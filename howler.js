@@ -131,36 +131,38 @@
 
   // setup the audio object
   var Howl = window.Howl = function(o) {
+    var self = this;
+
     // setup the defaults
-    this._autoplay = o.autoplay || false;
-    this._duration = o.duration || 0;
-    this._loop = o.loop || false;
-    this._preload = o.preload || 'auto';
-    this._sprite = o.sprite || {};
-    this._src = o.src || '';
-    this._pos = o.pos || 0;
-    this._volume = o.volume || 1;
-    this._urls = o.urls || [];
+    self._autoplay = o.autoplay || false;
+    self._duration = o.duration || 0;
+    self._loop = o.loop || false;
+    self._sprite = o.sprite || {};
+    self._src = o.src || '';
+    self._pos = o.pos || 0;
+    self._volume = o.volume || 1;
+    self._urls = o.urls || [];
 
     // setup event functions
-    this._onload = o.onload || function() {};
-    this._onend = o.onend || function() {};
-    this._onpause = o.onpause || function() {};
+    self._onload = o.onload || function() {};
+    self._onend = o.onend || function() {};
+    self._onpause = o.onpause || function() {};
 
-    this._onendTimer = [];
+    self._onendTimer = [];
+
 
     // check if we need to fall back to HTML5 Audio
     if (!usingWebAudio) {
-      this._audioNode = [];
+      self._audioNode = [];
     } else {
       // create gain node
-      this._gainNode = ctx.createGainNode();
-      this._gainNode.gain.value = this._volume;
-      this._gainNode.connect(gainNode);
+      self._gainNode = ctx.createGainNode();
+      self._gainNode.gain.value = self._volume;
+      self._gainNode.connect(gainNode);
     }
 
     // load the track
-    this.load();
+    self.load();
   };
 
   // setup all of the methods
