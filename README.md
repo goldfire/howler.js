@@ -17,7 +17,7 @@ More documentation, examples and demos can be found at **[howlerjs.com](http://h
 * Fade in/out sounds
 * Methods can be chained
 * Uses no outside libraries, just pure Javascript
-* Lightweight, 5kb filesize
+* Lightweight, 7kb filesize (2kb gzipped)
 
 ### Browser Compatibility
 Tested in the following browsers/versions:
@@ -110,7 +110,7 @@ Example:
   * *volume*: `Number` (optional) Volume from `0.0` to `1.0`.
 * **urls**: Get/set the URLs to be pulled from to play in this source.
   * *urls*: `Array` (optional) Changes the source files for this `Howl` object.
-* **on**: Call/set custom events.
+* **on**: Call/set custom events. Multiple events can be added by calling this multiple times.
   * *event*: `String` Name of event to fire/set.
   * *function*: `Function` (optional) Define function to fire on event.
 
