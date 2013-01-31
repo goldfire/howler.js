@@ -48,14 +48,14 @@
 
         if (usingWebAudio) {
           gainNode.gain.value = vol;
-        } else {
-          // loop through cache and change volume of all nodes
-          for (var key in cache) {
-            if (cache.hasOwnProperty(key)) {
-              // loop through the audio nodes
-              for (var i=0; i<cache[key]._audioNode.length; i++) {
-                cache[key]._audioNode[i].volume = cache[key]._volume * self._volume;
-              }
+        }
+
+        // loop through cache and change volume of all nodes that are using HTML5 Audio
+        for (var key in cache) {
+          if (cache.hasOwnProperty(key) && cache[key]._webAudio === false) {
+            // loop through the audio nodes
+            for (var i=0; i<cache[key]._audioNode.length; i++) {
+              cache[key]._audioNode[i].volume = cache[key]._volume * self._volume;
             }
           }
         }
@@ -78,13 +78,13 @@
     mute: function() {
       if (usingWebAudio) {
         gainNode.gain.value = 0;
-      } else {
-        for (var key in cache) {
-          if (cache.hasOwnProperty(key)) {
-            // loop through the audio nodes
-            for (var i=0; i<cache[key]._audioNode.length; i++) {
-              cache[key]._audioNode[i].volume = 0;
-            }
+      }
+
+      for (var key in cache) {
+        if (cache.hasOwnProperty(key) && cache[key]._webAudio === false) {
+          // loop through the audio nodes
+          for (var i=0; i<cache[key]._audioNode.length; i++) {
+            cache[key]._audioNode[i].volume = 0;
           }
         }
       }
@@ -101,13 +101,13 @@
       
       if (usingWebAudio) {
         gainNode.gain.value = self._volume;
-      } else {
-        for (var key in cache) {
-          if (cache.hasOwnProperty(key)) {
-            // loop through the audio nodes
-            for (var i=0; i<cache[key]._audioNode.length; i++) {
-              cache[key]._audioNode[i].volume = cache[key]._volume * self._volume;
-            }
+      }
+
+      for (var key in cache) {
+        if (cache.hasOwnProperty(key) && cache[key]._webAudio === false) {
+          // loop through the audio nodes
+          for (var i=0; i<cache[key]._audioNode.length; i++) {
+            cache[key]._audioNode[i].volume = cache[key]._volume * self._volume;
           }
         }
       }
@@ -135,6 +135,7 @@
 
     // setup the defaults
     self._autoplay = o.autoplay || false;
+    self._buffer = o.buffer || false;
     self._duration = o.duration || 0;
     self._loop = o.loop || false;
     self._sprite = o.sprite || {};
@@ -150,9 +151,11 @@
 
     self._onendTimer = [];
 
+    // Web Audio or HTML5 Audio?
+    self._webAudio = usingWebAudio && !self._buffer;
 
     // check if we need to fall back to HTML5 Audio
-    if (!usingWebAudio) {
+    if (!self._webAudio) {
       self._audioNode = [];
     } else {
       // create gain node
@@ -210,7 +213,7 @@
       
       self._src = url;
       
-      if (usingWebAudio) {
+      if (self._webAudio) {
         loadBuffer(self, url);
       } else {
         var newNode = new Audio();
@@ -218,10 +221,12 @@
 
         // setup the new audio node
         newNode.src = url;
-        newNode.preload = self._preload;
+        newNode.preload = 'auto';
         newNode.volume = self._volume;
-        newNode.load();
-        newNode.addEventListener('loadedmetadata', function() {
+
+        // setup the event listener to start playing the sound
+        // as soon as it has buffered enough
+        var listener = function() {
           self._duration = newNode.duration;
           self.on('load');
 
@@ -231,7 +236,12 @@
 
           // add this sound to the cache
           cache[url] = self;
-        }, false);
+
+          // clear the event listener
+          newNode.removeEventListener('canplaythrough', listener, false);
+        };
+        newNode.addEventListener('canplaythrough', listener, false);
+        newNode.load();
       }
 
       return self;
@@ -287,7 +297,7 @@
           }
 
           // end the track if it is HTML audio
-          if (!usingWebAudio) {
+          if (!self._webAudio) {
             self.pause(data.id);
           }
 
@@ -296,7 +306,7 @@
         }, duration * 1000));
       })();
 
-      if (usingWebAudio) {
+      if (self._webAudio) {
         // load the sound into context
         refreshBuffer(self);
 
@@ -327,7 +337,7 @@
         self._onendTimer.splice(0, 1);
       }
 
-      if (usingWebAudio) {
+      if (self._webAudio) {
         // make sure the sound has been created
         if (!self.bufferSource) {
           return self;
@@ -364,7 +374,7 @@
         self._onendTimer.splice(0, 1);
       }
 
-      if (usingWebAudio) {
+      if (self._webAudio) {
         // make sure the sound has been created
         if (!self.bufferSource) {
           return self;
@@ -390,7 +400,7 @@
     mute: function() {
       var self = this;
 
-      if (usingWebAudio) {
+      if (self._webAudio) {
         self._gainNode.gain.value = 0;
       } else {
         var activeNode = self.activeNode();
@@ -410,7 +420,7 @@
     unmute: function() {
       var self = this;
 
-      if (usingWebAudio) {
+      if (self._webAudio) {
         self._gainNode.gain.value = self._volume;
       } else {
         var activeNode = self.activeNode();
@@ -434,7 +444,7 @@
       if (vol >= 0 && vol <= 1) {
         self._volume = vol;
 
-        if (usingWebAudio) {
+        if (self._webAudio) {
           self._gainNode.gain.value = vol;
         } else {
           var activeNode = self.activeNode();
@@ -494,7 +504,7 @@
     pos: function(pos) {
       var self = this;
 
-      if (usingWebAudio) {
+      if (self._webAudio) {
         if (pos >= 0) {
           self._pos = pos;
           self.pause().play();
