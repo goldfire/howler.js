@@ -138,6 +138,7 @@
     self._buffer = o.buffer || false;
     self._duration = o.duration || 0;
     self._loop = o.loop || false;
+    self._loaded = false;
     self._sprite = o.sprite || {};
     self._src = o.src || '';
     self._pos = o.pos || 0;
@@ -145,9 +146,9 @@
     self._urls = o.urls || [];
 
     // setup event functions
-    self._onload = o.onload || function() {};
-    self._onend = o.onend || function() {};
-    self._onpause = o.onpause || function() {};
+    self._onload = [o.onload || function() {}];
+    self._onend = [o.onend || function() {}];
+    self._onpause = [o.onpause || function() {}];
 
     self._onendTimer = [];
 
@@ -228,6 +229,7 @@
         // as soon as it has buffered enough
         var listener = function() {
           self._duration = newNode.duration;
+          self._loaded = true;
           self.on('load');
 
           if (self._autoplay) {
@@ -273,6 +275,15 @@
      */
     play: function(sprite) {
       var self = this;
+
+      // if the sound hasn't been loaded, add it to the event queue
+      if (!self._loaded) {
+        self.on('load', function() {
+          self.play(sprite);
+        });
+
+        return self;
+      }
 
       // if the sprite doesn't exist, play nothing
       if (sprite && !self._sprite[sprite]) {
@@ -331,6 +342,15 @@
     pause: function(id) {
       var self = this;
 
+      // if the sound hasn't been loaded, add it to the event queue
+      if (!self._loaded) {
+        self.on('load', function() {
+          self.pause(id);
+        });
+
+        return self;
+      }
+
       // clear 'onend' timer
       if (self._onendTimer[0]) {
         clearTimeout(self._onendTimer[0]);
@@ -368,6 +388,15 @@
 
       self._pos = 0;
 
+      // if the sound hasn't been loaded, add it to the event queue
+      if (!self._loaded) {
+        self.on('load', function() {
+          self.stop();
+        });
+
+        return self;
+      }
+
       // clear 'onend' timer
       if (self._onendTimer[0]) {
         clearTimeout(self._onendTimer[0]);
@@ -400,6 +429,15 @@
     mute: function() {
       var self = this;
 
+      // if the sound hasn't been loaded, add it to the event queue
+      if (!self._loaded) {
+        self.on('load', function() {
+          self.mute();
+        });
+
+        return self;
+      }
+
       if (self._webAudio) {
         self._gainNode.gain.value = 0;
       } else {
@@ -419,6 +457,15 @@
      */
     unmute: function() {
       var self = this;
+
+      // if the sound hasn't been loaded, add it to the event queue
+      if (!self._loaded) {
+        self.on('load', function() {
+          self.unmute();
+        });
+
+        return self;
+      }
 
       if (self._webAudio) {
         self._gainNode.gain.value = self._volume;
@@ -440,6 +487,15 @@
      */
     volume: function(vol) {
       var self = this;
+
+      // if the sound hasn't been loaded, add it to the event queue
+      if (!self._loaded) {
+        self.on('load', function() {
+          self.volume(vol);
+        });
+
+        return self;
+      }
 
       if (vol >= 0 && vol <= 1) {
         self._volume = vol;
@@ -504,6 +560,15 @@
     pos: function(pos) {
       var self = this;
 
+      // if the sound hasn't been loaded, add it to the event queue
+      if (!self._loaded) {
+        self.on('load', function() {
+          self.pos(pos);
+        });
+
+        return self;
+      }
+
       if (self._webAudio) {
         if (pos >= 0) {
           self._pos = pos;
@@ -543,6 +608,15 @@
         iterations = dist / 0.01,
         hold = len / iterations;
 
+      // if the sound hasn't been loaded, add it to the event queue
+      if (!self._loaded) {
+        self.on('load', function() {
+          self.fadeIn(to, len, callback);
+        });
+
+        return self;
+      }
+
       self.volume(0).play();
 
       for (var i=1; i<=iterations; i++) {
@@ -574,6 +648,15 @@
         dist = self._volume - to,
         iterations = dist / 0.01,
         hold = len / iterations;
+
+      // if the sound hasn't been loaded, add it to the event queue
+      if (!self._loaded) {
+        self.on('load', function() {
+          self.fadeOut(to, len, callback);
+        });
+
+        return self;
+      }
 
       for (var i=1; i<=iterations; i++) {
         (function() {
@@ -701,12 +784,15 @@
      * @return {Object}
      */
     on: function(event, fn) {
-      var self = this;
+      var self = this,
+        events = self['_on' + event];
 
       if (fn) {
-        self['_on' + event] = fn;
+        events.push(fn);
       } else {
-        self['_on' + event].call();
+        for (var i=0; i<events.length; i++) {
+          events[i].call();
+        }
       }
     }
 
@@ -752,6 +838,7 @@
       obj._duration = (buffer) ? buffer.duration : obj._duration;
 
       // fire the loaded event
+      obj._loaded = true;
       obj.on('load');
 
       if (obj._autoplay) {
