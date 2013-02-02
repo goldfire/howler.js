@@ -780,7 +780,8 @@
 
     /**
      * Call/set custom events.
-     * @param  {Function} fn Function to call.
+     * @param  {String}   event Event type.
+     * @param  {Function} fn    Function to call.
      * @return {Object}
      */
     on: function(event, fn) {
@@ -794,6 +795,8 @@
           events[i].call();
         }
       }
+
+      return self;
     }
 
   };
