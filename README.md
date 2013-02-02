@@ -113,6 +113,9 @@ Example:
 * **on**: Call/set custom events. Multiple events can be added by calling this multiple times.
   * *event*: `String` Name of event to fire/set.
   * *function*: `Function` (optional) Define function to fire on event.
+* **on**: Remove custom events that you've set.
+  * *event*: `String` Name of event.
+  * *function*: `Function` (optional) The listener to remove.
 
 ### Global Methods
 The following methods are used to modify all sounds globally, and are called from the `Howler` object.

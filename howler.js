@@ -1,5 +1,5 @@
 /*!
- *  howler.js v1.0.1
+ *  howler.js v1.0.2
  *  howlerjs.com
  *
  *  (c) 2013, James Simpson of GoldFire Studios
@@ -793,6 +793,28 @@
       } else {
         for (var i=0; i<events.length; i++) {
           events[i].call();
+        }
+      }
+
+      return self;
+    },
+
+    /**
+     * Remove a custom event.
+     * @param  {String}   event Event type.
+     * @param  {Function} fn    Listener to remove.
+     * @return {Object}         [description]
+     */
+    off: function(event, fn) {
+      var self = this,
+        events = self['_on' + event],
+        fnString = fn.toString();
+
+      // loop through functions in the event for comparison
+      for (var i=0; i<events.length; i++) {
+        if (fnString === events[i].toString()) {
+          events.splice(i, 1);
+          break;
         }
       }
 
