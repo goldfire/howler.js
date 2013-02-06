@@ -623,7 +623,7 @@
 
       for (var i=1; i<=iterations; i++) {
         (function() {
-          var vol = self._volume + 0.01 * i,
+          var vol = Math.round(1000 * (self._volume + 0.01 * i)) / 1000,
             toVol = to;
           setTimeout(function() {
             self.volume(vol);
@@ -662,7 +662,7 @@
 
       for (var i=1; i<=iterations; i++) {
         (function() {
-          var vol = self._volume - 0.01 * i,
+          var vol = Math.round(1000 * (self._volume - 0.01 * i)) / 1000,
             toVol = to;
           setTimeout(function() {
             self.volume(vol);
