@@ -127,7 +127,8 @@
     mp3: !!audioTest.canPlayType('audio/mpeg;').replace(/^no$/,''),
     ogg: !!audioTest.canPlayType('audio/ogg; codecs="vorbis"').replace(/^no$/,''),
     wav: !!audioTest.canPlayType('audio/wav; codecs="1"').replace(/^no$/,''),
-    m4a: !!(audioTest.canPlayType('audio/x-m4a;') || audioTest.canPlayType('audio/aac;')).replace(/^no$/,'')
+    m4a: !!(audioTest.canPlayType('audio/x-m4a;') || audioTest.canPlayType('audio/aac;')).replace(/^no$/,''),
+    webm: !!audioTest.canPlayType('audio/webm; codecs="vorbis"').replace(/^no$/,'')
   };
   audioTest = null;
 
@@ -201,6 +202,10 @@
 
           case 'm4a':
             canPlay = codecs.m4a;
+            break;
+
+          case 'weba':
+            canPlay = codecs.webm;
             break;
         }
 
