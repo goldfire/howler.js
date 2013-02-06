@@ -508,7 +508,7 @@
           var activeNode = self.activeNode();
 
           if (activeNode) {
-            activeNode.volume = vol * Howl.volume();
+            activeNode.volume = vol * Howler.volume();
           }
         }
 
