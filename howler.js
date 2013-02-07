@@ -1,5 +1,5 @@
 /*!
- *  howler.js v1.0.4
+ *  howler.js v1.0.5
  *  howlerjs.com
  *
  *  (c) 2013, James Simpson of GoldFire Studios
@@ -164,7 +164,7 @@
     } else {
       // create gain node
       self._gainNode = ctx.createGainNode();
-      self._gainNode.gain.value = self._volume;
+      self._gainNode.gain.value = self._volume * Howler.volume();
       self._gainNode.connect(gainNode);
     }
 
@@ -230,7 +230,7 @@
         // setup the new audio node
         newNode.src = url;
         newNode.preload = 'auto';
-        newNode.volume = self._volume;
+        newNode.volume = self._volume * Howler.volume();
 
         // setup the event listener to start playing the sound
         // as soon as it has buffered enough
@@ -508,7 +508,7 @@
         self._volume = vol;
 
         if (self._webAudio) {
-          self._gainNode.gain.value = vol;
+          self._gainNode.gain.value = vol * Howler.volume();
         } else {
           var activeNode = self.activeNode();
 
