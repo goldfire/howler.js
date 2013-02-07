@@ -33,6 +33,7 @@
   // create global controller
   var HowlerGlobal = function() {
     this._volume = 1;
+    this._muted = false;
   };
   HowlerGlobal.prototype = {
     /**
@@ -78,6 +79,8 @@
     mute: function() {
       var self = this;
 
+      self._muted = true;
+
       if (usingWebAudio) {
         gainNode.gain.value = 0;
       }
@@ -100,6 +103,8 @@
      */
     unmute: function() {
       var self = this;
+
+      self._muted = false;
       
       if (usingWebAudio) {
         gainNode.gain.value = self._volume;
@@ -164,7 +169,7 @@
     } else {
       // create gain node
       self._gainNode = ctx.createGainNode();
-      self._gainNode.gain.value = self._volume * Howler.volume();
+      self._gainNode.gain.value = self._volume;
       self._gainNode.connect(gainNode);
     }
 
@@ -230,7 +235,7 @@
         // setup the new audio node
         newNode.src = url;
         newNode.preload = 'auto';
-        newNode.volume = self._volume * Howler.volume();
+        newNode.volume = (Howler._muted) ? 0 : self._volume * Howler.volume();
 
         // setup the event listener to start playing the sound
         // as soon as it has buffered enough
@@ -508,7 +513,7 @@
         self._volume = vol;
 
         if (self._webAudio) {
-          self._gainNode.gain.value = vol * Howler.volume();
+          self._gainNode.gain.value = vol;
         } else {
           var activeNode = self.activeNode();
 
