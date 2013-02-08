@@ -1,5 +1,5 @@
 /*!
- *  howler.js v1.0.5
+ *  howler.js v1.0.6
  *  howlerjs.com
  *
  *  (c) 2013, James Simpson of GoldFire Studios
@@ -237,6 +237,9 @@
         newNode.preload = 'auto';
         newNode.volume = (Howler._muted) ? 0 : self._volume * Howler.volume();
 
+        // add this sound to the cache
+        cache[url] = self;
+
         // setup the event listener to start playing the sound
         // as soon as it has buffered enough
         var listener = function() {
@@ -247,9 +250,6 @@
           if (self._autoplay) {
             self.play();
           }
-
-          // add this sound to the cache
-          cache[url] = self;
 
           // clear the event listener
           newNode.removeEventListener('canplaythrough', listener, false);
