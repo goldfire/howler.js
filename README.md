@@ -26,7 +26,7 @@ Tested in the following browsers/versions:
 * Firefox 3.5+
 * Safari 4.0+
 * Mobile Safari 6.0+ (after user input)
-* Operat 10.5+
+* Opera 10.5+
 
 ## Documentation
 
