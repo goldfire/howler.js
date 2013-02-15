@@ -126,7 +126,7 @@
   // allow access to the global audio controls
   window.Howler = new HowlerGlobal();
 
-  // chek for browser codec support
+  // check for browser codec support
   var audioTest = new Audio();
   var codecs = {
     mp3: !!audioTest.canPlayType('audio/mpeg;').replace(/^no$/,''),
