@@ -846,6 +846,10 @@
     var loadBuffer = function(obj, url) {
       // check if the buffer has already been cached
       if (url in cache) {
+        // set the duration from the cache
+        obj._duration = cache[url].duration;
+
+        // load the sound into this object
         loadSound(obj);
       } else {
         // load the buffer from the URL
