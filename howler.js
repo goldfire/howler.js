@@ -321,12 +321,15 @@
 
           // end the track if it is HTML audio
           if (!self._webAudio) {
-            self.pause(data.id);
+            self.pause(data.id, data.timer);
           }
 
           // fire ended event
           self.on('end');
         }, duration * 1000));
+
+        // remember which timer to cancel
+        data.timer = self._onendTimer[self._onendTimer.length - 1];
       })();
 
       if (self._webAudio) {
@@ -349,9 +352,10 @@
     /**
      * Pause playback and save the current position.
      * @param {String} id (optional) Used only for HTML5 Audio to pause specific node.
+     * @param {String} id (optional) Used only for HTML5 Audio to clear the correct timeout id.
      * @return {Object}
      */
-    pause: function(id) {
+    pause: function(id, timerId) {
       var self = this;
 
       // if the sound hasn't been loaded, add it to the event queue
@@ -364,9 +368,10 @@
       }
 
       // clear 'onend' timer
-      if (self._onendTimer[0]) {
-        clearTimeout(self._onendTimer[0]);
-        self._onendTimer.splice(0, 1);
+      var timer = self._onendTimer.indexOf(timerId);
+      if (timer >= 0) {
+        clearTimeout(self._onendTimer[timer]);
+        self._onendTimer.splice(timer, 1);
       }
 
       if (self._webAudio) {
