@@ -44,7 +44,7 @@
     volume: function(vol) {
       var self = this;
 
-      if (vol >= 0 && vol <= 1) {
+      if (vol && vol >= 0 && vol <= 1) {
         self._volume = vol;
 
         if (usingWebAudio) {
