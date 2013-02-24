@@ -367,12 +367,13 @@
         return self;
       }
 
-      // clear 'onend' timer
-      var timer = self._onendTimer.indexOf(timerId);
-      if (timer >= 0) {
-        clearTimeout(self._onendTimer[timer]);
-        self._onendTimer.splice(timer, 1);
+      // always clear 'onend' timer
+      var timer = self._onendTimer.length - 1;
+      if (timerId) {
+        timer = self._onendTimer.indexOf(timerId);
       }
+      clearTimeout(self._onendTimer[timer]);
+      self._onendTimer.splice(timer, 1);
 
       if (self._webAudio) {
         // make sure the sound has been created
