@@ -157,6 +157,7 @@
     self._onload = [o.onload || function() {}];
     self._onend = [o.onend || function() {}];
     self._onpause = [o.onpause || function() {}];
+    self._onplay = [o.onplay || function() {}];
 
     self._onendTimer = [];
 
@@ -345,6 +346,8 @@
           node.play();
         });
       }
+
+      self.on('play');
 
       return self;
     },

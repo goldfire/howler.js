@@ -84,6 +84,7 @@ Example:
 * **onend**: `Function` *(`function(){}` by default)* Fire when the sound finishes playing (if it is looping, it'll fire at the end of each loop).
 * **onload**: `Function` *(`function(){}` by default)* Fires when the sound is loaded.
 * **onpause**: `Function` *(`function(){}` by default)* Fires when the sound has been paused.
+* **onplay**: `Function` *(`function(){}` by default)* Fires when the sound begins playing.
 
 ### Methods
 * **play**: Begins playback of sound. Will continue from previous point if sound has been previously paused.
