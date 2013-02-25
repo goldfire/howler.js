@@ -340,10 +340,29 @@
         self._playStart = ctx.currentTime;
         self.bufferSource.noteGrainOn(0, pos, duration);
       } else {
-        self.inactiveNode(function(node) {
-          node.id = soundId;
-          node.currentTime = pos;
-          node.play();
+        self._inactiveNode(function(node) {
+          if (node.readyState === 4) {
+            node.id = soundId;
+            node.currentTime = pos;
+            node.play();
+          } else {
+            self._clearEndTimer(soundId);
+
+            (function(){
+              var sound = self,
+                playSprite = sprite,
+                newNode = node;
+              var listener = function() {
+                sound.play(playSprite);
+
+                // clear the event listener
+                newNode.removeEventListener('canplaythrough', listener, false);
+              };
+              newNode.addEventListener('canplaythrough', listener, false);
+            })();
+
+            return self;
+          }
         });
       }
 
@@ -371,11 +390,7 @@
       }
 
       // clear 'onend' timer
-      var timer = self._onendTimer.indexOf(timerId);
-      if (timer >= 0) {
-        clearTimeout(self._onendTimer[timer]);
-        self._onendTimer.splice(timer, 1);
-      }
+      self._clearEndTimer(timerId);
 
       if (self._webAudio) {
         // make sure the sound has been created
@@ -386,7 +401,7 @@
         self._pos += ctx.currentTime - self._playStart;
         self.bufferSource.noteOff(0);
       } else {
-        var activeNode = (id) ? self.nodeById(id) : self.activeNode();
+        var activeNode = (id) ? self._nodeById(id) : self._activeNode();
 
         if (activeNode) {
           self._pos = activeNode.currentTime;
@@ -418,10 +433,7 @@
       }
 
       // clear 'onend' timer
-      if (self._onendTimer[0]) {
-        clearTimeout(self._onendTimer[0]);
-        self._onendTimer.splice(0, 1);
-      }
+      self._clearEndTimer(0);
 
       if (self._webAudio) {
         // make sure the sound has been created
@@ -431,7 +443,7 @@
 
         self.bufferSource.noteOff(0);
       } else {
-        var activeNode = self.activeNode();
+        var activeNode = self._activeNode();
 
         if (activeNode) {
           activeNode.pause();
@@ -461,7 +473,7 @@
       if (self._webAudio) {
         self._gainNode.gain.value = 0;
       } else {
-        var activeNode = self.activeNode();
+        var activeNode = self._activeNode();
 
         if (activeNode) {
           activeNode.volume = 0;
@@ -490,7 +502,7 @@
       if (self._webAudio) {
         self._gainNode.gain.value = self._volume;
       } else {
-        var activeNode = self.activeNode();
+        var activeNode = self._activeNode();
 
         if (activeNode) {
           activeNode.volume = self._volume;
@@ -523,7 +535,7 @@
         if (self._webAudio) {
           self._gainNode.gain.value = vol;
         } else {
-          var activeNode = self.activeNode();
+          var activeNode = self._activeNode();
 
           if (activeNode) {
             activeNode.volume = vol * Howler.volume();
@@ -599,7 +611,7 @@
           return self._pos + (ctx.currentTime - self._playStart);
         }
       } else {
-        var activeNode = self.activeNode();
+        var activeNode = self._activeNode();
 
         if (!activeNode) {
           return self;
@@ -700,7 +712,7 @@
      * Get an HTML5 Audio node by ID.
      * @return {Object} Audio node.
      */
-    nodeById: function(id) {
+    _nodeById: function(id) {
       var self = this,
         node = null;
 
@@ -719,7 +731,7 @@
      * Get the first active audio node (HTML5 audio use only).
      * @return {Object} Audio node.
      */
-    activeNode: function() {
+    _activeNode: function() {
       var self = this,
         node = null;
 
@@ -732,7 +744,7 @@
       }
 
       // remove excess inactive nodes
-      self.drainPool();
+      self._drainPool();
 
       return node;
     },
@@ -742,7 +754,7 @@
      * If there is none, create a new one and add it to the pool.
      * @param  {Function} callback Function to call when the audio node is ready.
      */
-    inactiveNode: function(callback) {
+    _inactiveNode: function(callback) {
       var self = this,
         node = null;
 
@@ -756,7 +768,7 @@
       }
 
       // remove excess inactive nodes
-      self.drainPool();
+      self._drainPool();
 
       if (node) {
         return;
@@ -773,7 +785,7 @@
     /**
      * If there are more than 5 inactive audio nodes in the pool, clear out the rest.
      */
-    drainPool: function() {
+    _drainPool: function() {
       var self = this,
         inactive = 0,
         i;
@@ -795,6 +807,20 @@
           inactive--;
           self._audioNode.splice(i, 1);
         }
+      }
+    },
+
+    /**
+     * Clear 'onend' timeout before it ends.
+     * @param  {Number} timerId The ID of the sound to be cancelled.
+     */
+    _clearEndTimer: function(timerId) {
+      var self = this,
+        timer = self._onendTimer.indexOf(timerId);
+
+      if (timer >= 0) {
+        clearTimeout(self._onendTimer[timer]);
+        self._onendTimer.splice(timer, 1);
       }
     },
 
