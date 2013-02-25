@@ -190,8 +190,11 @@
 
       // loop through source URLs and pick the first one that is compatible
       for (var i=0; i<self._urls.length; i++) {
-        var ext = self._urls[i].toLowerCase().match(/.+\.([^?]+)(\?|$)/)[1],
+        var ext = self._urls[i].toLowerCase().match(/.+\.([^?]+)(\?|$)/),
           canPlay = false;
+
+        // figure out the filetype (whether an extension or base64 data)
+        ext = (ext && ext.length >= 2) ? ext[1] : self._urls[i].toLowerCase().match(/data\:audio\/([^?]+);/)[1];
 
         switch (ext) {
           case 'mp3':
