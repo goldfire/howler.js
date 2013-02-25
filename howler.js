@@ -818,7 +818,10 @@
       var self = this,
         timer = self._onendTimer.indexOf(timerId);
 
-      if (timer >= 0) {
+      // make sure the timer gets cleared
+      timer = timer >= 0 ? timer : 0;
+
+      if (self._onendTimer[timer]) {
         clearTimeout(self._onendTimer[timer]);
         self._onendTimer.splice(timer, 1);
       }
