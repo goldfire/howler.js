@@ -308,7 +308,7 @@
         duration = (sprite) ? self._sprite[sprite][1] / 1000 : self._duration - pos;
 
       // set timer to fire the 'onend' event
-      var soundId = Date.now() + '';
+      var soundId = Math.round(Date.now() * Math.random()) + '';
       (function() {
         var data = {
           id: soundId,
