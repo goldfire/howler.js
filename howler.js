@@ -349,7 +349,13 @@
         refreshBuffer(self);
 
         self._playStart = ctx.currentTime;
-        self.bufferSource.noteGrainOn(0, pos, duration);
+        // webkit
+        if (typeof self.bufferSource.noteGrainOn !== 'undefined') {
+          self.bufferSource.noteGrainOn(0, pos, duration);  
+        }
+        else { // w3c spec
+          self.bufferSource.start(0, pos, duration);
+        }        
       } else {
         self._inactiveNode(function(node) {
           if (node.readyState === 4) {
@@ -452,7 +458,13 @@
           return self;
         }
 
-        self.bufferSource.noteOff(0);
+        if (typeof self.bufferSource.noteOff !== 'undefined') {
+          self.bufferSource.noteOff(0);  
+        }
+        else {
+          self.bufferSource.stop(0);
+        }
+        
       } else {
         var activeNode = self._activeNode();
 
