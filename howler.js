@@ -25,7 +25,11 @@
 
   // create a master gain node
   if (usingWebAudio) {
-    var gainNode = ctx.createGainNode();
+    if (typeof ctx.createGain === 'undefined') { // Chrome / Safari
+      var gainNode = ctx.createGainNode();
+    } else {
+      var gainNode = ctx.createGain();
+    }
     gainNode.gain.value = 1;
     gainNode.connect(ctx.destination);
   }
@@ -169,7 +173,11 @@
       self._audioNode = [];
     } else {
       // create gain node
-      self._gainNode = ctx.createGainNode();
+      if (typeof ctx.createGain === 'undefined') { // Chrome / Safari
+        self._gainNode = ctx.createGainNode();
+      } else { // spec-compliant
+        self._gainNode = ctx.createGain();
+      }
       self._gainNode.gain.value = self._volume;
       self._gainNode.connect(gainNode);
     }
