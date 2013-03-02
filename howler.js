@@ -1,5 +1,5 @@
 /*!
- *  howler.js v1.0.9
+ *  howler.js v1.0.10
  *  howlerjs.com
  *
  *  (c) 2013, James Simpson of GoldFire Studios
@@ -311,13 +311,14 @@
         duration = (sprite) ? self._sprite[sprite][1] / 1000 : self._duration - pos;
 
       // set timer to fire the 'onend' event
-      var soundId = Math.round(Date.now() * Math.random()) + '';
+      var soundId = Math.round(Date.now() * Math.random()) + '',
+        timerId;
       (function() {
         var data = {
           id: soundId,
           sprite: sprite
         };
-        self._onendTimer.push(setTimeout(function() {
+        timerId = setTimeout(function() {
           // if looping, restart the track
           if (self._loop) {
             self.stop().play(sprite);
@@ -330,7 +331,10 @@
 
           // fire ended event
           self.on('end');
-        }, duration * 1000));
+        }, duration * 1000);
+
+        // store the reference to the timer
+        self._onendTimer.push(timerId);
 
         // remember which timer to cancel
         data.timer = self._onendTimer[self._onendTimer.length - 1];
@@ -345,7 +349,7 @@
           self.bufferSource.noteGrainOn(0, pos, duration);
         } else {
           self.bufferSource.start(0, pos, duration);
-        }      
+        }
       } else {
         self._inactiveNode(function(node) {
           if (node.readyState === 4) {
@@ -353,7 +357,7 @@
             node.currentTime = pos;
             node.play();
           } else {
-            self._clearEndTimer(soundId);
+            self._clearEndTimer(timerId);
 
             (function(){
               var sound = self,
@@ -449,7 +453,7 @@
         }
 
         if (typeof self.bufferSource.stop === 'undefined') {
-          self.bufferSource.noteOff(0);  
+          self.bufferSource.noteOff(0);
         } else {
           self.bufferSource.stop(0);
         }
@@ -772,7 +776,7 @@
 
       // find first inactive node to recycle
       for (var i=0; i<self._audioNode.length; i++) {
-        if (self._audioNode[i].paused) {
+        if (self._audioNode[i].paused && self._audioNode[i].readyState === 4) {
           callback(self._audioNode[i]);
           node = true;
           break;
