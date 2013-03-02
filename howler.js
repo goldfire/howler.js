@@ -1,5 +1,5 @@
 /*!
- *  howler.js v1.0.8
+ *  howler.js v1.0.9
  *  howlerjs.com
  *
  *  (c) 2013, James Simpson of GoldFire Studios
@@ -25,11 +25,7 @@
 
   // create a master gain node
   if (usingWebAudio) {
-    if (typeof ctx.createGain === 'undefined') { // Chrome / Safari
-      var gainNode = ctx.createGainNode();
-    } else {
-      var gainNode = ctx.createGain();
-    }
+    var gainNode = (typeof ctx.createGain === 'undefined') ? ctx.createGainNode() : ctx.createGain();
     gainNode.gain.value = 1;
     gainNode.connect(ctx.destination);
   }
@@ -173,11 +169,7 @@
       self._audioNode = [];
     } else {
       // create gain node
-      if (typeof ctx.createGain === 'undefined') { // Chrome / Safari
-        self._gainNode = ctx.createGainNode();
-      } else { // spec-compliant
-        self._gainNode = ctx.createGain();
-      }
+      self._gainNode = (typeof ctx.createGain === 'undefined') ? ctx.createGainNode() : ctx.createGain();
       self._gainNode.gain.value = self._volume;
       self._gainNode.connect(gainNode);
     }
@@ -349,13 +341,11 @@
         refreshBuffer(self);
 
         self._playStart = ctx.currentTime;
-        // webkit
-        if (typeof self.bufferSource.noteGrainOn !== 'undefined') {
-          self.bufferSource.noteGrainOn(0, pos, duration);  
-        }
-        else { // w3c spec
+        if (typeof self.bufferSource.start === 'undefined') {
+          self.bufferSource.noteGrainOn(0, pos, duration);
+        } else {
           self.bufferSource.start(0, pos, duration);
-        }        
+        }      
       } else {
         self._inactiveNode(function(node) {
           if (node.readyState === 4) {
@@ -458,10 +448,9 @@
           return self;
         }
 
-        if (typeof self.bufferSource.noteOff !== 'undefined') {
+        if (typeof self.bufferSource.stop === 'undefined') {
           self.bufferSource.noteOff(0);  
-        }
-        else {
+        } else {
           self.bufferSource.stop(0);
         }
         
