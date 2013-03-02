@@ -105,7 +105,7 @@
       var self = this;
 
       self._muted = false;
-      
+
       if (usingWebAudio) {
         gainNode.gain.value = self._volume;
       }
@@ -120,6 +120,19 @@
       }
 
       return self;
+    },
+
+	/**
+	 * Check for use of Web Audio API.
+	 * @return {Boolean}  Returns true if using Web Audio API.
+	 */ 
+	webaudio: function() {
+
+      if (usingWebAudio) {
+        return true;
+      } else {
+        return false;
+      }
     }
   };
 

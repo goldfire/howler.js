@@ -119,12 +119,13 @@ Example:
   * *function*: `Function` (optional) The listener to remove.
 
 ### Global Methods
-The following methods are used to modify all sounds globally, and are called from the `Howler` object.
+The following methods are used to modify all sounds globally or to check if the Web Audio API is being used. They are called from the `Howler` object.
 
 * **mute**: Mutes all sounds.
 * **unmute**: Unmutes all sounds and restores them to their previous volume.
 * **volume**: Get/set the global volume for all sounds.
   * *volume*: `Number` (optional) Volume from `0.0` to `1.0`.
+* **webaudio**: Get whether the Web Audio API is being used. Returns a boolean, true if Web Audio API is in use, false if not.
 
 ## License
 
