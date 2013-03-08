@@ -34,6 +34,7 @@
   var HowlerGlobal = function() {
     this._volume = 1;
     this._muted = false;
+    this.usingWebAudio = usingWebAudio;
   };
   HowlerGlobal.prototype = {
     /**
