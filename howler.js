@@ -325,8 +325,8 @@
             self.stop().play(sprite);
           }
 
-          // end the track if it is HTML audio
-          if (!self._webAudio) {
+          // end the track if it is HTML audio and a sprite
+          if (!self._webAudio && sprite) {
             self.pause(data.id, data.timer);
           }
 
