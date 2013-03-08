@@ -1,0 +1,28 @@
+<html>
+  <head>
+    <title>Test loading howler.js from require.js</title>
+    <script>
+      var require = {
+        paths: {
+          jquery: "//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min"
+          , Howler: "../howler"
+          , Howl: "../howler"
+        }, 
+
+        shim: {
+          jquery: { exports: "jQuery" }
+        }
+      }
+
+    </script>
+    <script 
+      src="https://raw.github.com/jrburke/requirejs/2.1.5/require.js"
+      data-main="main">
+    </script>
+  </head>
+
+  <body>
+    <h1>Test of howler.js loading from require.js</h1>
+    <button id="play-bonk">Play BONK Sound</button>
+  </body>
+</html>
