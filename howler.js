@@ -124,6 +124,8 @@
     }
   };
 
+  var Howler = new HowlerGlobal();
+
   // check for browser codec support
   var audioTest = new Audio();
   var codecs = {
@@ -954,7 +956,7 @@
   // Support for AMD (async module definition)
   if (typeof define == 'function' && define.amd) {
       define('Howler', function() {
-          return new HowlerGlobal()
+          return Howler;
       });
 
       define('Howl', function() {

@@ -10,7 +10,7 @@ define(["jquery", "Howler", "Howl"], function($, Howler, Howl)
   }
 
   bonk = new Howl({
-    urls: ["/test/bonk.mp3", "/test/bonk.ogg"]
+    urls: ["/test-amd/bonk.mp3", "/test-amd/bonk.ogg"]
   });
 
   $(function() {
