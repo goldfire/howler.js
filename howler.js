@@ -109,7 +109,7 @@
       var self = this;
 
       self._muted = false;
-      
+
       if (usingWebAudio) {
         gainNode.gain.value = self._volume;
       }
@@ -231,9 +231,9 @@
       if (!url) {
         return;
       }
-      
+
       self._src = url;
-      
+
       if (self._webAudio) {
         loadBuffer(self, url);
       } else {
@@ -461,7 +461,7 @@
         } else {
           self.bufferSource.stop(0);
         }
-        
+
       } else {
         var activeNode = self._activeNode();
 
@@ -924,6 +924,16 @@
               loadSound(obj, buffer);
             }
           });
+        };
+        xhr.onerror = function() {
+          // if there is an error, switch the sound to HTML Audio
+          if (obj._webAudio) {
+            obj._buffer = true;
+            obj._webAudio = false;
+            obj._audioNode = [];
+            delete obj._gainNode;
+            obj.load();
+          }
         };
         xhr.send();
       }
