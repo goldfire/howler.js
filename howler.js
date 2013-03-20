@@ -45,6 +45,9 @@
     volume: function(vol) {
       var self = this;
 
+      // make sure volume is a number
+      vol = parseFloat(vol, 10);
+
       if (vol && vol >= 0 && vol <= 1) {
         self._volume = vol;
 
@@ -536,6 +539,9 @@
      */
     volume: function(vol) {
       var self = this;
+
+      // make sure volume is a number
+      vol = parseFloat(vol, 10);
 
       // if the sound hasn't been loaded, add it to the event queue
       if (!self._loaded) {
