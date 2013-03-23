@@ -1,5 +1,5 @@
 /*!
- *  howler.js v1.0.13
+ *  howler.js v1.1.0-a1
  *  howlerjs.com
  *
  *  (c) 2013, James Simpson of GoldFire Studios
@@ -176,6 +176,11 @@
       self._gainNode = (typeof ctx.createGain === 'undefined') ? ctx.createGainNode() : ctx.createGain();
       self._gainNode.gain.value = self._volume;
       self._gainNode.connect(masterGain);
+
+      // create the panner
+      self._panner = ctx.createPanner();
+      self._panner.setPosition(0, 0, -0.5);
+      self._panner.connect(self._gainNode);
     }
 
     // load the track
@@ -964,7 +969,7 @@
     var refreshBuffer = function(obj) {
       obj.bufferSource = ctx.createBufferSource();
       obj.bufferSource.buffer = cache[obj._src];
-      obj.bufferSource.connect(obj._gainNode);
+      obj.bufferSource.connect(obj._panner);
       obj.bufferSource.loop = obj._loop;
     };
 
