@@ -154,6 +154,7 @@
     self._sprite = o.sprite || {};
     self._src = o.src || '';
     self._pos = o.pos || 0;
+    self._pos3d = o.pos3d || [0, 0, -0.5];
     self._volume = o.volume || 1;
     self._urls = o.urls || [];
 
@@ -179,7 +180,7 @@
 
       // create the panner
       self._panner = ctx.createPanner();
-      self._panner.setPosition(0, 0, -0.5);
+      self._panner.setPosition(self._pos3d[0], self._pos3d[1], self._pos3d[2]);
       self._panner.connect(self._gainNode);
     }
 
@@ -653,6 +654,38 @@
           return activeNode.currentTime;
         }
       }
+    },
+
+
+    pos3d: function(x, y, z) {
+      var self = this;
+
+      // set a default for the optional 'y' & 'z'
+      y = (typeof y === 'undefined' || !y) ? 0 : y;
+      z = (typeof z === 'undefined' || !z) ? -0.5 : z;
+
+      // if the sound hasn't been loaded, add it to the event queue
+      if (!self._loaded) {
+        self.on('load', function() {
+          self.pos3d(x, y, z);
+        });
+
+        return self;
+      }
+
+      if (x >= 0 || x < 0) {
+        if (self._webAudio) {
+          self._pos3d = [x, y, z];
+          self._panner.setPosition(x, y, z);
+        } else {
+          // TODO: fake this in HTML5 Audio
+          // Basically, as the sound gets 'further' away, make the volume lower or higher
+        }
+      } else {
+        return self._pos3d;
+      }
+
+      return self;
     },
 
     /**
