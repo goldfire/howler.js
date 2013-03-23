@@ -656,7 +656,17 @@
       }
     },
 
-
+    /**
+     * Get/set the 3D position of the audio source.
+     * The most common usage is to set the 'x' position
+     * to effect the left/right ear panning.
+     * NOTE: This only works with Web Audio API, HTML5 Audio playback
+     * will not be affected.
+     * @param  {Float} x The x-position of the playback from -1.0 to 1.0
+     * @param  {Float} y The y-position of the playback from -1.0 to 1.0
+     * @param  {Float} z The z-position of the playback from -1.0 to 1.0
+     * @return {Object/Array}   Returns self or the current 3D position: [x, y, z]
+     */
     pos3d: function(x, y, z) {
       var self = this;
 
@@ -677,9 +687,6 @@
         if (self._webAudio) {
           self._pos3d = [x, y, z];
           self._panner.setPosition(x, y, z);
-        } else {
-          // TODO: fake this in HTML5 Audio
-          // Basically, as the sound gets 'further' away, make the volume lower or higher
         }
       } else {
         return self._pos3d;
