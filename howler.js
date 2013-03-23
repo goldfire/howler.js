@@ -25,9 +25,9 @@
 
   // create a master gain node
   if (usingWebAudio) {
-    var gainNode = (typeof ctx.createGain === 'undefined') ? ctx.createGainNode() : ctx.createGain();
-    gainNode.gain.value = 1;
-    gainNode.connect(ctx.destination);
+    var masterGain = (typeof ctx.createGain === 'undefined') ? ctx.createGainNode() : ctx.createGain();
+    masterGain.gain.value = 1;
+    masterGain.connect(ctx.destination);
   }
 
   // create global controller
@@ -52,7 +52,7 @@
         self._volume = vol;
 
         if (usingWebAudio) {
-          gainNode.gain.value = vol;
+          masterGain.gain.value = vol;
         }
 
         // loop through cache and change volume of all nodes that are using HTML5 Audio
@@ -69,7 +69,7 @@
       } else {
         // return the current global volume
         if (usingWebAudio) {
-          return gainNode.gain.value;
+          return masterGain.gain.value;
         } else {
           return self._volume;
         }
@@ -86,7 +86,7 @@
       self._muted = true;
 
       if (usingWebAudio) {
-        gainNode.gain.value = 0;
+        masterGain.gain.value = 0;
       }
 
       for (var key in cache) {
@@ -111,7 +111,7 @@
       self._muted = false;
 
       if (usingWebAudio) {
-        gainNode.gain.value = self._volume;
+        masterGain.gain.value = self._volume;
       }
 
       for (var key in cache) {
@@ -175,7 +175,7 @@
       // create gain node
       self._gainNode = (typeof ctx.createGain === 'undefined') ? ctx.createGainNode() : ctx.createGain();
       self._gainNode.gain.value = self._volume;
-      self._gainNode.connect(gainNode);
+      self._gainNode.connect(masterGain);
     }
 
     // load the track
