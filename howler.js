@@ -659,12 +659,13 @@
     /**
      * Get/set the 3D position of the audio source.
      * The most common usage is to set the 'x' position
-     * to effect the left/right ear panning.
+     * to effect the left/right ear panning. Setting any value higher than
+     * 1.0 will begin to decrease the volume of the sound as it moves further away.
      * NOTE: This only works with Web Audio API, HTML5 Audio playback
      * will not be affected.
-     * @param  {Float} x The x-position of the playback from -1.0 to 1.0
-     * @param  {Float} y The y-position of the playback from -1.0 to 1.0
-     * @param  {Float} z The z-position of the playback from -1.0 to 1.0
+     * @param  {Float} x The x-position of the playback from -1000.0 to 1000.0
+     * @param  {Float} y The y-position of the playback from -1000.0 to 1000.0
+     * @param  {Float} z The z-position of the playback from -1000.0 to 1000.0
      * @return {Object/Array}   Returns self or the current 3D position: [x, y, z]
      */
     pos3d: function(x, y, z) {
