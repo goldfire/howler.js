@@ -1,5 +1,5 @@
 /*!
- *  howler.js v1.1.0-a1
+ *  howler.js v1.1.0-a2
  *  howlerjs.com
  *
  *  (c) 2013, James Simpson of GoldFire Studios
@@ -170,18 +170,9 @@
     self._webAudio = usingWebAudio && !self._buffer;
 
     // check if we need to fall back to HTML5 Audio
-    if (!self._webAudio) {
-      self._audioNode = [];
-    } else {
-      // create gain node
-      self._gainNode = (typeof ctx.createGain === 'undefined') ? ctx.createGainNode() : ctx.createGain();
-      self._gainNode.gain.value = self._volume;
-      self._gainNode.connect(masterGain);
-
-      // create the panner
-      self._panner = ctx.createPanner();
-      self._panner.setPosition(self._pos3d[0], self._pos3d[1], self._pos3d[2]);
-      self._panner.connect(self._gainNode);
+    self._audioNode = [];
+    if (self._webAudio) {
+      self._setupAudioNode();
     }
 
     // load the track
@@ -297,7 +288,7 @@
     /**
      * Play a sound from the current time (0 by default).
      * @param  {String} sprite (optional) Plays from the specified position in the sound sprite definition.
-     * @return {Object}
+     * @return {String}    The id for this play instance, which allows you to manipulate individual plays.
      */
     play: function(sprite) {
       var self = this;
@@ -351,15 +342,19 @@
       })();
 
       if (self._webAudio) {
-        // load the sound into context
-        refreshBuffer(self);
+        self._inactiveNode(function(node) {
+          // set the play id to this node and load into context
+          node.id = soundId;
+          node.paused = false;
+          refreshBuffer(self, soundId);
+          self._playStart = ctx.currentTime;
 
-        self._playStart = ctx.currentTime;
-        if (typeof self.bufferSource.start === 'undefined') {
-          self.bufferSource.noteGrainOn(0, pos, duration);
-        } else {
-          self.bufferSource.start(0, pos, duration);
-        }
+          if (typeof self.bufferSource.start === 'undefined') {
+            self.bufferSource.noteGrainOn(0, pos, duration);
+          } else {
+            self.bufferSource.start(0, pos, duration);
+          }
+        });
       } else {
         self._inactiveNode(function(node) {
           if (node.readyState === 4) {
@@ -389,7 +384,7 @@
 
       self.on('play');
 
-      return self;
+      return soundId;
     },
 
     /**
@@ -437,9 +432,10 @@
 
     /**
      * Stop playback and reset to start.
+     * @param  {String} id  (optional) The play instance id.
      * @return {Object}
      */
-    stop: function() {
+    stop: function(id) {
       var self = this;
 
       self._pos = 0;
@@ -482,9 +478,10 @@
 
     /**
      * Mute this sound.
+     * @param  {String} id (optional) The play instance id.
      * @return {Object}
      */
-    mute: function() {
+    mute: function(id) {
       var self = this;
 
       // if the sound hasn't been loaded, add it to the event queue
@@ -496,12 +493,11 @@
         return self;
       }
 
-      if (self._webAudio) {
-        self._gainNode.gain.value = 0;
-      } else {
-        var activeNode = self._activeNode();
-
-        if (activeNode) {
+      var activeNode = (id) ? self._nodeById(id) : self._activeNode();
+      if (activeNode) {
+        if (self._webAudio) {
+          activeNode.gain.value = 0;
+        } else {
           activeNode.volume = 0;
         }
       }
@@ -511,9 +507,10 @@
 
     /**
      * Unmute this sound.
+     * @param  {String} id (optional) The play instance id.
      * @return {Object}
      */
-    unmute: function() {
+    unmute: function(id) {
       var self = this;
 
       // if the sound hasn't been loaded, add it to the event queue
@@ -525,12 +522,11 @@
         return self;
       }
 
-      if (self._webAudio) {
-        self._gainNode.gain.value = self._volume;
-      } else {
-        var activeNode = self._activeNode();
-
-        if (activeNode) {
+      var activeNode = (id) ? self._nodeById(id) : self._activeNode();
+      if (activeNode) {
+        if (self._webAudio) {
+          activeNode.gain.value = self._volume;
+        } else {
           activeNode.volume = self._volume;
         }
       }
@@ -541,9 +537,10 @@
     /**
      * Get/set volume of this sound.
      * @param  {Float} vol Volume from 0.0 to 1.0.
+     * @param  {String} id (optional) The play instance id.
      * @return {Object/Float}     Returns self or current volume.
      */
-    volume: function(vol) {
+    volume: function(vol, id) {
       var self = this;
 
       // make sure volume is a number
@@ -666,9 +663,10 @@
      * @param  {Float} x The x-position of the playback from -1000.0 to 1000.0
      * @param  {Float} y The y-position of the playback from -1000.0 to 1000.0
      * @param  {Float} z The z-position of the playback from -1000.0 to 1000.0
+     * @param  {String} id (optional) The play instance id.
      * @return {Object/Array}   Returns self or the current 3D position: [x, y, z]
      */
-    pos3d: function(x, y, z) {
+    pos3d: function(x, y, z, id) {
       var self = this;
 
       // set a default for the optional 'y' & 'z'
@@ -701,9 +699,10 @@
      * @param  {Float} to  Volume to fade to (0.0 to 1.0).
      * @param  {Number} len Time in milliseconds to fade.
      * @param  {Function} callback
+     * @param  {String} id (optional) The play instance id.
      * @return {Object}
      */
-    fadeIn: function(to, len, callback) {
+    fadeIn: function(to, len, callback, id) {
       var self = this,
         dist = to,
         iterations = dist / 0.01,
@@ -742,9 +741,10 @@
      * @param  {Float} to  Volume to fade to (0.0 to 1.0).
      * @param  {Number} len Time in milliseconds to fade.
      * @param  {Function} callback
+     * @param  {String} id (optional) The play instance id.
      * @return {Object}
      */
-    fadeOut: function(to, len, callback) {
+    fadeOut: function(to, len, callback, id) {
       var self = this,
         dist = self._volume - to,
         iterations = dist / 0.01,
@@ -783,7 +783,7 @@
      */
     _nodeById: function(id) {
       var self = this,
-        node = null;
+        node = self._audioNode[0];
 
       // find the node with this ID
       for (var i=0; i<self._audioNode.length; i++) {
@@ -836,6 +836,8 @@
         }
       }
 
+      return;
+
       // remove excess inactive nodes
       self._drainPool();
 
@@ -844,11 +846,18 @@
       }
 
       // create new node if there are no inactives
-      self.load();
-      var newNode = self._audioNode[self._audioNode.length - 1];
-      newNode.addEventListener('loadedmetadata', function() {
+      var newNode;
+      if (self._webAudio) {
+        newNode = self._setupAudioNode();
+        self.load();
         callback(newNode);
-      });
+      } else {
+        self.load();
+        newNode = self._audioNode[self._audioNode.length - 1];
+        newNode.addEventListener('loadedmetadata', function() {
+          callback(newNode);
+        });
+      }
     },
 
     /**
@@ -894,6 +903,30 @@
         clearTimeout(self._onendTimer[timer]);
         self._onendTimer.splice(timer, 1);
       }
+    },
+
+    /**
+     * Setup the gain node and panner for a Web Audio instance.
+     * @return {Object} The new audio node.
+     */
+    _setupAudioNode: function() {
+      var self = this,
+        node = self._audioNode,
+        index = self._audioNode.length;
+
+      // create gain node
+      node[index] = (typeof ctx.createGain === 'undefined') ? ctx.createGainNode() : ctx.createGain();
+      node[index].gain.value = self._volume;
+      node[index].paused = true;
+      node[index].readyState = 4;
+      node[index].connect(masterGain);
+
+      // create the panner
+      node[index].panner = ctx.createPanner();
+      node[index].panner.setPosition(self._pos3d[0], self._pos3d[1], self._pos3d[2]);
+      node[index].panner.connect(node[index]);
+
+      return node[index];
     },
 
     /**
@@ -986,7 +1019,7 @@
     };
 
     /**
-     * Finishes loading the Web Audio API sound and fies the loaded event
+     * Finishes loading the Web Audio API sound and fires the loaded event
      * @param  {Object} obj    The Howl object for the sound to load.
      * @param  {Objecct} buffer The decoded buffer sound source.
      */
@@ -1006,11 +1039,16 @@
     /**
      * Load the sound back into the buffer source.
      * @param  {Object} obj The sound to load.
+     * @param  {String} id  [Optional] The play instance id.
      */
-    var refreshBuffer = function(obj) {
+    var refreshBuffer = function(obj, id) {
+      // determine which node to connect to
+      var node = obj._nodeById(id);
+
+      // setup the buffer source for playback
       obj.bufferSource = ctx.createBufferSource();
       obj.bufferSource.buffer = cache[obj._src];
-      obj.bufferSource.connect(obj._panner);
+      obj.bufferSource.connect(node.panner);
       obj.bufferSource.loop = obj._loop;
     };
 
