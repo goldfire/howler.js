@@ -288,15 +288,15 @@
     /**
      * Play a sound from the current time (0 by default).
      * @param  {String} sprite (optional) Plays from the specified position in the sound sprite definition.
-     * @return {String}    The id for this play instance, which allows you to manipulate individual plays.
+     * @return {Object}
      */
-    play: function(sprite) {
+    play: function(sprite, callback) {
       var self = this;
 
       // if the sound hasn't been loaded, add it to the event queue
       if (!self._loaded) {
         self.on('load', function() {
-          self.play(sprite);
+          self.play(sprite, callback);
         });
 
         return self;
@@ -304,6 +304,7 @@
 
       // if the sprite doesn't exist, play nothing
       if (sprite && !self._sprite[sprite]) {
+        if (typeof callback === 'function') callback();
         return self;
       }
 
@@ -312,7 +313,7 @@
         duration = (sprite) ? self._sprite[sprite][1] / 1000 : self._duration - pos;
 
       // set timer to fire the 'onend' event
-      var soundId = Math.round(Date.now() * Math.random()) + '',
+      var soundId = (typeof callback === 'string') ? callback : Math.round(Date.now() * Math.random()) + '',
         timerId;
       (function() {
         var data = {
@@ -322,7 +323,9 @@
         timerId = setTimeout(function() {
           // if looping, restart the track
           if (self._loop) {
-            self.stop().play(sprite);
+            self.stop(data.id).play(sprite, data.id);
+          } else if (self._webAudio) {
+            self._nodeById(data.id).paused = true;
           }
 
           // end the track if it is HTML audio and a sprite
@@ -367,9 +370,10 @@
             (function(){
               var sound = self,
                 playSprite = sprite,
+                fn = callback,
                 newNode = node;
               var listener = function() {
-                sound.play(playSprite);
+                sound.play(playSprite, fn);
 
                 // clear the event listener
                 newNode.removeEventListener('canplaythrough', listener, false);
@@ -383,8 +387,9 @@
       }
 
       self.on('play');
+      if (typeof callback === 'function') callback(soundId);
 
-      return soundId;
+      return self;
     },
 
     /**
@@ -408,18 +413,22 @@
       // clear 'onend' timer
       self._clearEndTimer(timerId);
 
-      if (self._webAudio) {
-        // make sure the sound has been created
-        if (!self.bufferSource) {
-          return self;
-        }
+      var activeNode = (id) ? self._nodeById(id) : self._activeNode();
+      if (activeNode) {
+        if (self._webAudio) {
+          // make sure the sound has been created
+          if (!self.bufferSource) {
+            return self;
+          }
 
-        self._pos += ctx.currentTime - self._playStart;
-        self.bufferSource.noteOff(0);
-      } else {
-        var activeNode = (id) ? self._nodeById(id) : self._activeNode();
-
-        if (activeNode) {
+          activeNode.paused = true;
+          self._pos += ctx.currentTime - self._playStart;
+          if (typeof self.bufferSource.stop === 'undefined') {
+            self.bufferSource.noteOff(0);
+          } else {
+            self.bufferSource.stop(0);
+          }
+        } else {
           self._pos = activeNode.currentTime;
           activeNode.pause();
         }
@@ -443,7 +452,7 @@
       // if the sound hasn't been loaded, add it to the event queue
       if (!self._loaded) {
         self.on('load', function() {
-          self.stop();
+          self.stop(id);
         });
 
         return self;
@@ -452,22 +461,22 @@
       // clear 'onend' timer
       self._clearEndTimer(0);
 
-      if (self._webAudio) {
-        // make sure the sound has been created
-        if (!self.bufferSource) {
-          return self;
-        }
+      var activeNode = (id) ? self._nodeById(id) : self._activeNode();
+      if (activeNode) {
+        if (self._webAudio) {
+          // make sure the sound has been created
+          if (!self.bufferSource) {
+            return self;
+          }
 
-        if (typeof self.bufferSource.stop === 'undefined') {
-          self.bufferSource.noteOff(0);
+          activeNode.paused = true;
+
+          if (typeof self.bufferSource.stop === 'undefined') {
+            self.bufferSource.noteOff(0);
+          } else {
+            self.bufferSource.stop(0);
+          }
         } else {
-          self.bufferSource.stop(0);
-        }
-
-      } else {
-        var activeNode = self._activeNode();
-
-        if (activeNode) {
           activeNode.pause();
           activeNode.currentTime = 0;
         }
