@@ -1,5 +1,5 @@
 /*!
- *  howler.js v1.1.0-a2
+ *  howler.js v1.1.0-a3
  *  howlerjs.com
  *
  *  (c) 2013, James Simpson of GoldFire Studios
@@ -312,19 +312,26 @@
       var pos = (sprite) ? self._sprite[sprite][0] / 1000 : self._pos,
         duration = (sprite) ? self._sprite[sprite][1] / 1000 : self._duration - pos;
 
+      // determine if this sound should be looped
+      var loop = !!(self._loop || sprite && self._sprite[sprite][2]);
+
       // set timer to fire the 'onend' event
       var soundId = (typeof callback === 'string') ? callback : Math.round(Date.now() * Math.random()) + '',
         timerId;
       (function() {
         var data = {
           id: soundId,
-          sprite: sprite
+          sprite: sprite,
+          loop: loop
         };
         timerId = setTimeout(function() {
           // if looping, restart the track
-          if (self._loop) {
+          if (!self._webAudio && loop) {
             self.stop(data.id).play(sprite, data.id);
-          } else if (self._webAudio) {
+          }
+
+          // set web audio node to puased at end
+          if (self._webAudio && !loop) {
             self._nodeById(data.id).paused = true;
           }
 
@@ -346,10 +353,12 @@
 
       if (self._webAudio) {
         self._inactiveNode(function(node) {
+          // determine if this soun
+
           // set the play id to this node and load into context
           node.id = soundId;
           node.paused = false;
-          refreshBuffer(self, soundId);
+          refreshBuffer(self, soundId, [loop, pos, duration]);
           self._playStart = ctx.currentTime;
 
           if (typeof self.bufferSource.start === 'undefined') {
@@ -601,9 +610,10 @@
 
     /**
      * Get/set sound sprite definition.
-     * @param  {Object} sprite Example: {spriteName: [offset, duration]}
-     *                @param {Integer} offset Where to begin playback in milliseconds
+     * @param  {Object} sprite Example: {spriteName: [offset, duration, loop]}
+     *                @param {Integer} offset   Where to begin playback in milliseconds
      *                @param {Integer} duration How long to play in milliseconds
+     *                @param {Boolean} loop     (optional) Set true to loop this sprite
      * @return {Object}        Returns current sprite sheet or self.
      */
     sprite: function(sprite) {
@@ -1027,7 +1037,7 @@
 
     /**
      * Finishes loading the Web Audio API sound and fires the loaded event
-     * @param  {Object} obj    The Howl object for the sound to load.
+     * @param  {Object}  obj    The Howl object for the sound to load.
      * @param  {Objecct} buffer The decoded buffer sound source.
      */
     var loadSound = function(obj, buffer) {
@@ -1045,10 +1055,11 @@
 
     /**
      * Load the sound back into the buffer source.
-     * @param  {Object} obj The sound to load.
-     * @param  {String} id  [Optional] The play instance id.
+     * @param  {Object} obj   The sound to load.
+     * @param  {Array}  loop  Loop boolean, pos, and duration.
+     * @param  {String} id    (optional) The play instance id.
      */
-    var refreshBuffer = function(obj, id) {
+    var refreshBuffer = function(obj, loop, id) {
       // determine which node to connect to
       var node = obj._nodeById(id);
 
@@ -1056,7 +1067,9 @@
       obj.bufferSource = ctx.createBufferSource();
       obj.bufferSource.buffer = cache[obj._src];
       obj.bufferSource.connect(node.panner);
-      obj.bufferSource.loop = obj._loop;
+      obj.bufferSource.loop = loop[0];
+      obj.bufferSource.loopStart = loop[1];
+      obj.bufferSource.loopEnd = loop[0] + loop[1];
     };
 
   }
