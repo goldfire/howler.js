@@ -567,12 +567,11 @@
       if (vol >= 0 && vol <= 1) {
         self._volume = vol;
 
-        if (self._webAudio) {
-          self._gainNode.gain.value = vol;
-        } else {
-          var activeNode = self._activeNode();
-
-          if (activeNode) {
+        var activeNode = (id) ? self._nodeById(id) : self._activeNode();
+        if (activeNode) {
+          if (self._webAudio) {
+            activeNode.gain.value = vol;
+          } else {
             activeNode.volume = vol * Howler.volume();
           }
         }
@@ -693,8 +692,11 @@
 
       if (x >= 0 || x < 0) {
         if (self._webAudio) {
-          self._pos3d = [x, y, z];
-          self._panner.setPosition(x, y, z);
+          var activeNode = (id) ? self._nodeById(id) : self._activeNode();
+          if (activeNode) {
+            self._pos3d = [x, y, z];
+            node.panner.setPosition(x, y, z);
+          }
         }
       } else {
         return self._pos3d;
@@ -708,10 +710,9 @@
      * @param  {Float} to  Volume to fade to (0.0 to 1.0).
      * @param  {Number} len Time in milliseconds to fade.
      * @param  {Function} callback
-     * @param  {String} id (optional) The play instance id.
      * @return {Object}
      */
-    fadeIn: function(to, len, callback, id) {
+    fadeIn: function(to, len, callback) {
       var self = this,
         dist = to,
         iterations = dist / 0.01,
@@ -773,11 +774,11 @@
           var vol = Math.round(1000 * (self._volume - 0.01 * i)) / 1000,
             toVol = to;
           setTimeout(function() {
-            self.volume(vol);
+            self.volume(vol, id);
 
             if (vol === toVol) {
               if (callback) callback();
-              self.pause();
+              self.pause(id);
             }
           }, hold * i);
         })();
