@@ -846,8 +846,6 @@
         }
       }
 
-      return;
-
       // remove excess inactive nodes
       self._drainPool();
 
@@ -859,7 +857,6 @@
       var newNode;
       if (self._webAudio) {
         newNode = self._setupAudioNode();
-        self.load();
         callback(newNode);
       } else {
         self.load();
