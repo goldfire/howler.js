@@ -358,7 +358,7 @@
           // set the play id to this node and load into context
           node.id = soundId;
           node.paused = false;
-          refreshBuffer(self, soundId, [loop, pos, duration]);
+          refreshBuffer(self, [loop, pos, duration], soundId);
           self._playStart = ctx.currentTime;
 
           if (typeof self.bufferSource.start === 'undefined') {
@@ -1068,8 +1068,10 @@
       obj.bufferSource.buffer = cache[obj._src];
       obj.bufferSource.connect(node.panner);
       obj.bufferSource.loop = loop[0];
-      obj.bufferSource.loopStart = loop[1];
-      obj.bufferSource.loopEnd = loop[0] + loop[1];
+      if (loop[0]) {
+        obj.bufferSource.loopStart = loop[1];
+        obj.bufferSource.loopEnd = loop[0] + loop[1];
+      }
     };
 
   }
