@@ -953,7 +953,7 @@
         events.push(fn);
       } else {
         for (var i=0; i<events.length; i++) {
-          events[i].call();
+          events[i].call(self);
         }
       }
 
