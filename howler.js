@@ -695,7 +695,7 @@
           var activeNode = (id) ? self._nodeById(id) : self._activeNode();
           if (activeNode) {
             self._pos3d = [x, y, z];
-            node.panner.setPosition(x, y, z);
+            activeNode.panner.setPosition(x, y, z);
           }
         }
       } else {
