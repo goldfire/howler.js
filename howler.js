@@ -271,7 +271,7 @@
 
     /**
      * Get/set the URLs to be pulled from to play in this source.
-     * @param  {Array} urls Arry of URLs to load from
+     * @param  {Array} urls  Arry of URLs to load from
      * @return {Object}      Returns self or the current URLs
      */
     urls: function(urls) {
@@ -562,7 +562,7 @@
 
     /**
      * Get/set volume of this sound.
-     * @param  {Float} vol Volume from 0.0 to 1.0.
+     * @param  {Float}  vol Volume from 0.0 to 1.0.
      * @param  {String} id (optional) The play instance id.
      * @return {Object/Float}     Returns self or current volume.
      */
@@ -686,9 +686,9 @@
      * 1.0 will begin to decrease the volume of the sound as it moves further away.
      * NOTE: This only works with Web Audio API, HTML5 Audio playback
      * will not be affected.
-     * @param  {Float} x The x-position of the playback from -1000.0 to 1000.0
-     * @param  {Float} y The y-position of the playback from -1000.0 to 1000.0
-     * @param  {Float} z The z-position of the playback from -1000.0 to 1000.0
+     * @param  {Float}  x  The x-position of the playback from -1000.0 to 1000.0
+     * @param  {Float}  y  The y-position of the playback from -1000.0 to 1000.0
+     * @param  {Float}  z  The z-position of the playback from -1000.0 to 1000.0
      * @param  {String} id (optional) The play instance id.
      * @return {Object/Array}   Returns self or the current 3D position: [x, y, z]
      */
@@ -725,8 +725,8 @@
 
     /**
      * Fade in the current sound.
-     * @param  {Float} to  Volume to fade to (0.0 to 1.0).
-     * @param  {Number} len Time in milliseconds to fade.
+     * @param  {Float}    to      Volume to fade to (0.0 to 1.0).
+     * @param  {Number}   len     Time in milliseconds to fade.
      * @param  {Function} callback
      * @return {Object}
      */
@@ -766,10 +766,10 @@
 
     /**
      * Fade out the current sound and pause when finished.
-     * @param  {Float} to  Volume to fade to (0.0 to 1.0).
-     * @param  {Number} len Time in milliseconds to fade.
+     * @param  {Float}    to       Volume to fade to (0.0 to 1.0).
+     * @param  {Number}   len      Time in milliseconds to fade.
      * @param  {Function} callback
-     * @param  {String} id (optional) The play instance id.
+     * @param  {String}   id       (optional) The play instance id.
      * @return {Object}
      */
     fadeOut: function(to, len, callback, id) {
