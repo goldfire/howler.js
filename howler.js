@@ -420,7 +420,7 @@
 
       // if the sound hasn't been loaded, add it to the event queue
       if (!self._loaded) {
-        self.on('load', function() {
+        self.on('play', function() {
           self.pause(id);
         });
 
@@ -468,7 +468,7 @@
 
       // if the sound hasn't been loaded, add it to the event queue
       if (!self._loaded) {
-        self.on('load', function() {
+        self.on('play', function() {
           self.stop(id);
         });
 
@@ -512,8 +512,8 @@
 
       // if the sound hasn't been loaded, add it to the event queue
       if (!self._loaded) {
-        self.on('load', function() {
-          self.mute();
+        self.on('play', function() {
+          self.mute(id);
         });
 
         return self;
@@ -541,8 +541,8 @@
 
       // if the sound hasn't been loaded, add it to the event queue
       if (!self._loaded) {
-        self.on('load', function() {
-          self.unmute();
+        self.on('play', function() {
+          self.unmute(id);
         });
 
         return self;
@@ -574,8 +574,8 @@
 
       // if the sound hasn't been loaded, add it to the event queue
       if (!self._loaded) {
-        self.on('load', function() {
-          self.volume(vol);
+        self.on('play', function() {
+          self.volume(vol, id);
         });
 
         return self;
@@ -701,8 +701,8 @@
 
       // if the sound hasn't been loaded, add it to the event queue
       if (!self._loaded) {
-        self.on('load', function() {
-          self.pos3d(x, y, z);
+        self.on('play', function() {
+          self.pos3d(x, y, z, id);
         });
 
         return self;
@@ -780,8 +780,8 @@
 
       // if the sound hasn't been loaded, add it to the event queue
       if (!self._loaded) {
-        self.on('load', function() {
-          self.fadeOut(to, len, callback);
+        self.on('play', function() {
+          self.fadeOut(to, len, callback, id);
         });
 
         return self;
