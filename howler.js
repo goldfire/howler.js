@@ -249,8 +249,11 @@
         // as soon as it has buffered enough
         var listener = function() {
           self._duration = newNode.duration;
-          self._loaded = true;
-          self.on('load');
+          
+          if (!self._loaded) {
+            self._loaded = true;
+            self.on('load');
+          }
 
           if (self._autoplay) {
             self.play();
@@ -353,8 +356,6 @@
 
       if (self._webAudio) {
         self._inactiveNode(function(node) {
-          // determine if this soun
-
           // set the play id to this node and load into context
           node.id = soundId;
           node.paused = false;
@@ -366,6 +367,12 @@
           } else {
             self.bufferSource.start(0, pos, duration);
           }
+
+          // fire the play event and send the soundId back in the callback
+          self.on('play');
+          if (typeof callback === 'function') callback(soundId);
+
+          return self;
         });
       } else {
         self._inactiveNode(function(node) {
@@ -373,6 +380,12 @@
             node.id = soundId;
             node.currentTime = pos;
             node.play();
+
+            // fire the play event and send the soundId back in the callback
+            self.on('play');
+            if (typeof callback === 'function') callback(soundId);
+
+            return self;
           } else {
             self._clearEndTimer(timerId);
 
@@ -394,11 +407,6 @@
           }
         });
       }
-
-      self.on('play');
-      if (typeof callback === 'function') callback(soundId);
-
-      return self;
     },
 
     /**
@@ -1045,8 +1053,10 @@
       obj._duration = (buffer) ? buffer.duration : obj._duration;
 
       // fire the loaded event
-      obj._loaded = true;
-      obj.on('load');
+      if (!self._loaded) {
+        obj._loaded = true;
+        obj.on('load');
+      }
 
       if (obj._autoplay) {
         obj.play();
