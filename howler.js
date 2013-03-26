@@ -1,5 +1,5 @@
 /*!
- *  howler.js v1.1.0-b1
+ *  howler.js v1.1.0-b2
  *  howlerjs.com
  *
  *  (c) 2013, James Simpson of GoldFire Studios
@@ -362,10 +362,10 @@
           refreshBuffer(self, [loop, pos, duration], soundId);
           self._playStart = ctx.currentTime;
 
-          if (typeof self.bufferSource.start === 'undefined') {
-            self.bufferSource.noteGrainOn(0, pos, duration);
+          if (typeof node.bufferSource.start === 'undefined') {
+            node.bufferSource.noteGrainOn(0, pos, duration);
           } else {
-            self.bufferSource.start(0, pos, duration);
+            node.bufferSource.start(0, pos, duration);
           }
 
           // fire the play event and send the soundId back in the callback
@@ -434,16 +434,16 @@
       if (activeNode) {
         if (self._webAudio) {
           // make sure the sound has been created
-          if (!self.bufferSource) {
+          if (!activeNode.bufferSource) {
             return self;
           }
 
           activeNode.paused = true;
           self._pos += ctx.currentTime - self._playStart;
-          if (typeof self.bufferSource.stop === 'undefined') {
-            self.bufferSource.noteOff(0);
+          if (typeof activeNode.bufferSource.stop === 'undefined') {
+            activeNode.bufferSource.noteOff(0);
           } else {
-            self.bufferSource.stop(0);
+            activeNode.bufferSource.stop(0);
           }
         } else {
           self._pos = activeNode.currentTime;
@@ -482,16 +482,16 @@
       if (activeNode) {
         if (self._webAudio) {
           // make sure the sound has been created
-          if (!self.bufferSource) {
+          if (!activeNode.bufferSource) {
             return self;
           }
 
           activeNode.paused = true;
 
-          if (typeof self.bufferSource.stop === 'undefined') {
-            self.bufferSource.noteOff(0);
+          if (typeof activeNode.bufferSource.stop === 'undefined') {
+            activeNode.bufferSource.noteOff(0);
           } else {
-            self.bufferSource.stop(0);
+            activeNode.bufferSource.stop(0);
           }
         } else {
           activeNode.pause();
@@ -1074,13 +1074,13 @@
       var node = obj._nodeById(id);
 
       // setup the buffer source for playback
-      obj.bufferSource = ctx.createBufferSource();
-      obj.bufferSource.buffer = cache[obj._src];
-      obj.bufferSource.connect(node.panner);
-      obj.bufferSource.loop = loop[0];
+      node.bufferSource = ctx.createBufferSource();
+      node.bufferSource.buffer = cache[obj._src];
+      node.bufferSource.connect(node.panner);
+      node.bufferSource.loop = loop[0];
       if (loop[0]) {
-        obj.bufferSource.loopStart = loop[1];
-        obj.bufferSource.loopEnd = loop[1] + loop[2];
+        node.bufferSource.loopStart = loop[1];
+        node.bufferSource.loopEnd = loop[1] + loop[2];
       }
     };
 
