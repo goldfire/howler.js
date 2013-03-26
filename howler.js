@@ -1070,7 +1070,7 @@
       obj.bufferSource.loop = loop[0];
       if (loop[0]) {
         obj.bufferSource.loopStart = loop[1];
-        obj.bufferSource.loopEnd = loop[0] + loop[1];
+        obj.bufferSource.loopEnd = loop[1] + loop[2];
       }
     };
 
