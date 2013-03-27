@@ -23,6 +23,11 @@
     usingWebAudio = false;
   }
 
+  // Bail out silently on older browsers
+  if ( !usingWebAudio && typeof Audio === "undefined" ) {
+    return;
+  }
+
   // create a master gain node
   if (usingWebAudio) {
     var gainNode = (typeof ctx.createGain === 'undefined') ? ctx.createGainNode() : ctx.createGain();
