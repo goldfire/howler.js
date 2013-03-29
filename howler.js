@@ -1,5 +1,5 @@
 /*!
- *  howler.js v1.1.0-b2
+ *  howler.js v1.1.0-b3
  *  howlerjs.com
  *
  *  (c) 2013, James Simpson of GoldFire Studios
@@ -1039,7 +1039,11 @@
             obj.load();
           }
         };
-        xhr.send();
+        try {
+          xhr.send();
+        } catch (e) {
+          xhr.onerror();
+        }
       }
     };
 
