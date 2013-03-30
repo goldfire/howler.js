@@ -78,7 +78,6 @@ Example:
   key: [offset, duration]
 }
 ```
-* **pos**: `Number` *(`0` by default)* Position to start playback from in milliseconds.
 * **volume**: `Number` *(`1.0` by default)* The volume of the specific track, from `0.0` to `1.0`.
 * **urls**: `Array` *(`[]` by default)* The source URLs to the track(s) to be loaded for the sound. These should be in order of preference, howler.js will automatically load the first one that is compatible with the current browser.
 * **onend**: `Function` *(`function(){}` by default)* Fire when the sound finishes playing (if it is looping, it'll fire at the end of each loop).

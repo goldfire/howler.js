@@ -1,5 +1,5 @@
 /*!
- *  howler.js v1.1.0-b3
+ *  howler.js v1.1.0-b4
  *  howlerjs.com
  *
  *  (c) 2013, James Simpson of GoldFire Studios
@@ -153,7 +153,6 @@
     self._loaded = false;
     self._sprite = o.sprite || {};
     self._src = o.src || '';
-    self._pos = o.pos || 0;
     self._pos3d = o.pos3d || [0, 0, -0.5];
     self._volume = o.volume || 1;
     self._urls = o.urls || [];
@@ -239,6 +238,7 @@
 
         // setup the new audio node
         newNode.src = url;
+        newNode._pos = 0;
         newNode.preload = 'auto';
         newNode.volume = (Howler._muted) ? 0 : self._volume * Howler.volume();
 
@@ -249,7 +249,12 @@
         // as soon as it has buffered enough
         var listener = function() {
           self._duration = newNode.duration;
-          
+
+          // setup a sprite if none is defined
+          if (Object.getOwnPropertyNames(self._sprite).length === 0) {
+            self._sprite = {_default: [0, self._duration * 1000]};
+          }
+
           if (!self._loaded) {
             self._loaded = true;
             self.on('load');
@@ -290,11 +295,17 @@
 
     /**
      * Play a sound from the current time (0 by default).
-     * @param  {String} sprite (optional) Plays from the specified position in the sound sprite definition.
+     * @param  {String}   sprite   (optional) Plays from the specified position in the sound sprite definition.
+     * @param  {Function} callback (optional) Returns the unique playback id for this sound instance.
      * @return {Object}
      */
     play: function(sprite, callback) {
       var self = this;
+
+      // use the default sprite if none is passed
+      if (!sprite) {
+        sprite = '_default';
+      }
 
       // if the sound hasn't been loaded, add it to the event queue
       if (!self._loaded) {
@@ -306,56 +317,60 @@
       }
 
       // if the sprite doesn't exist, play nothing
-      if (sprite && !self._sprite[sprite]) {
+      if (!self._sprite[sprite]) {
         if (typeof callback === 'function') callback();
         return self;
       }
 
-      // determine where to start playing from
-      var pos = (sprite) ? self._sprite[sprite][0] / 1000 : self._pos,
-        duration = (sprite) ? self._sprite[sprite][1] / 1000 : self._duration - pos;
+      // get the node to playback
+      self._inactiveNode(function(node) {
+        // persist the sprite being played
+        node._sprite = sprite;
 
-      // determine if this sound should be looped
-      var loop = !!(self._loop || sprite && self._sprite[sprite][2]);
+        // determine where to start playing from
+        var pos = (node._pos > 0) ? node._pos : self._sprite[sprite][0] / 1000,
+          duration = self._sprite[sprite][1] / 1000 - node._pos;
 
-      // set timer to fire the 'onend' event
-      var soundId = (typeof callback === 'string') ? callback : Math.round(Date.now() * Math.random()) + '',
-        timerId;
-      (function() {
-        var data = {
-          id: soundId,
-          sprite: sprite,
-          loop: loop
-        };
-        timerId = setTimeout(function() {
-          // if looping, restart the track
-          if (!self._webAudio && loop) {
-            self.stop(data.id).play(sprite, data.id);
-          }
+        // determine if this sound should be looped
+        var loop = !!(self._loop || self._sprite[sprite][2]);
 
-          // set web audio node to puased at end
-          if (self._webAudio && !loop) {
-            self._nodeById(data.id).paused = true;
-          }
+        // set timer to fire the 'onend' event
+        var soundId = (typeof callback === 'string') ? callback : Math.round(Date.now() * Math.random()) + '',
+          timerId;
+        (function() {
+          var data = {
+            id: soundId,
+            sprite: sprite,
+            loop: loop
+          };
+          timerId = setTimeout(function() {
+            // if looping, restart the track
+            if (!self._webAudio && loop) {
+              self.stop(data.id).play(sprite, data.id);
+            }
 
-          // end the track if it is HTML audio and a sprite
-          if (!self._webAudio && sprite) {
-            self.pause(data.id, data.timer);
-          }
+            // set web audio node to puased at end
+            if (self._webAudio && !loop) {
+              self._nodeById(data.id).paused = true;
+            }
 
-          // fire ended event
-          self.on('end');
-        }, duration * 1000);
+            // end the track if it is HTML audio and a sprite
+            if (!self._webAudio) {
+              self.pause(data.id, data.timer);
+            }
 
-        // store the reference to the timer
-        self._onendTimer.push(timerId);
+            // fire ended event
+            self.on('end');
+          }, duration * 1000);
 
-        // remember which timer to cancel
-        data.timer = self._onendTimer[self._onendTimer.length - 1];
-      })();
+          // store the reference to the timer
+          self._onendTimer.push(timerId);
 
-      if (self._webAudio) {
-        self._inactiveNode(function(node) {
+          // remember which timer to cancel
+          data.timer = self._onendTimer[self._onendTimer.length - 1];
+        })();
+
+        if (self._webAudio) {
           // set the play id to this node and load into context
           node.id = soundId;
           node.paused = false;
@@ -367,25 +382,11 @@
           } else {
             node.bufferSource.start(0, pos, duration);
           }
-
-          // fire the play event and send the soundId back in the callback
-          self.on('play');
-          if (typeof callback === 'function') callback(soundId);
-
-          return self;
-        });
-      } else {
-        self._inactiveNode(function(node) {
+        } else {
           if (node.readyState === 4) {
             node.id = soundId;
             node.currentTime = pos;
             node.play();
-
-            // fire the play event and send the soundId back in the callback
-            self.on('play');
-            if (typeof callback === 'function') callback(soundId);
-
-            return self;
           } else {
             self._clearEndTimer(timerId);
 
@@ -405,8 +406,14 @@
 
             return self;
           }
-        });
-      }
+        }
+
+        // fire the play event and send the soundId back in the callback
+        self.on('play');
+        if (typeof callback === 'function') callback(soundId);
+
+        return self;
+      });
     },
 
     /**
@@ -439,14 +446,14 @@
           }
 
           activeNode.paused = true;
-          self._pos += ctx.currentTime - self._playStart;
+          activeNode._pos += ctx.currentTime - self._playStart;
           if (typeof activeNode.bufferSource.stop === 'undefined') {
             activeNode.bufferSource.noteOff(0);
           } else {
             activeNode.bufferSource.stop(0);
           }
         } else {
-          self._pos = activeNode.currentTime;
+          activeNode._pos = activeNode.currentTime;
           activeNode.pause();
         }
       }
@@ -464,8 +471,6 @@
     stop: function(id) {
       var self = this;
 
-      self._pos = 0;
-
       // if the sound hasn't been loaded, add it to the event queue
       if (!self._loaded) {
         self.on('play', function() {
@@ -480,6 +485,8 @@
 
       var activeNode = (id) ? self._nodeById(id) : self._activeNode();
       if (activeNode) {
+        activeNode._pos = 0;
+
         if (self._webAudio) {
           // make sure the sound has been created
           if (!activeNode.bufferSource) {
@@ -563,7 +570,7 @@
     /**
      * Get/set volume of this sound.
      * @param  {Float}  vol Volume from 0.0 to 1.0.
-     * @param  {String} id (optional) The play instance id.
+     * @param  {String} id  (optional) The play instance id.
      * @return {Object/Float}     Returns self or current volume.
      */
     volume: function(vol, id) {
@@ -638,10 +645,11 @@
 
     /**
      * Get/set the position of playback.
-     * @param  {Float} pos The position to move current playback to.
+     * @param  {Float}  pos The position to move current playback to.
+     * @param  {String} id  (optional) The play instance id.
      * @return {Object/Float}      Returns self or current playback position.
      */
-    pos: function(pos) {
+    pos: function(pos, id) {
       var self = this;
 
       // if the sound hasn't been loaded, add it to the event queue
@@ -653,28 +661,25 @@
         return self;
       }
 
-      if (self._webAudio) {
-        if (pos >= 0) {
-          self._pos = pos;
-          self.pause().play();
+      var activeNode = (id) ? self._nodeById(id) : self._activeNode();
+      if (activeNode) {
+        if (self._webAudio) {
+          if (pos >= 0) {
+            activeNode._pos = pos;
+            self.pause(id).play(node._sprite, id);
 
-          return self;
+            return self;
+          } else {
+            return activeNode._pos + (ctx.currentTime - self._playStart);
+          }
         } else {
-          return self._pos + (ctx.currentTime - self._playStart);
-        }
-      } else {
-        var activeNode = self._activeNode();
+          if (pos >= 0) {
+            activeNode.currentTime = pos;
 
-        if (!activeNode) {
-          return self;
-        }
-
-        if (pos >= 0) {
-          activeNode.currentTime = pos;
-
-          return self;
-        } else {
-          return activeNode.currentTime;
+            return self;
+          } else {
+            return activeNode.currentTime;
+          }
         }
       }
     },
@@ -943,6 +948,7 @@
       node[index] = (typeof ctx.createGain === 'undefined') ? ctx.createGainNode() : ctx.createGain();
       node[index].gain.value = self._volume;
       node[index].paused = true;
+      node[index]._pos = 0;
       node[index].readyState = 4;
       node[index].connect(masterGain);
 
@@ -1055,6 +1061,11 @@
     var loadSound = function(obj, buffer) {
       // set the duration
       obj._duration = (buffer) ? buffer.duration : obj._duration;
+
+      // setup a sprite if none is defined
+      if (Object.getOwnPropertyNames(obj._sprite).length === 0) {
+        obj._sprite = {_default: [0, obj._duration * 1000]};
+      }
 
       // fire the loaded event
       if (!self._loaded) {

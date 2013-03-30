@@ -3,6 +3,7 @@
 - `ADDED:` Multi-playback control system that allows for control of specific play instances when sprites are used. A callback has been added to the `play` method that returns the `soundId` for the playback instance. This can then be passed as the optional last parameter to other methods to control that specific playback instead of the whole sound object.
 - `ADDED:` Pass the `Howl` object reference as the first parameter in the custom event callbacks.
 - `ADDED:` New optional parameter in sprite defintions to define a sprite as looping rather than the whole track. In the sprite definition array, set the 3rd value to true for looping (`spriteName: [pos, duration, loop]`).
+- `FIXED:` Now all audio acts as a sound sprite internally, which helps to fix several lingering bugs (doesn't affect the API at all).
 - `FIXED:` Improved implementation of Web Audio API looping.
 - `FIXED:` Issue that caused the fallback to not work when testing locally.
 - `FIXED:` Various code cleanup and optimizations.
