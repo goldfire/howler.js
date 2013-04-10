@@ -14,13 +14,16 @@
 
   // setup the audio context
   var ctx = null,
-    usingWebAudio = true;
+    usingWebAudio = true,
+    noAudio = false;
   if (typeof AudioContext !== 'undefined') {
     ctx = new AudioContext();
   } else if (typeof webkitAudioContext !== 'undefined') {
     ctx = new webkitAudioContext();
-  } else {
+  } else if (typeof Audio !== 'undefined') {
     usingWebAudio = false;
+  } else {
+    noAudio = true;
   }
 
   // create a master gain node
@@ -187,6 +190,11 @@
     load: function() {
       var self = this,
         url = null;
+
+      // if no audio is available, quit immediately
+      if (noAudio) {
+        return;
+      }
 
       // loop through source URLs and pick the first one that is compatible
       for (var i=0; i<self._urls.length; i++) {
