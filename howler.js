@@ -357,14 +357,15 @@
               self.stop(data.id).play(sprite, data.id);
             }
 
-            // set web audio node to puased at end
+            // set web audio node to paused at end
             if (self._webAudio && !loop) {
               self._nodeById(data.id).paused = true;
             }
 
-            // end the track if it is HTML audio and a sprite
+            // pause and reset the track if it is HTML audio
             if (!self._webAudio) {
               self.pause(data.id, data.timer);
+              node._pos = 0;
             }
 
             // fire ended event
