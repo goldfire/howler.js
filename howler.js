@@ -354,7 +354,7 @@
           timerId = setTimeout(function() {
             // if looping, restart the track
             if (!self._webAudio && loop) {
-              self.stop(data.id).play(sprite, data.id);
+              self.stop(data.id, data.timer).play(sprite, data.id);
             }
 
             // set web audio node to puased at end
@@ -363,8 +363,8 @@
             }
 
             // end the track if it is HTML audio and a sprite
-            if (!self._webAudio) {
-              self.pause(data.id, data.timer);
+            if (!self._webAudio && !loop) {
+              self.stop(data.id, data.timer);
             }
 
             // fire ended event
@@ -443,7 +443,7 @@
       }
 
       // clear 'onend' timer
-      self._clearEndTimer(timerId);
+      self._clearEndTimer(timerId || 0);
 
       var activeNode = (id) ? self._nodeById(id) : self._activeNode();
       if (activeNode) {
@@ -474,9 +474,10 @@
     /**
      * Stop playback and reset to start.
      * @param  {String} id  (optional) The play instance id.
+     * @param {String} id (optional) Used only for HTML5 Audio to clear the correct timeout id.
      * @return {Object}
      */
-    stop: function(id) {
+    stop: function(id, timerId) {
       var self = this;
 
       // if the sound hasn't been loaded, add it to the event queue
@@ -489,7 +490,7 @@
       }
 
       // clear 'onend' timer
-      self._clearEndTimer(0);
+      self._clearEndTimer(timerId || 0);
 
       var activeNode = (id) ? self._nodeById(id) : self._activeNode();
       if (activeNode) {
