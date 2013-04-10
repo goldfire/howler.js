@@ -802,6 +802,9 @@
             if (vol === toVol) {
               if (callback) callback();
               self.pause(id);
+
+              // fire ended event
+              self.on('end');
             }
           }, hold * i);
         })();
