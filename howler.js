@@ -134,15 +134,17 @@
   window.Howler = new HowlerGlobal();
 
   // check for browser codec support
-  var audioTest = new Audio();
-  var codecs = {
-    mp3: !!audioTest.canPlayType('audio/mpeg;').replace(/^no$/,''),
-    ogg: !!audioTest.canPlayType('audio/ogg; codecs="vorbis"').replace(/^no$/,''),
-    wav: !!audioTest.canPlayType('audio/wav; codecs="1"').replace(/^no$/,''),
-    m4a: !!(audioTest.canPlayType('audio/x-m4a;') || audioTest.canPlayType('audio/aac;')).replace(/^no$/,''),
-    webm: !!audioTest.canPlayType('audio/webm; codecs="vorbis"').replace(/^no$/,'')
-  };
-  audioTest = null;
+  var audioTest = null;
+  if (!noAudio) {
+    audioTest = new Audio();
+    var codecs = {
+      mp3: !!audioTest.canPlayType('audio/mpeg;').replace(/^no$/,''),
+      ogg: !!audioTest.canPlayType('audio/ogg; codecs="vorbis"').replace(/^no$/,''),
+      wav: !!audioTest.canPlayType('audio/wav; codecs="1"').replace(/^no$/,''),
+      m4a: !!(audioTest.canPlayType('audio/x-m4a;') || audioTest.canPlayType('audio/aac;')).replace(/^no$/,''),
+      webm: !!audioTest.canPlayType('audio/webm; codecs="vorbis"').replace(/^no$/,'')
+    };
+  }
 
   // setup the audio object
   var Howl = window.Howl = function(o) {
