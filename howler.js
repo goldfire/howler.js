@@ -1,5 +1,5 @@
 /*!
- *  howler.js v1.1.0-b4
+ *  howler.js v1.1.0-rc
  *  howlerjs.com
  *
  *  (c) 2013, James Simpson of GoldFire Studios
@@ -69,14 +69,10 @@
         }
 
         return self;
-      } else {
-        // return the current global volume
-        if (usingWebAudio) {
-          return masterGain.gain.value;
-        } else {
-          return self._volume;
-        }
       }
+
+      // return the current global volume
+      return (usingWebAudio) ? masterGain.gain.value : self._volume;
     },
 
     /**
@@ -359,7 +355,7 @@
               self.stop(data.id, data.timer).play(sprite, data.id);
             }
 
-            // set web audio node to puased at end
+            // set web audio node to paused at end
             if (self._webAudio && !loop) {
               self._nodeById(data.id).paused = true;
             }
@@ -428,8 +424,8 @@
 
     /**
      * Pause playback and save the current position.
-     * @param {String} id (optional) Used only for HTML5 Audio to pause specific node.
-     * @param {String} id (optional) Used only for HTML5 Audio to clear the correct timeout id.
+     * @param {String} id (optional) The play instance ID.
+     * @param {String} id (optional) Clear the correct timeout ID.
      * @return {Object}
      */
     pause: function(id, timerId) {
@@ -475,8 +471,8 @@
 
     /**
      * Stop playback and reset to start.
-     * @param  {String} id  (optional) The play instance id.
-     * @param {String} id (optional) Used only for HTML5 Audio to clear the correct timeout id.
+     * @param  {String} id  (optional) The play instance ID.
+     * @param  {String} id  (optional) Clear the correct timeout ID.
      * @return {Object}
      */
     stop: function(id, timerId) {
@@ -522,7 +518,7 @@
 
     /**
      * Mute this sound.
-     * @param  {String} id (optional) The play instance id.
+     * @param  {String} id (optional) The play instance ID.
      * @return {Object}
      */
     mute: function(id) {
@@ -551,7 +547,7 @@
 
     /**
      * Unmute this sound.
-     * @param  {String} id (optional) The play instance id.
+     * @param  {String} id (optional) The play instance ID.
      * @return {Object}
      */
     unmute: function(id) {
@@ -581,7 +577,7 @@
     /**
      * Get/set volume of this sound.
      * @param  {Float}  vol Volume from 0.0 to 1.0.
-     * @param  {String} id  (optional) The play instance id.
+     * @param  {String} id  (optional) The play instance ID.
      * @return {Object/Float}     Returns self or current volume.
      */
     volume: function(vol, id) {
@@ -657,7 +653,7 @@
     /**
      * Get/set the position of playback.
      * @param  {Float}  pos The position to move current playback to.
-     * @param  {String} id  (optional) The play instance id.
+     * @param  {String} id  (optional) The play instance ID.
      * @return {Object/Float}      Returns self or current playback position.
      */
     pos: function(pos, id) {
@@ -698,14 +694,14 @@
     /**
      * Get/set the 3D position of the audio source.
      * The most common usage is to set the 'x' position
-     * to effect the left/right ear panning. Setting any value higher than
+     * to affect the left/right ear panning. Setting any value higher than
      * 1.0 will begin to decrease the volume of the sound as it moves further away.
      * NOTE: This only works with Web Audio API, HTML5 Audio playback
      * will not be affected.
      * @param  {Float}  x  The x-position of the playback from -1000.0 to 1000.0
      * @param  {Float}  y  The y-position of the playback from -1000.0 to 1000.0
      * @param  {Float}  z  The z-position of the playback from -1000.0 to 1000.0
-     * @param  {String} id (optional) The play instance id.
+     * @param  {String} id (optional) The play instance ID.
      * @return {Object/Array}   Returns self or the current 3D position: [x, y, z]
      */
     pos3d: function(x, y, z, id) {
@@ -785,7 +781,7 @@
      * @param  {Float}    to       Volume to fade to (0.0 to 1.0).
      * @param  {Number}   len      Time in milliseconds to fade.
      * @param  {Function} callback
-     * @param  {String}   id       (optional) The play instance id.
+     * @param  {String}   id       (optional) The play instance ID.
      * @return {Object}
      */
     fadeOut: function(to, len, callback, id) {
@@ -825,7 +821,7 @@
     },
 
     /**
-     * Get an HTML5 Audio node by ID.
+     * Get an audio node by ID.
      * @return {Object} Audio node.
      */
     _nodeById: function(id) {
@@ -844,7 +840,7 @@
     },
 
     /**
-     * Get the first active audio node (HTML5 audio use only).
+     * Get the first active audio node.
      * @return {Object} Audio node.
      */
     _activeNode: function() {
@@ -866,7 +862,7 @@
     },
 
     /**
-     * Get the first inactive audio node (HTML5 audio use only).
+     * Get the first inactive audio node.
      * If there is none, create a new one and add it to the pool.
      * @param  {Function} callback Function to call when the audio node is ready.
      */
@@ -1096,7 +1092,7 @@
      * Load the sound back into the buffer source.
      * @param  {Object} obj   The sound to load.
      * @param  {Array}  loop  Loop boolean, pos, and duration.
-     * @param  {String} id    (optional) The play instance id.
+     * @param  {String} id    (optional) The play instance ID.
      */
     var refreshBuffer = function(obj, loop, id) {
       // determine which node to connect to
