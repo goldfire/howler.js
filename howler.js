@@ -23,6 +23,7 @@
   } else if (typeof Audio !== 'undefined') {
     usingWebAudio = false;
   } else {
+    usingWebAudio = false;
     noAudio = true;
   }
 
@@ -673,7 +674,7 @@
         if (self._webAudio) {
           if (pos >= 0) {
             activeNode._pos = pos;
-            self.pause(id).play(node._sprite, id);
+            self.pause(id).play(activeNode._sprite, id);
 
             return self;
           } else {
@@ -1078,7 +1079,7 @@
       }
 
       // fire the loaded event
-      if (!self._loaded) {
+      if (!obj._loaded) {
         obj._loaded = true;
         obj.on('load');
       }
@@ -1114,7 +1115,7 @@
   /**
    * Add support for AMD (Async Module Definition) libraries such as require.js.
    */
-  if (typeof define == 'function' && define.amd) {
+  if (typeof define === 'function' && define.amd) {
     define('Howler', function() {
       return Howler;
     });
