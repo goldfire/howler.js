@@ -1,4 +1,4 @@
-## 1.1.0 (April 10, 2013)
+## 1.1.0 (April 11, 2013)
 - `ADDED:` New `pos3d` method that allows for positional audio (Web Audio API only).
 - `ADDED:` Multi-playback control system that allows for control of specific play instances when sprites are used. A callback has been added to the `play` method that returns the `soundId` for the playback instance. This can then be passed as the optional last parameter to other methods to control that specific playback instead of the whole sound object.
 - `ADDED:` Pass the `Howl` object reference as the first parameter in the custom event callbacks.
