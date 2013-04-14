@@ -151,6 +151,7 @@
     self._autoplay = o.autoplay || false;
     self._buffer = o.buffer || false;
     self._duration = o.duration || 0;
+    self._format = o.format || null;
     self._loop = o.loop || false;
     self._loaded = false;
     self._sprite = o.sprite || {};
@@ -202,6 +203,11 @@
 
         // figure out the filetype (whether an extension or base64 data)
         ext = (ext && ext.length >= 2) ? ext[1] : self._urls[i].toLowerCase().match(/data\:audio\/([^?]+);/)[1];
+
+        // set audio file format if specified
+        if (self._format) {
+          ext = self._format;
+        }
 
         switch (ext) {
           case 'mp3':
