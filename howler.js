@@ -128,7 +128,7 @@
   };
 
   // allow access to the global audio controls
-  window.Howler = new HowlerGlobal();
+  var Howler = new HowlerGlobal();
 
   // check for browser codec support
   var audioTest = null;
@@ -144,7 +144,7 @@
   }
 
   // setup the audio object
-  var Howl = window.Howl = function(o) {
+  var Howl = function(o) {
     var self = this;
 
     // setup the defaults
@@ -1117,11 +1117,13 @@
    */
   if (typeof define === 'function' && define.amd) {
     define('Howler', function() {
-      return Howler;
+      return {
+        Howler: Howler,
+        Howl: Howl
+      };
     });
-
-    define('Howl', function() {
-      return Howl;
-    });
+  } else {
+    window.Howler = Howler;
+    window.Howl = Howl;
   }
 })();
