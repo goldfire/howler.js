@@ -651,6 +651,50 @@
     },
 
     /**
+     * Generic fade function.
+     * @param  {Float} to  Volume to fade to (0.0 to 1.0).
+     * @param  {Number} len Time in milliseconds to fade.
+     * @param  {Function} callback
+     * @return {Object}
+     */
+    fade: function(from, to, len, callback) {
+      var self = this,
+        dist = to - from,
+        iterations = Math.abs(dist) / 0.01,
+        hold = len / iterations;
+
+      // if the sound hasn't been loaded, add it to the event queue
+      if (!self._loaded) {
+        self.on('load', function() {
+          self.fade(from, to, len, callback);
+        });
+
+        return self;
+      }
+
+      self.volume(from);
+
+      for (var i=1; i<=iterations; i++) {
+        (function() {
+          var multiplier = (dist < 0) ? -1 : 1,
+            vol = Math.round(1000 * (self._volume + 0.01 * i * multiplier)) / 1000,
+            toVol = to;
+          setTimeout(function() {
+            self.volume(vol);
+          }, hold * i);
+        })();
+      }
+
+      if (callback) {
+        setTimeout(function() {
+          if(self.volume() === to) callback();
+        }, len);
+      }
+
+      return self;
+    },
+
+    /**
      * Fade in the current sound.
      * @param  {Float} to  Volume to fade to (0.0 to 1.0).
      * @param  {Number} len Time in milliseconds to fade.
@@ -658,10 +702,7 @@
      * @return {Object}
      */
     fadeIn: function(to, len, callback) {
-      var self = this,
-        dist = to,
-        iterations = dist / 0.01,
-        hold = len / iterations;
+      var self = this;
 
       // if the sound hasn't been loaded, add it to the event queue
       if (!self._loaded) {
@@ -672,21 +713,7 @@
         return self;
       }
 
-      self.volume(0).play();
-
-      for (var i=1; i<=iterations; i++) {
-        (function() {
-          var vol = Math.round(1000 * (self._volume + 0.01 * i)) / 1000,
-            toVol = to;
-          setTimeout(function() {
-            self.volume(vol);
-
-            if (vol === toVol) {
-              if (callback) callback();
-            }
-          }, hold * i);
-        })();
-      }
+      self.volume(0).play().fade(0, to, len, callback);
 
       return self;
     },
@@ -699,10 +726,7 @@
      * @return {Object}
      */
     fadeOut: function(to, len, callback) {
-      var self = this,
-        dist = self._volume - to,
-        iterations = dist / 0.01,
-        hold = len / iterations;
+      var self = this;
 
       // if the sound hasn't been loaded, add it to the event queue
       if (!self._loaded) {
@@ -713,20 +737,12 @@
         return self;
       }
 
-      for (var i=1; i<=iterations; i++) {
-        (function() {
-          var vol = Math.round(1000 * (self._volume - 0.01 * i)) / 1000,
-            toVol = to;
-          setTimeout(function() {
-            self.volume(vol);
+      callback = function(callback) {
+        self.pause();
+		if (callback) callback();
+      };
 
-            if (vol === toVol) {
-              if (callback) callback();
-              self.pause();
-            }
-          }, hold * i);
-        })();
-      }
+      self.fade(self.volume(), to, len, callback);
 
       return self;
     },
