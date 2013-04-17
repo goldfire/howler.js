@@ -161,6 +161,7 @@
 
     // setup event functions
     self._onload = [o.onload || function() {}];
+    self._onloaderror = [o.onloaderror || function() {}];
     self._onend = [o.onend || function() {}];
     self._onpause = [o.onpause || function() {}];
     self._onplay = [o.onplay || function() {}];
@@ -192,6 +193,7 @@
 
       // if no audio is available, quit immediately
       if (noAudio) {
+        self.on('loaderror');
         return;
       }
 
@@ -232,6 +234,7 @@
       }
 
       if (!url) {
+        self.on('loaderror');
         return;
       }
 
