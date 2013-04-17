@@ -421,6 +421,8 @@
 
         return self;
       });
+
+      return self;
     },
 
     /**
