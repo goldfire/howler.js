@@ -83,6 +83,7 @@ Example:
 * **urls**: `Array` *(`[]` by default)* The source URLs to the track(s) to be loaded for the sound. These should be in order of preference, howler.js will automatically load the first one that is compatible with the current browser.
 * **onend**: `Function` *(`function(){}` by default)* Fire when the sound finishes playing (if it is looping, it'll fire at the end of each loop).
 * **onload**: `Function` *(`function(){}` by default)* Fires when the sound is loaded.
+* **onloaderror**: `Function` *(`function(){}` by default)* Fires when the sound is unable to load.
 * **onpause**: `Function` *(`function(){}` by default)* Fires when the sound has been paused.
 * **onplay**: `Function` *(`function(){}` by default)* Fires when the sound begins playing.
 
