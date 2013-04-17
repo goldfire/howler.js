@@ -1,3 +1,9 @@
+## 1.1.1 (April 17, 2013)
+- `ADDED`: `onloaderror` event fired when sound fails to load (thanks Thiago de Barros Laceda).
+- `ADDED`: `format` property that overrides the URL extraction of the file format (thanks Kenan Shifflett).
+- `FIXED`: AMD implementation now only defines one module and removes global scope (thanks Kenan Shifflett).
+- `FIXED`: Broken chaining with `play` method.
+
 ## 1.1.0 (April 11, 2013)
 - `ADDED:` New `pos3d` method that allows for positional audio (Web Audio API only).
 - `ADDED:` Multi-playback control system that allows for control of specific play instances when sprites are used. A callback has been added to the `play` method that returns the `soundId` for the playback instance. This can then be passed as the optional last parameter to other methods to control that specific playback instead of the whole sound object.
