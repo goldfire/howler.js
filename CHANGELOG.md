@@ -1,6 +1,7 @@
 ## 1.1.2 (April 24, 2013)
 - `FIXED`: Calling `volume` before `play` now works as expected.
 - `FIXED`: Edge case issue with cache cleaning.
+- `FIXED`: Load event didn't fire when new URLs were loaded after the initial load.
 
 ## 1.1.1 (April 17, 2013)
 - `ADDED`: `onloaderror` event fired when sound fails to load (thanks Thiago de Barros Laceda).

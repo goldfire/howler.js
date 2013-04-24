@@ -300,6 +300,7 @@
 
       if (urls) {
         self._urls = urls;
+        self._loaded = false;
         self.stop();
         self.load();
 
