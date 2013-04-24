@@ -1,5 +1,5 @@
 /*!
- *  howler.js v1.1.1
+ *  howler.js v1.1.2
  *  howlerjs.com
  *
  *  (c) 2013, James Simpson of GoldFire Studios
@@ -392,6 +392,7 @@
           node.paused = false;
           refreshBuffer(self, [loop, pos, duration], soundId);
           self._playStart = ctx.currentTime;
+          node.gain.value = self._volume;
 
           if (typeof node.bufferSource.start === 'undefined') {
             node.bufferSource.noteGrainOn(0, pos, duration);
@@ -402,6 +403,7 @@
           if (node.readyState === 4) {
             node.id = soundId;
             node.currentTime = pos;
+            node.volume = self._volume;
             node.play();
           } else {
             self._clearEndTimer(timerId);
@@ -928,7 +930,7 @@
       }
 
       // remove excess inactive nodes
-      for (i=0; i<self._audioNode.length; i++) {
+      for (i=self._audioNode.length-1; i>=0; i--) {
         if (inactive <= 5) {
           break;
         }
