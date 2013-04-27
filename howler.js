@@ -1,5 +1,5 @@
 /*!
- *  howler.js v1.1.2
+ *  howler.js v1.1.3
  *  howlerjs.com
  *
  *  (c) 2013, James Simpson of GoldFire Studios
@@ -404,7 +404,7 @@
           if (node.readyState === 4) {
             node.id = soundId;
             node.currentTime = pos;
-            node.volume = self._volume;
+            node.volume = self._volume * Howler.volume();
             node.play();
           } else {
             self._clearEndTimer(timerId);

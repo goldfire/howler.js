@@ -1,3 +1,6 @@
+## 1.1.3 (April 27, 2013)
+- `FIXED`: Bug that prevented global mute from working 100% of the time when using HTML5 Audio.
+
 ## 1.1.2 (April 24, 2013)
 - `FIXED`: Calling `volume` before `play` now works as expected.
 - `FIXED`: Edge case issue with cache cleaning.
