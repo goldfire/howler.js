@@ -1,3 +1,6 @@
+## 1.1.4 (April 28, 2013)
+- `FIXED`: A few small bugs that broke global mute and unmute when using HTML5 Audio.
+
 ## 1.1.3 (April 27, 2013)
 - `FIXED`: Bug that prevented global mute from working 100% of the time when using HTML5 Audio.
 

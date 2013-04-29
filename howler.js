@@ -1,5 +1,5 @@
 /*!
- *  howler.js v1.1.3
+ *  howler.js v1.1.4
  *  howlerjs.com
  *
  *  (c) 2013, James Simpson of GoldFire Studios
@@ -39,6 +39,7 @@
     this._volume = 1;
     this._muted = false;
     this.usingWebAudio = usingWebAudio;
+    this._howls = [];
   };
   HowlerGlobal.prototype = {
     /**
@@ -50,7 +51,7 @@
       var self = this;
 
       // make sure volume is a number
-      vol = parseFloat(vol, 10);
+      vol = parseFloat(vol);
 
       if (vol && vol >= 0 && vol <= 1) {
         self._volume = vol;
@@ -60,11 +61,11 @@
         }
 
         // loop through cache and change volume of all nodes that are using HTML5 Audio
-        for (var key in cache) {
-          if (cache.hasOwnProperty(key) && cache[key]._webAudio === false) {
+        for (var key in self._howls) {
+          if (self._howls.hasOwnProperty(key) && self._howls[key]._webAudio === false) {
             // loop through the audio nodes
-            for (var i=0; i<cache[key]._audioNode.length; i++) {
-              cache[key]._audioNode[i].volume = cache[key]._volume * self._volume;
+            for (var i=0; i<self._howls[key]._audioNode.length; i++) {
+              self._howls[key]._audioNode[i].volume = self._howls[key]._volume * self._volume;
             }
           }
         }
@@ -89,11 +90,11 @@
         masterGain.gain.value = 0;
       }
 
-      for (var key in cache) {
-        if (cache.hasOwnProperty(key) && cache[key]._webAudio === false) {
+      for (var key in self._howls) {
+        if (self._howls.hasOwnProperty(key) && self._howls[key]._webAudio === false) {
           // loop through the audio nodes
-          for (var i=0; i<cache[key]._audioNode.length; i++) {
-            cache[key]._audioNode[i].volume = 0;
+          for (var i=0; i<self._howls[key]._audioNode.length; i++) {
+            self._howls[key]._audioNode[i].muted = true;
           }
         }
       }
@@ -114,11 +115,12 @@
         masterGain.gain.value = self._volume;
       }
 
-      for (var key in cache) {
-        if (cache.hasOwnProperty(key) && cache[key]._webAudio === false) {
+      for (var key in self._howls) {
+        if (self._howls.hasOwnProperty(key) && self._howls[key]._webAudio === false) {
           // loop through the audio nodes
-          for (var i=0; i<cache[key]._audioNode.length; i++) {
-            cache[key]._audioNode[i].volume = cache[key]._volume * self._volume;
+          for (var i=0; i<self._howls[key]._audioNode.length; i++) {
+            //self._howls[key]._audioNode[i].volume = self._howls[key]._volume * self._volume;
+            self._howls[key]._audioNode[i].muted = false;
           }
         }
       }
@@ -177,6 +179,9 @@
     if (self._webAudio) {
       self._setupAudioNode();
     }
+
+    // add this to an array of Howl's to allow global control
+    Howler._howls.push(self);
 
     // load the track
     self.load();
@@ -404,6 +409,7 @@
           if (node.readyState === 4) {
             node.id = soundId;
             node.currentTime = pos;
+            node.muted = Howler._muted;
             node.volume = self._volume * Howler.volume();
             node.play();
           } else {
@@ -599,7 +605,7 @@
       var self = this;
 
       // make sure volume is a number
-      vol = parseFloat(vol, 10);
+      vol = parseFloat(vol);
 
       // if the sound hasn't been loaded, add it to the event queue
       if (!self._loaded) {
