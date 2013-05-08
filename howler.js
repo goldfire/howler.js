@@ -451,7 +451,7 @@
     /**
      * Pause playback and save the current position.
      * @param {String} id (optional) The play instance ID.
-     * @param {String} id (optional) Clear the correct timeout ID.
+     * @param {String} timerId (optional) Clear the correct timeout ID.
      * @return {Object}
      */
     pause: function(id, timerId) {
@@ -498,7 +498,7 @@
     /**
      * Stop playback and reset to start.
      * @param  {String} id  (optional) The play instance ID.
-     * @param  {String} id  (optional) Clear the correct timeout ID.
+     * @param  {String} timerId  (optional) Clear the correct timeout ID.
      * @return {Object}
      */
     stop: function(id, timerId) {
