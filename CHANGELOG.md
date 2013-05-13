@@ -1,3 +1,10 @@
+## 1.1.5 (May 3, 2013)
+- `ADDED`: Support for the Ogg Opus codec (thanks Andrew Carpenter).
+- `ADDED`: Semver tags for easy package management (thanks Martin Reurings).
+- `ADDED`: Improve style/readability of code that discovers which audio file extension to use (thanks Fabien).
+- `ADDED`: The `onend` event now passes the soundId back as the 2nd parameter of the callback (thanks Ross Cairns).
+- `FIXED`: A few small typos in the comments. (thanks VAS).
+
 ## 1.1.4 (April 28, 2013)
 - `FIXED`: A few small bugs that broke global mute and unmute when using HTML5 Audio.
 
