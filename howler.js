@@ -995,6 +995,8 @@
         for (var i=0; i<events.length; i++) {
           if (fn) {
             events[i].call(self, fn);
+          } else {
+            events[i].call(self);
           }
         }
       }
