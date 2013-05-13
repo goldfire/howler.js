@@ -370,7 +370,7 @@
             }
 
             // fire ended event
-            self.on('end');
+            self.on('end', soundId);
           }, duration * 1000);
 
           // store the reference to the timer
@@ -989,11 +989,13 @@
       var self = this,
         events = self['_on' + event];
 
-      if (fn) {
+      if (typeof fn === "function") {
         events.push(fn);
       } else {
         for (var i=0; i<events.length; i++) {
-          events[i].call(self);
+          if (fn) {
+            events[i].call(self, fn);
+          }
         }
       }
 
