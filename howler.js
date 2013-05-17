@@ -82,7 +82,8 @@
      * @return {Object}
      */
     mute: function() {
-      setGlobalMute.call(this, true);
+      this._setMuted(true);
+
       return this;
     },
 
@@ -91,8 +92,29 @@
      * @return {Object}
      */
     unmute: function() {
-      setGlobalMute.call(this, false);
+      this._setMuted(false);
+
       return this;
+    },
+
+
+    _setMuted: function() {
+      var self = this;
+
+      self._muted = muted;
+
+      if (usingWebAudio) {
+        masterGain.gain.value = muted ? 0 : self._volume;
+      }
+
+      for (var key in self._howls) {
+        if (self._howls.hasOwnProperty(key) && self._howls[key]._webAudio === false) {
+          // loop through the audio nodes
+          for (var i=0; i<self._howls[key]._audioNode.length; i++) {
+            self._howls[key]._audioNode[i].muted = muted;
+          }
+        }
+      }
     }
   };
 
@@ -994,25 +1016,6 @@
     }
 
   };
-
-  // helper method for the global Howler.mute / Howler.unmute methods
-  function setGlobalMute(muted) {
-    var self = this;
-
-    self._muted = muted;
-
-    if (usingWebAudio) {
-      masterGain.gain.value = muted ? 0 : self._volume;
-    }
-
-    for (var key in self._howls) {
-      if (!self._howls.hasOwnProperty(key) || self._howls[key]._webAudio !== false) continue;
-      // loop through the audio nodes
-      for (var i=0; i<self._howls[key]._audioNode.length; i++) {
-        self._howls[key]._audioNode[i].muted = muted;
-      }
-    }
-  }
 
   // only define these functions when using WebAudio
   if (usingWebAudio) {
