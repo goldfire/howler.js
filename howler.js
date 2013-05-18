@@ -82,24 +82,8 @@
      * @return {Object}
      */
     mute: function() {
-      var self = this;
-
-      self._muted = true;
-
-      if (usingWebAudio) {
-        masterGain.gain.value = 0;
-      }
-
-      for (var key in self._howls) {
-        if (self._howls.hasOwnProperty(key) && self._howls[key]._webAudio === false) {
-          // loop through the audio nodes
-          for (var i=0; i<self._howls[key]._audioNode.length; i++) {
-            self._howls[key]._audioNode[i].muted = true;
-          }
-        }
-      }
-
-      return self;
+      setGlobalMute.call(this, true);
+      return this;
     },
 
     /**
@@ -107,25 +91,8 @@
      * @return {Object}
      */
     unmute: function() {
-      var self = this;
-
-      self._muted = false;
-
-      if (usingWebAudio) {
-        masterGain.gain.value = self._volume;
-      }
-
-      for (var key in self._howls) {
-        if (self._howls.hasOwnProperty(key) && self._howls[key]._webAudio === false) {
-          // loop through the audio nodes
-          for (var i=0; i<self._howls[key]._audioNode.length; i++) {
-            //self._howls[key]._audioNode[i].volume = self._howls[key]._volume * self._volume;
-            self._howls[key]._audioNode[i].muted = false;
-          }
-        }
-      }
-
-      return self;
+      setGlobalMute.call(this, false);
+      return this;
     }
   };
 
@@ -1027,6 +994,25 @@
     }
 
   };
+
+  // helper method for the global Howler.mute / Howler.unmute methods
+  function setGlobalMute(muted) {
+    var self = this;
+
+    self._muted = muted;
+
+    if (usingWebAudio) {
+      masterGain.gain.value = muted ? 0 : self._volume;
+    }
+
+    for (var key in self._howls) {
+      if (!self._howls.hasOwnProperty(key) || self._howls[key]._webAudio !== false) continue;
+      // loop through the audio nodes
+      for (var i=0; i<self._howls[key]._audioNode.length; i++) {
+        self._howls[key]._audioNode[i].muted = muted;
+      }
+    }
+  }
 
   // only define these functions when using WebAudio
   if (usingWebAudio) {
