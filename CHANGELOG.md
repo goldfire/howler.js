@@ -1,3 +1,6 @@
+## 1.1.7 (May 30, 2013)
+- `FIXED`: Hotfix for a missing parameter that somehow missed the 1.1.6 commit in global muting.
+
 ## 1.1.6 (May 30, 2013)
 - `ADDED`: A general `fade` method that allows a playing sound to be faded from one volume to another.
 - `DEPRECATED`: The `fadeIn` and `fadeOut` methods should no longer be used and have been deprecated. These will be removed in a future major release.

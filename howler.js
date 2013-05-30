@@ -1,5 +1,5 @@
 /*!
- *  howler.js v1.1.6
+ *  howler.js v1.1.7
  *  howlerjs.com
  *
  *  (c) 2013, James Simpson of GoldFire Studios
@@ -99,8 +99,9 @@
 
     /**
      * Handle muting and unmuting globally.
+     * @param  {Boolean} muted Is muted or not.
      */
-    _setMuted: function() {
+    _setMuted: function(muted) {
       var self = this;
 
       self._muted = muted;
