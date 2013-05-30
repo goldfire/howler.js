@@ -91,6 +91,7 @@ Example:
 ### Methods
 * **play**: Begins playback of sound. Will continue from previous point if sound has been previously paused.
   * *sprite*: `String` (optional) Plays from the defined sprite key.
+  * *callback*: `Function` (optional) Fires when playback begins and returns the `soundId`, which is the unique identifier for this specific playback instance.
 * **pause**: Pauses playback of sound, saving the `pos` of playback.
   * *id*: `Number` (optional) The play instance ID.
 * **stop**: Stops playback of sound, resetting `pos` to `0`.

@@ -301,8 +301,13 @@
     play: function(sprite, callback) {
       var self = this;
 
+      // if no sprite was passed but a callback was, update the variables
+      if (typeof sprite === 'function') {
+        callback = sprite;
+      }
+
       // use the default sprite if none is passed
-      if (!sprite) {
+      if (!sprite || typeof sprite === 'function') {
         sprite = '_default';
       }
 
