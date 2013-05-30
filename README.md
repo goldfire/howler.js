@@ -100,11 +100,17 @@ Example:
   * *id*: `Number` (optional) The play instance ID.
 * **unmute**: Unmutes the sound.
   * *id*: `Number` (optional) The play instance ID.
-* **fadeIn**: Fade in the current sound.
+* **fade**: Fade a currently playing sound between two volumes.
+  * *from*: `Number` Volume to fade from (`0.0` to `1.0`).
   * *to*: `Number` Volume to fade to (`0.0` to `1.0`).
   * *duration*: `Number` Time in milliseconds to fade.
   * *callback*: `Function` (optional) Fires when fade is complete.
-* **fadeOut**: Fade out the current sound and pause when finished.
+  * *id*: `Number` (optional) The play instance ID.
+* [DEPRECATED] **fadeIn**: Fade in the current sound.
+  * *to*: `Number` Volume to fade to (`0.0` to `1.0`).
+  * *duration*: `Number` Time in milliseconds to fade.
+  * *callback*: `Function` (optional) Fires when fade is complete.
+* [DEPRECATED] **fadeOut**: Fade out the current sound and pause when finished.
   * *to*: `Number` Volume to fade to (`0.0` to `1.0`).
   * *duration*: `Number` Time in milliseconds to fade.
   * *callback*: `Function` (optional) Fires when fade is complete.

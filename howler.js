@@ -739,48 +739,63 @@
     },
 
     /**
-     * Fade in the current sound.
+     * Fade a currently playing sound between two volumes.
+     * @param  {Number}   from     The volume to fade from (0.0 to 1.0).
+     * @param  {Number}   to       The volume to fade to (0.0 to 1.0).
+     * @param  {Number}   len      Time in milliseconds to fade.
+     * @param  {Function} callback (optional) Fired when the fade is complete.
+     * @param  {String}   id       (optional) The play instance ID.
+     * @return {Howl}
+     */
+    fade: function(from, to, len, callback, id) {
+      var self = this,
+        diff = Math.abs(from - to),
+        dir = from > to ? 'down' : 'up',
+        steps = diff / 0.01,
+        stepTime = len / steps;
+
+      // if the sound hasn't been loaded, add it to the event queue
+      if (!self._loaded) {
+        self.on('load', function() {
+          self.fade(from, to, len, callback, id);
+        });
+
+        return self;
+      }
+
+      // set the volume to the start position
+      self.volume(from, id);
+
+      for (var i=1; i<=steps; i++) {
+        (function() {
+          var change = self._volume + (dir === 'up' ? 0.01 : -0.01) * i,
+            vol = Math.round(1000 * change) / 1000,
+            toVol = to;
+
+          setTimeout(function() {
+            self.volume(vol, id);
+
+            if (vol === toVol) {
+              if (callback) callback();
+            }
+          }, stepTime * i);
+        })();
+      }
+    },
+
+    /**
+     * [DEPRECATED] Fade in the current sound.
      * @param  {Float}    to      Volume to fade to (0.0 to 1.0).
      * @param  {Number}   len     Time in milliseconds to fade.
      * @param  {Function} callback
      * @return {Object}
      */
     fadeIn: function(to, len, callback) {
-      var self = this,
-        dist = to,
-        iterations = dist / 0.01,
-        hold = len / iterations;
-
-      // if the sound hasn't been loaded, add it to the event queue
-      if (!self._loaded) {
-        self.on('load', function() {
-          self.fadeIn(to, len, callback);
-        });
-
-        return self;
-      }
-
-      self.volume(0).play();
-
-      for (var i=1; i<=iterations; i++) {
-        (function() {
-          var vol = Math.round(1000 * (self._volume + 0.01 * i)) / 1000,
-            toVol = to;
-          setTimeout(function() {
-            self.volume(vol);
-
-            if (vol === toVol) {
-              if (callback) callback();
-            }
-          }, hold * i);
-        })();
-      }
-
-      return self;
+      return this.volume(0).play().fade(0, to, len, callback);
     },
 
     /**
-     * Fade out the current sound and pause when finished.
+     * [DEPRECATED] Fade out the current sound and pause when finished.
      * @param  {Float}    to       Volume to fade to (0.0 to 1.0).
      * @param  {Number}   len      Time in milliseconds to fade.
      * @param  {Function} callback
@@ -788,39 +803,15 @@
      * @return {Object}
      */
     fadeOut: function(to, len, callback, id) {
-      var self = this,
-        dist = self._volume - to,
-        iterations = dist / 0.01,
-        hold = len / iterations;
+      var self = this;
 
-      // if the sound hasn't been loaded, add it to the event queue
-      if (!self._loaded) {
-        self.on('play', function() {
-          self.fadeOut(to, len, callback, id);
-        });
+      return self.fade(self._volume, to, len, function() {
+        if (callback) callback();
+        self.pause(id);
 
-        return self;
-      }
-
-      for (var i=1; i<=iterations; i++) {
-        (function() {
-          var vol = Math.round(1000 * (self._volume - 0.01 * i)) / 1000,
-            toVol = to;
-          setTimeout(function() {
-            self.volume(vol, id);
-
-            if (vol === toVol) {
-              if (callback) callback();
-              self.pause(id);
-
-              // fire ended event
-              self.on('end');
-            }
-          }, hold * i);
-        })();
-      }
-
-      return self;
+        // fire ended event
+        self.on('end');
+      }, id);
     },
 
     /**
