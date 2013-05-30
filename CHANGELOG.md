@@ -1,3 +1,9 @@
+## 1.1.6 (May 30, 2013)
+- `ADDED`: A general `fade` method that allows a playing sound to be faded from one volume to another.
+- `DEPRECATED`: The `fadeIn` and `fadeOut` methods should no longer be used and have been deprecated. These will be removed in a future major release.
+- `FIXED`: No longer require the sprite parameter to be passed into the `play` method when just passing a callback function.
+- `FIXED`: Cleaned up global muting code. (thanks arnorhs).
+
 ## 1.1.5 (May 3, 2013)
 - `ADDED`: Support for the Ogg Opus codec (thanks Andrew Carpenter).
 - `ADDED`: Semver tags for easy package management (thanks Martin Reurings).

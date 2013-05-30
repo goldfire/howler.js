@@ -1,5 +1,5 @@
 /*!
- *  howler.js v1.1.5
+ *  howler.js v1.1.6
  *  howlerjs.com
  *
  *  (c) 2013, James Simpson of GoldFire Studios
@@ -97,7 +97,9 @@
       return this;
     },
 
-
+    /**
+     * Handle muting and unmuting globally.
+     */
     _setMuted: function() {
       var self = this;
 
