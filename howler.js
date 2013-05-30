@@ -45,7 +45,7 @@
     /**
      * Get/set the global volume for all sounds.
      * @param  {Float} vol Volume from 0.0 to 1.0.
-     * @return {Object/Float}     Returns self or current volume.
+     * @return {Howler/Float}     Returns self or current volume.
      */
     volume: function(vol) {
       var self = this;
@@ -79,7 +79,7 @@
 
     /**
      * Mute all sounds.
-     * @return {Object}
+     * @return {Howler}
      */
     mute: function() {
       this._setMuted(true);
@@ -89,7 +89,7 @@
 
     /**
      * Unmute all sounds.
-     * @return {Object}
+     * @return {Howler}
      */
     unmute: function() {
       this._setMuted(false);
@@ -181,7 +181,7 @@
   Howl.prototype = {
     /**
      * Load an audio file.
-     * @return {Object}
+     * @return {Howl}
      */
     load: function() {
       var self = this,
@@ -275,7 +275,7 @@
     /**
      * Get/set the URLs to be pulled from to play in this source.
      * @param  {Array} urls  Arry of URLs to load from
-     * @return {Object}      Returns self or the current URLs
+     * @return {Howl}        Returns self or the current URLs
      */
     urls: function(urls) {
       var self = this;
@@ -296,7 +296,7 @@
      * Play a sound from the current time (0 by default).
      * @param  {String}   sprite   (optional) Plays from the specified position in the sound sprite definition.
      * @param  {Function} callback (optional) Returns the unique playback id for this sound instance.
-     * @return {Object}
+     * @return {Howl}
      */
     play: function(sprite, callback) {
       var self = this;
@@ -429,7 +429,7 @@
      * Pause playback and save the current position.
      * @param {String} id (optional) The play instance ID.
      * @param {String} timerId (optional) Clear the correct timeout ID.
-     * @return {Object}
+     * @return {Howl}
      */
     pause: function(id, timerId) {
       var self = this;
@@ -476,7 +476,7 @@
      * Stop playback and reset to start.
      * @param  {String} id  (optional) The play instance ID.
      * @param  {String} timerId  (optional) Clear the correct timeout ID.
-     * @return {Object}
+     * @return {Howl}
      */
     stop: function(id, timerId) {
       var self = this;
@@ -522,7 +522,7 @@
     /**
      * Mute this sound.
      * @param  {String} id (optional) The play instance ID.
-     * @return {Object}
+     * @return {Howl}
      */
     mute: function(id) {
       var self = this;
@@ -551,7 +551,7 @@
     /**
      * Unmute this sound.
      * @param  {String} id (optional) The play instance ID.
-     * @return {Object}
+     * @return {Howl}
      */
     unmute: function(id) {
       var self = this;
@@ -581,7 +581,7 @@
      * Get/set volume of this sound.
      * @param  {Float}  vol Volume from 0.0 to 1.0.
      * @param  {String} id  (optional) The play instance ID.
-     * @return {Object/Float}     Returns self or current volume.
+     * @return {Howl/Float}     Returns self or current volume.
      */
     volume: function(vol, id) {
       var self = this;
@@ -619,7 +619,7 @@
     /**
      * Get/set whether to loop the sound.
      * @param  {Boolean} loop To loop or not to loop, that is the question.
-     * @return {Object/Boolean}      Returns self or current looping value.
+     * @return {Howl/Boolean}      Returns self or current looping value.
      */
     loop: function(loop) {
       var self = this;
@@ -639,7 +639,7 @@
      *                @param {Integer} offset   Where to begin playback in milliseconds
      *                @param {Integer} duration How long to play in milliseconds
      *                @param {Boolean} loop     (optional) Set true to loop this sprite
-     * @return {Object}        Returns current sprite sheet or self.
+     * @return {Howl}        Returns current sprite sheet or self.
      */
     sprite: function(sprite) {
       var self = this;
@@ -657,7 +657,7 @@
      * Get/set the position of playback.
      * @param  {Float}  pos The position to move current playback to.
      * @param  {String} id  (optional) The play instance ID.
-     * @return {Object/Float}      Returns self or current playback position.
+     * @return {Howl/Float}      Returns self or current playback position.
      */
     pos: function(pos, id) {
       var self = this;
@@ -705,7 +705,7 @@
      * @param  {Float}  y  The y-position of the playback from -1000.0 to 1000.0
      * @param  {Float}  z  The z-position of the playback from -1000.0 to 1000.0
      * @param  {String} id (optional) The play instance ID.
-     * @return {Object/Array}   Returns self or the current 3D position: [x, y, z]
+     * @return {Howl/Array}   Returns self or the current 3D position: [x, y, z]
      */
     pos3d: function(x, y, z, id) {
       var self = this;
@@ -788,7 +788,7 @@
      * @param  {Float}    to      Volume to fade to (0.0 to 1.0).
      * @param  {Number}   len     Time in milliseconds to fade.
      * @param  {Function} callback
-     * @return {Object}
+     * @return {Howl}
      */
     fadeIn: function(to, len, callback) {
       return this.volume(0).play().fade(0, to, len, callback);
@@ -800,7 +800,7 @@
      * @param  {Number}   len      Time in milliseconds to fade.
      * @param  {Function} callback
      * @param  {String}   id       (optional) The play instance ID.
-     * @return {Object}
+     * @return {Howl}
      */
     fadeOut: function(to, len, callback, id) {
       var self = this;
@@ -816,7 +816,7 @@
 
     /**
      * Get an audio node by ID.
-     * @return {Object} Audio node.
+     * @return {Howl} Audio node.
      */
     _nodeById: function(id) {
       var self = this,
@@ -835,7 +835,7 @@
 
     /**
      * Get the first active audio node.
-     * @return {Object} Audio node.
+     * @return {Howl} Audio node.
      */
     _activeNode: function() {
       var self = this,
@@ -968,7 +968,7 @@
      * Call/set custom events.
      * @param  {String}   event Event type.
      * @param  {Function} fn    Function to call.
-     * @return {Object}
+     * @return {Howl}
      */
     on: function(event, fn) {
       var self = this,
@@ -993,7 +993,7 @@
      * Remove a custom event.
      * @param  {String}   event Event type.
      * @param  {Function} fn    Listener to remove.
-     * @return {Object}         [description]
+     * @return {Howl}
      */
     off: function(event, fn) {
       var self = this,
