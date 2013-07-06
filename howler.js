@@ -396,7 +396,7 @@
             node.currentTime = pos;
             node.muted = Howler._muted;
             node.volume = self._volume * Howler.volume();
-            node.play();
+            setTimeout(function() { node.play(); }, 0);
           } else {
             self._clearEndTimer(timerId);
 
