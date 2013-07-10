@@ -1,3 +1,7 @@
+## 1.1.8 (July 10, 2013)
+- `FIXED`: `urls` method now works again, and can take a string rather than an array if only one url is being passed.
+- `FIXED`: Make `node.play` async when not using webAudio (thanks Alex Dong).
+
 ## 1.1.7 (May 30, 2013)
 - `FIXED`: Hotfix for a missing parameter that somehow missed the 1.1.6 commit in global muting.
 
