@@ -284,9 +284,9 @@
       var self = this;
 
       if (urls) {
-        self._urls = urls;
-        self._loaded = false;
         self.stop();
+        self._urls = (typeof urls === 'string') ? [urls] : urls;
+        self._loaded = false;
         self.load();
 
         return self;
