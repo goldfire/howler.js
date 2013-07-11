@@ -1,3 +1,6 @@
+## 1.1.9 (July 11, 2013)
+- `FIXED`: Fixed issue where calling the `volume` method before a sound had loaded prevented the volume from being changed.
+
 ## 1.1.8 (July 10, 2013)
 - `FIXED`: `urls` method now works again, and can take a string rather than an array if only one url is being passed.
 - `FIXED`: Make `node.play` async when not using webAudio (thanks Alex Dong).

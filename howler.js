@@ -1,5 +1,5 @@
 /*!
- *  howler.js v1.1.8
+ *  howler.js v1.1.9
  *  howlerjs.com
  *
  *  (c) 2013, James Simpson of GoldFire Studios
@@ -592,17 +592,17 @@
       // make sure volume is a number
       vol = parseFloat(vol);
 
-      // if the sound hasn't been loaded, add it to the event queue
-      if (!self._loaded) {
-        self.on('play', function() {
-          self.volume(vol, id);
-        });
-
-        return self;
-      }
-
       if (vol >= 0 && vol <= 1) {
         self._volume = vol;
+
+        // if the sound hasn't been loaded, add it to the event queue
+        if (!self._loaded) {
+          self.on('play', function() {
+            self.volume(vol, id);
+          });
+
+          return self;
+        }
 
         var activeNode = (id) ? self._nodeById(id) : self._activeNode();
         if (activeNode) {
