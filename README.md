@@ -138,6 +138,7 @@ Example:
 * **off**: Remove custom events that you've set.
   * *event*: `String` Name of event.
   * *function*: `Function` (optional) The listener to remove.
+* **unload**: Unload and destroy a Howl object. This will immediately stop all play instances attached to this sound and remove it from the cache.
 
 ### Global Methods
 The following methods are used to modify all sounds globally, and are called from the `Howler` object.

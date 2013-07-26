@@ -1,3 +1,8 @@
+## 1.1.10 (July 26, 2013)
+- `ADDED`: New `unload` method to destroy a Howl object. This will stop all associated sounds instantly and remove the sound from the cache.
+- `FIXED`: When using Web Audio, loop from the correct position after pausing the sound halfway through.
+- `FIXED`: Always return a number when getting a sound's position with the `pos` method, and always return the reference to the sound when setting a sound that hasn't loaded.
+
 ## 1.1.9 (July 11, 2013)
 - `FIXED`: Fixed issue where calling the `volume` method before a sound had loaded prevented the volume from being changed.
 
