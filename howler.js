@@ -925,6 +925,7 @@
 
         if (self._audioNode[i].paused) {
           inactive--;
+          self._audioNode[i].disconnect(0);
           self._audioNode.splice(i, 1);
         }
       }
@@ -1017,6 +1018,38 @@
       }
 
       return self;
+    },
+
+    /**
+     * Unload and destroy the current Howl object.
+     * This will immediately stop all play instances attached to this sound.
+     */
+    unload: function() {
+      var self = this;
+
+      // stop playing any active nodes
+      var nodes = self._audioNode;
+      for (var i=0; i<self._audioNode.length; i++) {
+        self.stop(nodes[i].id);
+
+        if (!self._webAudio) {
+           // remove the source if using HTML5 Audio
+          nodes[i].src = '';
+        } else {
+          // disconnect the output from the master gain
+          nodes[i].disconnect(0);
+        }
+      }
+
+      // remove the reference in the global Howler object
+      var index = Howler._howls.indexOf(self);
+      if (index) {
+        Howler._howls.splice(index, 1);
+      }
+
+      // delete this sound from the cache
+      delete cache[self._src];
+      self = null;
     }
 
   };
