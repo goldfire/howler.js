@@ -381,7 +381,7 @@
           // set the play id to this node and load into context
           node.id = soundId;
           node.paused = false;
-          refreshBuffer(self, [loop, pos, duration], soundId);
+          refreshBuffer(self, [loop, self._sprite[sprite][0] / 1000, duration], soundId);
           self._playStart = ctx.currentTime;
           node.gain.value = self._volume;
 
@@ -457,8 +457,8 @@
             return self;
           }
 
+          activeNode._pos = self.pos(null, id);
           activeNode.paused = true;
-          activeNode._pos += ctx.currentTime - self._playStart;
           if (typeof activeNode.bufferSource.stop === 'undefined') {
             activeNode.bufferSource.noteOff(0);
           } else {
@@ -673,6 +673,9 @@
 
         return typeof pos === 'number' ? self : self._pos || 0;
       }
+
+      // make sure we are dealing with a number for pos
+      pos = parseFloat(pos);
 
       var activeNode = (id) ? self._nodeById(id) : self._activeNode();
       if (activeNode) {
