@@ -671,7 +671,7 @@
           self.pos(pos);
         });
 
-        return self;
+        return typeof pos === 'number' ? self : self._pos || 0;
       }
 
       var activeNode = (id) ? self._nodeById(id) : self._activeNode();
@@ -694,6 +694,8 @@
             return activeNode.currentTime;
           }
         }
+      } else {
+        return self;
       }
     },
 
