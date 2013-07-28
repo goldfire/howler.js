@@ -697,8 +697,15 @@
             return activeNode.currentTime;
           }
         }
-      } else {
+      } else if (pos >= 0) {
         return self;
+      } else {
+        // find the first inactive node to return the pos for
+        for (var i=0; i<self._audioNode.length; i++) {
+          if (self._audioNode[i].paused && self._audioNode[i].readyState === 4) {
+            return (self._webAudio) ? self._audioNode[i]._pos : self._audioNode[i].currentTime;
+          }
+        }
       }
     },
 
