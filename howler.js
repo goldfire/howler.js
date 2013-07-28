@@ -924,8 +924,12 @@
         }
 
         if (self._audioNode[i].paused) {
+          // disconnect the audio source if using Web Audio
+          if (self._webAudio) {
+            self._audioNode[i].disconnect(0);
+          }
+
           inactive--;
-          self._audioNode[i].disconnect(0);
           self._audioNode.splice(i, 1);
         }
       }
