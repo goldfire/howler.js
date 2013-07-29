@@ -1,3 +1,8 @@
+## 1.1.11 (July 28, 2013)
+- `FIXED`: Fix bug caused by trying to disconnect audio node when using HTML5 Audio.
+- `FIXED`: Correctly return the sound's position when it is paused.
+- `FIXED`: Fix another bug that caused looping sounds to not always correctly resume after a pause.
+
 ## 1.1.10 (July 26, 2013)
 - `ADDED`: New `unload` method to destroy a Howl object. This will stop all associated sounds instantly and remove the sound from the cache.
 - `FIXED`: When using Web Audio, loop from the correct position after pausing the sound halfway through.
