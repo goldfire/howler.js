@@ -378,10 +378,13 @@
         })();
 
         if (self._webAudio) {
+          var loopStart = self._sprite[sprite][0] / 1000,
+            loopEnd = self._sprite[sprite][1] / 1000;
+
           // set the play id to this node and load into context
           node.id = soundId;
           node.paused = false;
-          refreshBuffer(self, [loop, self._sprite[sprite][0] / 1000, duration], soundId);
+          refreshBuffer(self, [loop, loopStart, loopEnd], soundId);
           self._playStart = ctx.currentTime;
           node.gain.value = self._volume;
 
@@ -451,13 +454,14 @@
 
       var activeNode = (id) ? self._nodeById(id) : self._activeNode();
       if (activeNode) {
+        activeNode._pos = self.pos(null, id);
+
         if (self._webAudio) {
           // make sure the sound has been created
           if (!activeNode.bufferSource) {
             return self;
           }
 
-          activeNode._pos = self.pos(null, id);
           activeNode.paused = true;
           if (typeof activeNode.bufferSource.stop === 'undefined') {
             activeNode.bufferSource.noteOff(0);
@@ -465,7 +469,6 @@
             activeNode.bufferSource.stop(0);
           }
         } else {
-          activeNode._pos = activeNode.currentTime;
           activeNode.pause();
         }
       }
