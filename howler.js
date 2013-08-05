@@ -22,6 +22,11 @@
     ctx = new webkitAudioContext();
   } else if (typeof Audio !== 'undefined') {
     usingWebAudio = false;
+    try {
+      new Audio();
+    } catch(e) {
+      noAudio = true;
+    }
   } else {
     usingWebAudio = false;
     noAudio = true;
