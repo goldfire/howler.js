@@ -22,6 +22,11 @@
     ctx = new webkitAudioContext();
   } else if (typeof Audio !== 'undefined') {
     usingWebAudio = false;
+    try {
+      new Audio();
+    } catch(e) {
+      noAudio = true;
+    }
   } else {
     usingWebAudio = false;
     noAudio = true;
@@ -1165,17 +1170,19 @@
   }
 
   /**
-   * Add support for AMD (Async Module Definition) libraries such as require.js.
+   * Add support for AMD (Asynchronous Module Definition) libraries such as require.js.
    */
   if (typeof define === 'function' && define.amd) {
-    define('Howler', function() {
+    define(function() {
       return {
         Howler: Howler,
         Howl: Howl
       };
     });
-  } else {
-    window.Howler = Howler;
-    window.Howl = Howl;
   }
+  
+  // define globally in case AMD is not available or available but not used
+  window.Howler = Howler;
+  window.Howl = Howl;
+  
 })();
