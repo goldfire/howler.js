@@ -11,18 +11,15 @@
 (function() {
   // setup
   var cache = {};
-
   // setup the audio context
-  var ctx = null,
-    usingWebAudio = true,
-    noAudio = false;
-  if (typeof AudioContext !== 'undefined') {
-    ctx = new AudioContext();
-  } else if (typeof webkitAudioContext !== 'undefined') {
-    ctx = new webkitAudioContext();
-  } else if (typeof Audio !== 'undefined') {
+  var audio = window.AudioContext || window.webkitAudioContext;
+  var ctx = audio ? new audio : null,
+      usingWebAudio = true,
+      noAudio = false;
+      
+  if(!ctx && window.Audio){
     usingWebAudio = false;
-  } else {
+  }else{
     usingWebAudio = false;
     noAudio = true;
   }
