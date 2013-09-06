@@ -166,6 +166,9 @@
 
     // Web Audio or HTML5 Audio?
     self._webAudio = usingWebAudio && !self._buffer;
+    
+    
+    self._playbackRate = o.playbackRate || 1;//Playback rate for pitch and playback speed control.
 
     // check if we need to fall back to HTML5 Audio
     self._audioNode = [];
@@ -242,9 +245,10 @@
         newNode._pos = 0;
         newNode.preload = 'auto';
         newNode.volume = (Howler._muted) ? 0 : self._volume * Howler.volume();
-
+       
         // add this sound to the cache
         cache[url] = self;
+        
 
         // setup the event listener to start playing the sound
         // as soon as it has buffered enough
@@ -1160,6 +1164,7 @@
         node.bufferSource.loopStart = loop[1];
         node.bufferSource.loopEnd = loop[1] + loop[2];
       }
+      node.bufferSource.playbackRate.value = obj._playbackRate;//Playback rate for pitch and play speed control.
     };
 
   }
