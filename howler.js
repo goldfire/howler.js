@@ -159,6 +159,7 @@
     self._pos3d = o.pos3d || [0, 0, -0.5];
     self._volume = o.volume || 1;
     self._urls = o.urls || [];
+    self._rate = o.rate || 1;
 
     // setup event functions
     self._onload = [o.onload || function() {}];
@@ -247,7 +248,7 @@
         newNode._pos = 0;
         newNode.preload = 'auto';
         newNode.volume = (Howler._muted) ? 0 : self._volume * Howler.volume();
-
+       
         // add this sound to the cache
         cache[url] = self;
 
@@ -1165,6 +1166,7 @@
         node.bufferSource.loopStart = loop[1];
         node.bufferSource.loopEnd = loop[1] + loop[2];
       }
+      node.bufferSource.playbackRate.value = obj._rate;
     };
 
   }
