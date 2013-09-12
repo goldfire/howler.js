@@ -1,3 +1,8 @@
+## 1.1.12 (September 12, 2013)
+- `UPDATED`: Changed AMD definition to anonymous module and define it as global always (thanks Fabien).
+- `ADDED`: Added the `rate` property to `Howl` object creation, allowing you to specify the playback rate. This only works when using Web Audio (thanks Qqwy).
+- `FIXED`: Prevent some instances of IE9 from throwing "Not Implemented" error (thanks Tero Tilus).
+
 ## 1.1.11 (July 28, 2013)
 - `FIXED`: Fix bug caused by trying to disconnect audio node when using HTML5 Audio.
 - `FIXED`: Correctly return the sound's position when it is paused.
