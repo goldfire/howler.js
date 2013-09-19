@@ -213,16 +213,29 @@
 
       // loop through source URLs and pick the first one that is compatible
       for (var i=0; i<self._urls.length; i++) {
-        var ext;
+				var ext, urlItem;
 
-        if (self._format) {
-          // use specified audio format if available
-          ext = self._format;
-        } else {
-          // figure out the filetype (whether an extension or base64 data)
-          ext = self._urls[i].toLowerCase().match(/.+\.([^?]+)(\?|$)/);
-          ext = (ext && ext.length >= 2) ? ext[1] : self._urls[i].toLowerCase().match(/data\:audio\/([^?]+);/)[1];
-        }
+				if (self._format) {
+					// use specified audio format if available
+					ext = self._format;
+				} else {
+					urlItem = self._urls[i].toLowerCase();
+					// figure out the filetype (whether an extension or base64 data), with removing search
+					ext = urlItem.match(/([^?]+)[\?]?.+/);
+					if (ext && ext.length > 1) {
+						ext = ext[1].match(/.+\.([^?]+)(\?|$)/);
+						if (ext && ext.length >= 2) {
+							ext = ext[1];
+						} else {
+							ext = null;
+						}
+					} else {
+						ext = null;
+					}
+					if (ext == null) {
+						ext = urlItem.match(/data\:audio\/([^?]+);/)[1];
+					}
+				}
 
         if (canPlay[ext]) {
           url = self._urls[i];
