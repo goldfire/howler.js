@@ -202,15 +202,6 @@
         return;
       }
 
-      var canPlay = {
-        mp3: codecs.mp3,
-        opus: codecs.opus,
-        ogg: codecs.ogg,
-        wav: codecs.wav,
-        m4a: codecs.m4a,
-        weba: codecs.webm
-      };
-
       // loop through source URLs and pick the first one that is compatible
       for (var i=0; i<self._urls.length; i++) {
         var ext;
@@ -224,7 +215,7 @@
           ext = (ext && ext.length >= 2) ? ext[1] : self._urls[i].toLowerCase().match(/data\:audio\/([^?]+);/)[1];
         }
 
-        if (canPlay[ext]) {
+        if (codecs[ext]) {
           url = self._urls[i];
           break;
         }
