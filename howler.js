@@ -133,13 +133,14 @@
   var audioTest = null;
   if (!noAudio) {
     audioTest = new Audio();
+    var codecRegex = /^no|maybe$/;
     var codecs = {
-      mp3: !!audioTest.canPlayType('audio/mpeg;').replace(/^no$/,''),
-      opus: !!audioTest.canPlayType('audio/ogg; codecs="opus"').replace(/^no$/,''),
-      ogg: !!audioTest.canPlayType('audio/ogg; codecs="vorbis"').replace(/^no$/,''),
-      wav: !!audioTest.canPlayType('audio/wav; codecs="1"').replace(/^no$/,''),
-      m4a: !!(audioTest.canPlayType('audio/x-m4a;') || audioTest.canPlayType('audio/aac;')).replace(/^no$/,''),
-      webm: !!audioTest.canPlayType('audio/webm; codecs="vorbis"').replace(/^no$/,'')
+      mp3: !!audioTest.canPlayType('audio/mpeg;').replace(codecRegex,''),
+      opus: !!audioTest.canPlayType('audio/ogg; codecs="opus"').replace(codecRegex,''),
+      ogg: !!audioTest.canPlayType('audio/ogg; codecs="vorbis"').replace(codecRegex,''),
+      wav: !!audioTest.canPlayType('audio/wav; codecs="1"').replace(codecRegex,''),
+      m4a: !!(audioTest.canPlayType('audio/x-m4a;') || audioTest.canPlayType('audio/aac;')).replace(codecRegex,''),
+      weba: !!audioTest.canPlayType('audio/webm; codecs="vorbis"').replace(codecRegex,'')
     };
   }
 
@@ -202,15 +203,6 @@
         return;
       }
 
-      var canPlay = {
-        mp3: codecs.mp3,
-        opus: codecs.opus,
-        ogg: codecs.ogg,
-        wav: codecs.wav,
-        m4a: codecs.m4a,
-        weba: codecs.webm
-      };
-
       // loop through source URLs and pick the first one that is compatible
       for (var i=0; i<self._urls.length; i++) {
         var ext;
@@ -224,7 +216,7 @@
           ext = (ext && ext.length >= 2) ? ext[1] : self._urls[i].toLowerCase().match(/data\:audio\/([^?]+);/)[1];
         }
 
-        if (canPlay[ext]) {
+        if (codecs[ext]) {
           url = self._urls[i];
           break;
         }
