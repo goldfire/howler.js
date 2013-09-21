@@ -133,13 +133,14 @@
   var audioTest = null;
   if (!noAudio) {
     audioTest = new Audio();
+    var codecRegex = /^no|maybe$/;
     var codecs = {
-      mp3: !!audioTest.canPlayType('audio/mpeg;').replace(/^no$/,''),
-      opus: !!audioTest.canPlayType('audio/ogg; codecs="opus"').replace(/^no$/,''),
-      ogg: !!audioTest.canPlayType('audio/ogg; codecs="vorbis"').replace(/^no$/,''),
-      wav: !!audioTest.canPlayType('audio/wav; codecs="1"').replace(/^no$/,''),
-      m4a: !!(audioTest.canPlayType('audio/x-m4a;') || audioTest.canPlayType('audio/aac;')).replace(/^no$/,''),
-      weba: !!audioTest.canPlayType('audio/webm; codecs="vorbis"').replace(/^no$/,'')
+      mp3: !!audioTest.canPlayType('audio/mpeg;').replace(codecRegex,''),
+      opus: !!audioTest.canPlayType('audio/ogg; codecs="opus"').replace(codecRegex,''),
+      ogg: !!audioTest.canPlayType('audio/ogg; codecs="vorbis"').replace(codecRegex,''),
+      wav: !!audioTest.canPlayType('audio/wav; codecs="1"').replace(codecRegex,''),
+      m4a: !!(audioTest.canPlayType('audio/x-m4a;') || audioTest.canPlayType('audio/aac;')).replace(codecRegex,''),
+      weba: !!audioTest.canPlayType('audio/webm; codecs="vorbis"').replace(codecRegex,'')
     };
   }
 
