@@ -1,3 +1,8 @@
+## 1.1.13 (October 17, 2013)
+- `FIXED`: Code cleanup by removing redundant `canPlay` object (thanks Fabien).
+- `FIXED`: File extensions are now detected correctly if there is a query string with dots in the filename (thanks theshock).
+- `FIXED`: Fire `onloaderror` if a bad filename is passed with the `urls` property.
+
 ## 1.1.12 (September 12, 2013)
 - `UPDATED`: Changed AMD definition to anonymous module and define it as global always (thanks Fabien).
 - `ADDED`: Added the `rate` property to `Howl` object creation, allowing you to specify the playback rate. This only works when using Web Audio (thanks Qqwy).
