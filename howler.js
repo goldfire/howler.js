@@ -223,7 +223,13 @@
 
           // no extension found, check for base64 data
           if (ext == null) {
-            ext = urlItem.match(/data\:audio\/([^?]+);/)[1];
+            ext = urlItem.match(/data\:audio\/([^?]+);/);
+            if (ext) {
+              ext = ext[1];
+            } else {
+              self.on('loaderror');
+              return;
+            }
           }
         }
 
