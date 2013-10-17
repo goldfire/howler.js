@@ -204,27 +204,24 @@
       }
 
       // loop through source URLs and pick the first one that is compatible
-      for (var i=0; i<self._urls.length; i++) {
-        
+      for (var i=0; i<self._urls.length; i++) {        
         var ext, urlItem;
 
         if (self._format) {
           // use specified audio format if available
           ext = self._format;
         } else {
-          urlItem = self._urls[i].toLowerCase();
           // figure out the filetype (whether an extension or base64 data), with removing search
+          urlItem = self._urls[i].toLowerCase();
           ext = urlItem.match(/([^?]+)[\?]?.+/);
           if (ext && ext.length > 1) {
             ext = ext[1].match(/.+\.([^?]+)(\?|$)/);
-            if (ext && ext.length >= 2) {
-              ext = ext[1];
-            } else {
-              ext = null;
-            }
+            ext = (ext && ext.length >= 2) ? ext[1] : null;
           } else {
             ext = null;
           }
+
+          // no extension found, check for base64 data
           if (ext == null) {
             ext = urlItem.match(/data\:audio\/([^?]+);/)[1];
           }
@@ -234,7 +231,6 @@
           url = self._urls[i];
           break;
         }
-        
       }
 
       if (!url) {
