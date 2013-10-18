@@ -1,3 +1,6 @@
+# 1.1.14 (October 18, 2013)
+- `FIXED`: Critical bug fix that was breaking support on some browsers and some codecs.
+
 ## 1.1.13 (October 17, 2013)
 - `FIXED`: Code cleanup by removing redundant `canPlay` object (thanks Fabien).
 - `FIXED`: File extensions are now detected correctly if there is a query string with dots in the filename (thanks theshock).

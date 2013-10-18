@@ -1,5 +1,5 @@
 /*!
- *  howler.js v1.1.13
+ *  howler.js v1.1.14
  *  howlerjs.com
  *
  *  (c) 2013, James Simpson of GoldFire Studios
@@ -133,14 +133,13 @@
   var audioTest = null;
   if (!noAudio) {
     audioTest = new Audio();
-    var codecRegex = /^no|maybe$/;
     var codecs = {
-      mp3: !!audioTest.canPlayType('audio/mpeg;').replace(codecRegex,''),
-      opus: !!audioTest.canPlayType('audio/ogg; codecs="opus"').replace(codecRegex,''),
-      ogg: !!audioTest.canPlayType('audio/ogg; codecs="vorbis"').replace(codecRegex,''),
-      wav: !!audioTest.canPlayType('audio/wav; codecs="1"').replace(codecRegex,''),
-      m4a: !!(audioTest.canPlayType('audio/x-m4a;') || audioTest.canPlayType('audio/aac;')).replace(codecRegex,''),
-      weba: !!audioTest.canPlayType('audio/webm; codecs="vorbis"').replace(codecRegex,'')
+      mp3: !!audioTest.canPlayType('audio/mpeg;').replace(/^no$/, ''),
+      opus: !!audioTest.canPlayType('audio/ogg; codecs="opus"').replace(/^no$/, ''),
+      ogg: !!audioTest.canPlayType('audio/ogg; codecs="vorbis"').replace(/^no$/, ''),
+      wav: !!audioTest.canPlayType('audio/wav; codecs="1"').replace(/^no$/, ''),
+      m4a: !!(audioTest.canPlayType('audio/x-m4a;') || audioTest.canPlayType('audio/aac;')).replace(/^no$/, ''),
+      weba: !!audioTest.canPlayType('audio/webm; codecs="vorbis"').replace(/^no$/, '')
     };
   }
 
@@ -211,25 +210,16 @@
           // use specified audio format if available
           ext = self._format;
         } else {
-          // figure out the filetype (whether an extension or base64 data), with removing search
-          urlItem = self._urls[i].toLowerCase();
-          ext = urlItem.match(/([^?]+)[\?]?.+/);
-          if (ext && ext.length > 1) {
-            ext = ext[1].match(/.+\.([^?]+)(\?|$)/);
-            ext = (ext && ext.length >= 2) ? ext[1] : null;
-          } else {
-            ext = null;
-          }
+          // figure out the filetype (whether an extension or base64 data)
+          urlItem = self._urls[i].toLowerCase().split('?')[0];
+          ext = urlItem.match(/.+\.([^?]+)(\?|$)/);
+          ext = (ext && ext.length >= 2) ? ext : urlItem.match(/data\:audio\/([^?]+);/);
 
-          // no extension found, check for base64 data
-          if (ext == null) {
-            ext = urlItem.match(/data\:audio\/([^?]+);/);
-            if (ext) {
-              ext = ext[1];
-            } else {
-              self.on('loaderror');
-              return;
-            }
+          if (ext) {
+            ext = ext[1];
+          } else {
+            self.on('loaderror');
+            return;
           }
         }
 
