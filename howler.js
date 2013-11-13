@@ -157,6 +157,10 @@
     self._sprite = o.sprite || {};
     self._src = o.src || '';
     self._position = o.position || [0, 0, -0.5];
+    self._velocity = o.velocity || [0, 0, 0];
+    self._refDistance = o.refDistance || 1;
+    self._maxDistance = o.maxDistance || 10000;
+    self._rolloffFactor = o.rolloffFactor || 1;
     self._volume = o.volume || 1;
     self._urls = o.urls || [];
     self._rate = o.rate || 1;
@@ -762,6 +766,43 @@
     },
 
     /**
+     * Get/set the 3D velocity of the audio source.
+     * NOTE: This only works with Web Audio API, HTML5 Audio playback
+     * will not be affected.
+     * @param  {Float}  x  The x-velocity of the playback
+     * @param  {Float}  y  The y-velocity of the playback
+     * @param  {Float}  z  The z-velocity of the playback
+     * @param  {String} id (optional) The play instance ID.
+     * @return {Howl/Array}   Returns self or the current 3D velocity: [x, y, z]
+     */
+    velocity: function(x, y, z, id) {
+      var self = this;
+
+      // if the sound hasn't been loaded, add it to the event queue
+      if (!self._loaded) {
+        self.on('play', function() {
+          self.velocity(x, y, z, id);
+        });
+
+        return self;
+      }
+
+      if (x >= 0 || x < 0) {
+        if (self._webAudio) {
+          var activeNode = (id) ? self._nodeById(id) : self._activeNode();
+          if (activeNode) {
+            self._velocity = [x, y, z];
+            activeNode.panner.setVelocity(x, y, z);
+          }
+        }
+      } else {
+        return self._velocity;
+      }
+
+      return self;
+    },
+
+    /**
      * Fade a currently playing sound between two volumes.
      * @param  {Number}   from     The volume to fade from (0.0 to 1.0).
      * @param  {Number}   to       The volume to fade to (0.0 to 1.0).
@@ -987,6 +1028,7 @@
       // create the panner
       node[index].panner = ctx.createPanner();
       node[index].panner.setPosition(self._position[0], self._position[1], self._position[2]);
+      node[index].panner.setVelocity(self._velocity[0], self._velocity[1], self._velocity[2]);
       node[index].panner.connect(node[index]);
 
       return node[index];

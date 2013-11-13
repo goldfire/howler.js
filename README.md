@@ -125,6 +125,11 @@ Example:
   * *y*: `Number` The y-position of the sound.
   * *z*: `Number` The z-position of the sound.
   * *id*: `Number` (optional) The play instance ID.
+* **velocity**: Get/set the 3D velocity of the audio source. **This only works with Web Audio API.**
+  * *x*: `Number` The x-velocity of the sound.
+  * *y*: `Number` The y-velocity of the sound.
+  * *z*: `Number` The z-velocity of the sound.
+  * *id*: `Number` (optional) The play instance ID.
 * **sprite**: Get/set sound sprite definition.
   * *sprite*: `Object` (optional) See above for sound sprite definition.
 * **volume**: Get/set volume of this sound.
