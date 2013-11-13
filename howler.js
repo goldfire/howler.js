@@ -883,6 +883,111 @@
     },
 
     /**
+     * Get/set the reference distance of the audio source.
+     * NOTE: This only works with Web Audio API, HTML5 Audio playback
+     * will not be affected.
+     * @param  {Float}  refDistance  The reference distance of the playback
+     * @param  {String} id (optional) The play instance ID.
+     * @return {Float}   Returns self or the current reference distance
+     */
+    refDistance: function(refDistance, id) {
+      var self = this;
+
+      // if the sound hasn't been loaded, add it to the event queue
+      if (!self._loaded) {
+        self.on('play', function() {
+          self.refDistance(refDistance, id);
+        });
+
+        return self;
+      }
+
+      if (refDistance >= 0 || refDistance < 0) {
+        if (self._webAudio) {
+          var activeNode = (id) ? self._nodeById(id) : self._activeNode();
+          if (activeNode) {
+            self._refDistance = refDistance;
+            activeNode.panner.refDistance = refDistance;
+          }
+        }
+      } else {
+        return self._refDistance;
+      }
+
+      return self;
+    },
+
+    /**
+     * Get/set the maximum distance of the audio source.
+     * NOTE: This only works with Web Audio API, HTML5 Audio playback
+     * will not be affected.
+     * @param  {Float}  maxDistance  The maximum distance of the playback
+     * @param  {String} id (optional) The play instance ID.
+     * @return {Float}   Returns self or the current maximum distance
+     */
+    maxDistance: function(maxDistance, id) {
+      var self = this;
+
+      // if the sound hasn't been loaded, add it to the event queue
+      if (!self._loaded) {
+        self.on('play', function() {
+          self.maxDistance(maxDistance, id);
+        });
+
+        return self;
+      }
+
+      if (maxDistance >= 0 || maxDistance < 0) {
+        if (self._webAudio) {
+          var activeNode = (id) ? self._nodeById(id) : self._activeNode();
+          if (activeNode) {
+            self._maxDistance = maxDistance;
+            activeNode.panner.maxDistance = maxDistance;
+          }
+        }
+      } else {
+        return self._maxDistance;
+      }
+
+      return self;
+    },
+
+    /**
+     * Get/set the rolloff factor of the audio source.
+     * NOTE: This only works with Web Audio API, HTML5 Audio playback
+     * will not be affected.
+     * @param  {Float}  rolloffFactor  The rolloff factor of the playback
+     * @param  {String} id (optional) The play instance ID.
+     * @return {Float}   Returns self or the current rolloff factor
+     */
+    rolloffFactor: function(rolloffFactor, id) {
+      var self = this;
+
+      // if the sound hasn't been loaded, add it to the event queue
+      if (!self._loaded) {
+        self.on('play', function() {
+          self.rolloffFactor(rolloffFactor, id);
+        });
+
+        return self;
+      }
+
+      if (rolloffFactor >= 0 || rolloffFactor < 0) {
+        if (self._webAudio) {
+          var activeNode = (id) ? self._nodeById(id) : self._activeNode();
+          if (activeNode) {
+            self._rolloffFactor = rolloffFactor;
+            activeNode.panner.rolloffFactor = rolloffFactor;
+          }
+        }
+      } else {
+        return self._rolloffFactor;
+      }
+
+      return self;
+    },
+
+    /**
      * Fade a currently playing sound between two volumes.
      * @param  {Number}   from     The volume to fade from (0.0 to 1.0).
      * @param  {Number}   to       The volume to fade to (0.0 to 1.0).
@@ -1109,6 +1214,9 @@
       node[index].panner = ctx.createPanner();
       node[index].panner.setPosition(self._position[0], self._position[1], self._position[2]);
       node[index].panner.setVelocity(self._velocity[0], self._velocity[1], self._velocity[2]);
+      node[index].panner.refDistance = self._refDistance;
+      node[index].panner.maxDistance = self._maxDistance;
+      node[index].panner.rolloffFactor = self._rolloffFactor;
       node[index].panner.connect(node[index]);
 
       return node[index];

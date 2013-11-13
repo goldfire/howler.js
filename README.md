@@ -130,6 +130,15 @@ Example:
   * *y*: `Number` The y-velocity of the sound.
   * *z*: `Number` The z-velocity of the sound.
   * *id*: `Number` (optional) The play instance ID.
+* **refDistance**: Get/set the reference distance of the audio source. **This only works with Web Audio API.**
+  * *refDistance*: `Number` The reference distance of the sound.
+  * *id*: `Number` (optional) The play instance ID.
+* **maxDistance**: Get/set the maximum distance of the audio source. **This only works with Web Audio API.**
+  * *maxDistance*: `Number` The maximum distance of the sound.
+  * *id*: `Number` (optional) The play instance ID.
+* **rolloffFactor**: Get/set the rolloff factor of the audio source. **This only works with Web Audio API.**
+  * *rolloffFactor*: `Number` The rolloff factor of the sound.
+  * *id*: `Number` (optional) The play instance ID.
 * **sprite**: Get/set sound sprite definition.
   * *sprite*: `Object` (optional) See above for sound sprite definition.
 * **volume**: Get/set volume of this sound.
