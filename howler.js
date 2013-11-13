@@ -164,6 +164,46 @@
 
       return Howler;
     },
+
+    /**
+     * Get/set the Doppler factor.
+     * NOTE: This only works with Web Audio API, HTML5 Audio playback
+     * will not be affected.
+     * @param  {Float}  factor  Doppler factor to use
+     * @return {Float}   Returns {Howler} or the current Doppler factor
+     */
+    dopplerFactor: function(factor) {
+
+      if (factor >= 0 || factor < 0) {
+        if (usingWebAudio) {
+          ctx.listener.dopplerFactor = factor;
+        }
+      } else {
+        return ctx.listener.dopplerFactor;
+      }
+
+      return Howler;
+    },
+
+    /**
+     * Get/set the speed of sound.
+     * NOTE: This only works with Web Audio API, HTML5 Audio playback
+     * will not be affected.
+     * @param  {Float}  speed  Speed of sound to use
+     * @return {Float}   Returns {Howler} or the current speed of sound
+     */
+    speedOfSound: function(speed) {
+
+      if (speed >= 0 || speed < 0) {
+        if (usingWebAudio) {
+          ctx.listener.speedOfSound = speed;
+        }
+      } else {
+        return ctx.listener.speedOfSound;
+      }
+
+      return Howler;
+    },
   };
 
   // allow access to the global audio controls

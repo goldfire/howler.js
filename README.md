@@ -160,6 +160,10 @@ The following methods are used to modify all sounds globally, and are called fro
   * *x*: `Number` The x-velocity of the listener.
   * *y*: `Number` The y-velocity of the listener.
   * *z*: `Number` The z-velocity of the listener.
+* **dopplerFactor**: Get/set the Doppler factor. **This only works with Web Audio API.**
+  * *factor*: `Number` The Doppler factor.
+* **speedOfSound**: Get/set the speed of sound. **This only works with Web Audio API.**
+  * *speed*: `Number` The speed of sound.
 
 ## License
 
