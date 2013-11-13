@@ -152,6 +152,14 @@ The following methods are used to modify all sounds globally, and are called fro
 * **unmute**: Unmutes all sounds and restores them to their previous volume.
 * **volume**: Get/set the global volume for all sounds.
   * *volume*: `Number` (optional) Volume from `0.0` to `1.0`.
+* **position**: Get/set the 3D position of the listener. **This only works with Web Audio API.**
+  * *x*: `Number` The x-position of the listener.
+  * *y*: `Number` The y-position of the listener.
+  * *z*: `Number` The z-position of the listener.
+* **velocity**: Get/set the 3D velocity of the listener. **This only works with Web Audio API.**
+  * *x*: `Number` The x-velocity of the listener.
+  * *y*: `Number` The y-velocity of the listener.
+  * *z*: `Number` The z-velocity of the listener.
 
 ## License
 

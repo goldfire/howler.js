@@ -123,7 +123,47 @@
           }
         }
       }
-    }
+    },
+
+    /**
+     * Set the 3D position of the listener.
+     * NOTE: This only works with Web Audio API, HTML5 Audio playback
+     * will not be affected.
+     * @param  {Float}  x  The x-position of the listener
+     * @param  {Float}  y  The y-position of the listener
+     * @param  {Float}  z  The z-position of the listener
+     * @return {Howler}
+     */
+    position: function(x, y, z) {
+
+      if (x >= 0 || x < 0) {
+        if (usingWebAudio) {
+          ctx.listener.setPosition(x, y, z);
+        }
+      }
+
+      return Howler;
+    },
+
+    /**
+     * Set the 3D velocity of the listener.
+     * NOTE: This only works with Web Audio API, HTML5 Audio playback
+     * will not be affected.
+     * @param  {Float}  x  The x-velocity of the listener
+     * @param  {Float}  y  The y-velocity of the listener
+     * @param  {Float}  z  The z-velocity of the listener
+     * @return {Howler}
+     */
+    velocity: function(x, y, z) {
+
+      if (x >= 0 || x < 0) {
+        if (usingWebAudio) {
+          ctx.listener.setVelocity(x, y, z);
+        }
+      }
+
+      return Howler;
+    },
   };
 
   // allow access to the global audio controls
