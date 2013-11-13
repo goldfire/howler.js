@@ -244,7 +244,7 @@
 
         // setup the new audio node
         newNode.src = url;
-        newNode._pos = 0;
+        newNode._offset = 0;
         newNode.preload = 'auto';
         newNode.volume = (Howler._muted) ? 0 : self._volume * Howler.volume();
        
@@ -340,8 +340,8 @@
         node._sprite = sprite;
 
         // determine where to start playing from
-        var pos = (node._pos > 0) ? node._pos : self._sprite[sprite][0] / 1000,
-          duration = self._sprite[sprite][1] / 1000 - node._pos;
+        var offset = (node._offset > 0) ? node._offset : self._sprite[sprite][0] / 1000,
+          duration = self._sprite[sprite][1] / 1000 - node._offset;
 
         // determine if this sound should be looped
         var loop = !!(self._loop || self._sprite[sprite][2]);
@@ -394,14 +394,14 @@
           node.gain.value = self._volume;
 
           if (typeof node.bufferSource.start === 'undefined') {
-            node.bufferSource.noteGrainOn(0, pos, duration);
+            node.bufferSource.noteGrainOn(0, offset, duration);
           } else {
-            node.bufferSource.start(0, pos, duration);
+            node.bufferSource.start(0, offset, duration);
           }
         } else {
           if (node.readyState === 4) {
             node.id = soundId;
-            node.currentTime = pos;
+            node.currentTime = offset;
             node.muted = Howler._muted;
             node.volume = self._volume * Howler.volume();
             setTimeout(function() { node.play(); }, 0);
@@ -459,7 +459,7 @@
 
       var activeNode = (id) ? self._nodeById(id) : self._activeNode();
       if (activeNode) {
-        activeNode._pos = self.pos(null, id);
+        activeNode._offset = self.offset(null, id);
 
         if (self._webAudio) {
           // make sure the sound has been created
@@ -506,7 +506,7 @@
 
       var activeNode = (id) ? self._nodeById(id) : self._activeNode();
       if (activeNode) {
-        activeNode._pos = 0;
+        activeNode._offset = 0;
 
         if (self._webAudio) {
           // make sure the sound has been created
@@ -665,53 +665,53 @@
     },
 
     /**
-     * Get/set the position of playback.
-     * @param  {Float}  pos The position to move current playback to.
+     * Get/set the offset of playback.
+     * @param  {Float}  offset The offset to move current playback to.
      * @param  {String} id  (optional) The play instance ID.
      * @return {Howl/Float}      Returns self or current playback position.
      */
-    pos: function(pos, id) {
+    offset: function(offset, id) {
       var self = this;
 
       // if the sound hasn't been loaded, add it to the event queue
       if (!self._loaded) {
         self.on('load', function() {
-          self.pos(pos);
+          self.offset(offset);
         });
 
-        return typeof pos === 'number' ? self : self._pos || 0;
+        return typeof offset === 'number' ? self : self._offset || 0;
       }
 
-      // make sure we are dealing with a number for pos
-      pos = parseFloat(pos);
+      // make sure we are dealing with a number for offset
+      offset = parseFloat(offset);
 
       var activeNode = (id) ? self._nodeById(id) : self._activeNode();
       if (activeNode) {
         if (self._webAudio) {
-          if (pos >= 0) {
-            activeNode._pos = pos;
+          if (offset >= 0) {
+            activeNode._offset = offset;
             self.pause(id).play(activeNode._sprite, id);
 
             return self;
           } else {
-            return activeNode._pos + (ctx.currentTime - self._playStart);
+            return activeNode._offset + (ctx.currentTime - self._playStart);
           }
         } else {
-          if (pos >= 0) {
-            activeNode.currentTime = pos;
+          if (offset >= 0) {
+            activeNode.currentTime = offset;
 
             return self;
           } else {
             return activeNode.currentTime;
           }
         }
-      } else if (pos >= 0) {
+      } else if (offset >= 0) {
         return self;
       } else {
-        // find the first inactive node to return the pos for
+        // find the first inactive node to return the offset for
         for (var i=0; i<self._audioNode.length; i++) {
           if (self._audioNode[i].paused && self._audioNode[i].readyState === 4) {
-            return (self._webAudio) ? self._audioNode[i]._pos : self._audioNode[i].currentTime;
+            return (self._webAudio) ? self._audioNode[i]._offset : self._audioNode[i].currentTime;
           }
         }
       }
@@ -980,7 +980,7 @@
       node[index] = (typeof ctx.createGain === 'undefined') ? ctx.createGainNode() : ctx.createGain();
       node[index].gain.value = self._volume;
       node[index].paused = true;
-      node[index]._pos = 0;
+      node[index]._offset = 0;
       node[index].readyState = 4;
       node[index].connect(masterGain);
 

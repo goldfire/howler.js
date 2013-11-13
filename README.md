@@ -92,9 +92,9 @@ Example:
 * **play**: Begins playback of sound. Will continue from previous point if sound has been previously paused.
   * *sprite*: `String` (optional) Plays from the defined sprite key.
   * *callback*: `Function` (optional) Fires when playback begins and returns the `soundId`, which is the unique identifier for this specific playback instance.
-* **pause**: Pauses playback of sound, saving the `pos` of playback.
+* **pause**: Pauses playback of sound, saving the `offset` of playback.
   * *id*: `Number` (optional) The play instance ID.
-* **stop**: Stops playback of sound, resetting `pos` to `0`.
+* **stop**: Stops playback of sound, resetting `offset` to `0`.
   * *id*: `Number` (optional) The play instance ID.
 * **mute**: Mutes the sound, but doesn't pause the playback.
   * *id*: `Number` (optional) The play instance ID.
@@ -117,8 +117,8 @@ Example:
   * *id*: `Number` (optional) The play instance ID.
 * **loop**: Get/set whether to loop the sound.
   * *loop*: `Boolean` (optional) To loop or not to loop, that is the question.
-* **pos**: Get/set the position of playback.
-  * *position*: `Number` (optional) The position to move current playback to.
+* **offset**: Get/set the position of playback.
+  * *offset*: `Number` (optional) The offset to move current playback to.
   * *id*: `Number` (optional) The play instance ID.
 * **pos3d**: Get/set the 3D position of the audio source. The most common usage is to set the `x` position to affect the left/right ear panning. Setting the value higher than `1.0` will begin to decrease the volume of the sound as it moves further away. **This only works with Web Audio API.**
   * *x*: `Number` The x-position of the sound.
