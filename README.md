@@ -120,7 +120,7 @@ Example:
 * **offset**: Get/set the position of playback.
   * *offset*: `Number` (optional) The offset to move current playback to.
   * *id*: `Number` (optional) The play instance ID.
-* **pos3d**: Get/set the 3D position of the audio source. The most common usage is to set the `x` position to affect the left/right ear panning. Setting the value higher than `1.0` will begin to decrease the volume of the sound as it moves further away. **This only works with Web Audio API.**
+* **position**: Get/set the 3D position of the audio source. The most common usage is to set the `x` position to affect the left/right ear panning. Setting the value higher than `1.0` will begin to decrease the volume of the sound as it moves further away. **This only works with Web Audio API.**
   * *x*: `Number` The x-position of the sound.
   * *y*: `Number` The y-position of the sound.
   * *z*: `Number` The z-position of the sound.

@@ -156,7 +156,7 @@
     self._loaded = false;
     self._sprite = o.sprite || {};
     self._src = o.src || '';
-    self._pos3d = o.pos3d || [0, 0, -0.5];
+    self._position = o.position || [0, 0, -0.5];
     self._volume = o.volume || 1;
     self._urls = o.urls || [];
     self._rate = o.rate || 1;
@@ -730,7 +730,7 @@
      * @param  {String} id (optional) The play instance ID.
      * @return {Howl/Array}   Returns self or the current 3D position: [x, y, z]
      */
-    pos3d: function(x, y, z, id) {
+    position: function(x, y, z, id) {
       var self = this;
 
       // set a default for the optional 'y' & 'z'
@@ -740,7 +740,7 @@
       // if the sound hasn't been loaded, add it to the event queue
       if (!self._loaded) {
         self.on('play', function() {
-          self.pos3d(x, y, z, id);
+          self.position(x, y, z, id);
         });
 
         return self;
@@ -750,12 +750,12 @@
         if (self._webAudio) {
           var activeNode = (id) ? self._nodeById(id) : self._activeNode();
           if (activeNode) {
-            self._pos3d = [x, y, z];
+            self._position = [x, y, z];
             activeNode.panner.setPosition(x, y, z);
           }
         }
       } else {
-        return self._pos3d;
+        return self._position;
       }
 
       return self;
@@ -986,7 +986,7 @@
 
       // create the panner
       node[index].panner = ctx.createPanner();
-      node[index].panner.setPosition(self._pos3d[0], self._pos3d[1], self._pos3d[2]);
+      node[index].panner.setPosition(self._position[0], self._position[1], self._position[2]);
       node[index].panner.connect(node[index]);
 
       return node[index];
