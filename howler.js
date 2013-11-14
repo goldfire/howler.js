@@ -166,6 +166,27 @@
     },
 
     /**
+     * Set the 3D orientation of the listener.
+     * NOTE: This only works with Web Audio API, HTML5 Audio playback
+     * will not be affected.
+     * @param  {Float}  x  The x-orientation of the listener
+     * @param  {Float}  y  The y-orientation of the listener
+     * @param  {Float}  z  The z-orientation of the listener
+     * @param  {Float}  xUp  The x-orientation of up for the listener
+     * @param  {Float}  yUp  The y-orientation of up for the listener
+     * @param  {Float}  zUp  The z-orientation of up for the listener
+     * @return {Howler}
+     */
+    orientation: function(x, y, z, xUp, yUp, zUp) {
+      if (x >= 0 || x < 0) {
+        if (usingWebAudio) {
+          ctx.listener.setOrientation(x, y, z, xUp, yUp, zUp);
+        }
+      }
+      return Howler;
+    },
+
+    /**
      * Get/set the Doppler factor.
      * NOTE: This only works with Web Audio API, HTML5 Audio playback
      * will not be affected.
