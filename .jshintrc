@@ -18,12 +18,15 @@
   "quotmark": "single",
   "unused": true,
   "trailing": true,
-  "maxdepth": 4,       // non-default
+  "maxdepth": 4,        // non-default
   "maxcomplexity": 18,  // aim to get ths < 10
-  "loopfunc": true,    //non-default!
+  "loopfunc": true,     //non-default!
   "globals": {
     "AudioContext": false,
     "webkitAudioContext": false,
     "define": false
-  }
+  },
+  "predef": [
+    "module"
+  ]
 }

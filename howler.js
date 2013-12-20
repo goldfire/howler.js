@@ -146,45 +146,46 @@
 
   // setup the audio object
   var Howl = function(o) {
-    var self = this;
 
     // setup the defaults
-    self._autoplay = o.autoplay || false;
-    self._buffer = o.buffer || false;
-    self._duration = o.duration || 0;
-    self._format = o.format || null;
-    self._loop = o.loop || false;
-    self._loaded = false;
-    self._sprite = o.sprite || {};
-    self._src = o.src || '';
-    self._pos3d = o.pos3d || [0, 0, -0.5];
-    self._volume = o.volume || 1;
-    self._urls = o.urls || [];
-    self._rate = o.rate || 1;
+    this._autoplay = o.autoplay || false;
+    this._buffer = o.buffer || false;
+    this._duration = o.duration || 0;
+    this._format = o.format || null;
+    this._loop = o.loop || false;
+    this._loaded = false;
+    this._sprite = o.sprite || {};
+    this._src = o.src || '';
+    this._pos3d = o.pos3d || [0, 0, -0.5];
+    this._volume = o.volume || 1;
+    this._urls = o.urls || [];
+    this._rate = o.rate || 1;
 
     // setup event functions
-    self._onload = [o.onload || function() {}];
-    self._onloaderror = [o.onloaderror || function() {}];
-    self._onend = [o.onend || function() {}];
-    self._onpause = [o.onpause || function() {}];
-    self._onplay = [o.onplay || function() {}];
+    this._events = {
+      load:       [{callback: o.onload      || function() {}, context: this}],
+      loaderror:  [{callback: o.onloaderror || function() {}, context: this}],
+      end:        [{callback: o.onend       || function() {}, context: this}],
+      pause:      [{callback: o.onpause     || function() {}, context: this}],
+      play:       [{callback: o.onplay      || function() {}, context: this}]
+    };
 
-    self._onendTimer = [];
+    this._onendTimer = [];
 
     // Web Audio or HTML5 Audio?
-    self._webAudio = usingWebAudio && !self._buffer;
+    this._webAudio = usingWebAudio && !this._buffer;
 
     // check if we need to fall back to HTML5 Audio
-    self._audioNode = [];
-    if (self._webAudio) {
-      self._setupAudioNode();
+    this._audioNode = [];
+    if (this._webAudio) {
+      this._setupAudioNode();
     }
 
     // add this to an array of Howl's to allow global control
-    Howler._howls.push(self);
+    Howler._howls.push(this);
 
     // load the track
-    self.load();
+    this.load();
   };
 
   // setup all of the methods
@@ -1004,49 +1005,47 @@
 
     /**
      * Call/set custom events.
-     * @param  {String}   event Event type.
-     * @param  {Function} fn    Function to call.
+     * @param  {String}   event            Event type.
+     * @param  {Variant}  callbackOrParam  If function then set as the callback method for that event, if not a function then passed as the first argument when event is triggered
+     * @param  {Function} context          The context to apply to this object in the callback functions
      * @return {Howl}
      */
-    on: function(event, fn) {
-      var self = this,
-        events = self['_on' + event];
-
-      if (typeof fn === 'function') {
-        events.push(fn);
+    on: function(event, callbackOrParam, context) {
+      if (typeof callbackOrParam === 'function') {
+        if(Object.prototype.toString.call(this._events[event]) !== '[object Array]') {
+          this._events[event] = [];
+        }
+        this._events[event].push({callback: callbackOrParam, context: context || this});
       } else {
-        for (var i=0; i<events.length; i++) {
-          if (fn) {
-            events[i].call(self, fn);
-          } else {
-            events[i].call(self);
+        if(this._events[event] && this._events[event].length > 0) {
+          for (var i = 0; i < this._events[event].length; i++) {
+            this._events[event][i].callback.call(this._events[event][i].context, callbackOrParam);
           }
         }
       }
 
-      return self;
+      return this;
     },
 
     /**
      * Remove a custom event.
      * @param  {String}   event Event type.
-     * @param  {Function} fn    Listener to remove.
+     * @param  {Function} callback Listener to remove.
      * @return {Howl}
      */
-    off: function(event, fn) {
-      var self = this,
-        events = self['_on' + event],
-        fnString = fn.toString();
+    off: function(event, callback, context) {
 
-      // loop through functions in the event for comparison
-      for (var i=0; i<events.length; i++) {
-        if (fnString === events[i].toString()) {
-          events.splice(i, 1);
-          break;
+      var callbackName = (callback) ? callback.toString() : null,
+          i            = this._events[event].length;
+      context          = context || this;
+
+      while (i--) {
+        if(callbackName === null || (callbackName !== null && context === this._events[event][i].context) && (callbackName === this._events[event][i].callback.toString())) {
+          this._events[event].splice(i, 1);
         }
       }
 
-      return self;
+      return this;
     },
 
     /**
