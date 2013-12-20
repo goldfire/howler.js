@@ -9,6 +9,7 @@
  */
 
 (function() {
+  'use strict';
   // setup
   var cache = {};
 
@@ -203,7 +204,7 @@
       }
 
       // loop through source URLs and pick the first one that is compatible
-      for (var i=0; i<self._urls.length; i++) {        
+      for (var i=0; i<self._urls.length; i++) {
         var ext, urlItem;
 
         if (self._format) {
@@ -247,7 +248,7 @@
         newNode._pos = 0;
         newNode.preload = 'auto';
         newNode.volume = (Howler._muted) ? 0 : self._volume * Howler.volume();
-       
+
         // add this sound to the cache
         cache[url] = self;
 
@@ -330,7 +331,9 @@
 
       // if the sprite doesn't exist, play nothing
       if (!self._sprite[sprite]) {
-        if (typeof callback === 'function') callback();
+        if (typeof callback === 'function') {
+          callback();
+        }
         return self;
       }
 
@@ -428,7 +431,10 @@
 
         // fire the play event and send the soundId back in the callback
         self.on('play');
-        if (typeof callback === 'function') callback(soundId);
+
+        if (typeof callback === 'function') {
+          callback(soundId);
+        }
 
         return self;
       });
@@ -799,7 +805,9 @@
             self.volume(vol, id);
 
             if (vol === toVol) {
-              if (callback) callback();
+              if (callback) {
+                callback();
+              }
             }
           }, stepTime * i);
         })();
@@ -829,7 +837,9 @@
       var self = this;
 
       return self.fade(self._volume, to, len, function() {
-        if (callback) callback();
+        if (callback) {
+          callback();
+        }
         self.pause(id);
 
         // fire ended event
@@ -1002,7 +1012,7 @@
       var self = this,
         events = self['_on' + event];
 
-      if (typeof fn === "function") {
+      if (typeof fn === 'function') {
         events.push(fn);
       } else {
         for (var i=0; i<events.length; i++) {
@@ -1181,9 +1191,9 @@
       };
     });
   }
-  
+
   // define globally in case AMD is not available or available but not used
   window.Howler = Howler;
   window.Howl = Howl;
-  
+
 })();

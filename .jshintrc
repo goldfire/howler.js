@@ -1,0 +1,29 @@
+{
+  "strict": true,
+  "multistr": true,
+  "curly": true,
+  "eqeqeq": true,
+  "immed": true,
+  "latedef": true,
+  "newcap": true,
+  "noarg": true,
+  "sub": true,
+  "undef": true,
+  "boss": true,
+  "eqnull": true,
+  "browser": true,
+  "devel": true,
+  "indent": 2,
+  "noempty": true,
+  "quotmark": "single",
+  "unused": true,
+  "trailing": true,
+  "maxdepth": 4,       // non-default
+  "maxcomplexity": 18,  // aim to get ths < 10
+  "loopfunc": true,    //non-default!
+  "globals": {
+    "AudioContext": false,
+    "webkitAudioContext": false,
+    "define": false
+  }
+}
