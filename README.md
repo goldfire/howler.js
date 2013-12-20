@@ -155,7 +155,9 @@ The following methods are used to modify all sounds globally, and are called fro
 Currently test coverage is limited, but please contribute.
 
 Code Hygiene: JSHint
+
 Frameworks: Mocha + Chai + Sinon
+
 Test Runner: Karma
 
 ### Installation
@@ -170,7 +172,9 @@ npm install
 ### Execution
 
 To lint the code: `grunt`
+
 To run the unit tests: `grunt test`
+
 To produce the minified version: `grunt build`
 
 ### Code Coverage
