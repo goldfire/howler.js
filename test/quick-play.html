@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Test Page</title>
+<script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+</head>
+<body>
+<div id="body">
+  <br/><b>Most basic, play an MP3/OGG:</b>
+  <br/><button id="ex1-play">Play</button> <button id="ex1-pause">Pause</button> <button id="ex1-stop">Stop</button> <button id="ex1-loop">Loop</button>
+  <br/><div><pre class="sh_javascript" style="padding: 10px;">var sound = new Howl({
+    urls: ['sound.mp3', 'sound.ogg']
+  }).play();
+  </pre></div>
+  <br/><b>More playback options:</b>
+  <br/><button id="ex2-play">Play</button> <button id="ex2-pause">Pause</button> <button id="ex2-fadein">Fade In</button> <button id="ex2-fadeout">Fade Out</button>
+  <br/><div><pre class="sh_javascript" style="padding: 10px;">var sound = new Howl({
+    urls: ['sound.mp3', 'sound.ogg', 'sound.wav'],
+    autoplay: true,
+    loop: true,
+    volume: 0.5,
+    onend: function() {
+      alert('Finished!');
+    }
+  });
+  </pre></div>
+  <br/><b>Define and play a sound sprite:</b>
+  <br/><button id="ex3-play1">Play 'blast'</button> <button id="ex3-play2">Play 'laser'</button> <button id="ex3-play3">Play 'winner'</button>
+  <br/><div><pre class="sh_javascript" style="padding: 10px;">var sound = new Howl({
+    urls: ['sounds.mp3', 'sounds.ogg'],
+    sprite: {
+      blast: [0, 2000],
+      laser: [3000, 700],
+      winner: [5000, 9000]
+    }
+  });
+
+  // shoot the laser!
+  sound.play('laser');
+  </pre></div>
+  <br/><b style="font-size: 18px;">Properties</b>
+  <br/><div><ul><li><strong>autoplay</strong>: <code>Boolean</code> <em>(<code>true</code> by default)</em> Set to <code>true</code> to automatically start playback when sound is loaded.
+  </li><li><strong>buffer</strong>: <code>Boolean</code> <em>(<code>false</code> by default)</em> Set to <code>true</code> to force HTML5 Audio. This should be used for large audio files so that you don't have to wait for the full file to be downloaded and decoded before playing.
+  </li><li><strong>format</strong>: <code>String</code> <em>(<code>null</code> by default)</em> howler.js automatically detects your file format from the URL, but you may also specify a format in situations where URL extraction won't work.
+  </li><li><strong>loop</strong>: <code>Boolean</code> <em>(<code>false</code> by default)</em> Set to <code>true</code> to automatically loop the sound forever.
+  </li><li><strong>sprite</strong>: <code>Object</code> <em>(<code>{}</code> by default)</em> Define a sound sprite for the sound. The offset and duration are defined in milliseconds.
+  </li></ul></div><div><pre class="sh_javascript" style="padding: 10px; margin-left: 40px;">// Sound sprite definition format
+  {
+    key: [offset, duration]
+  }
+  </pre></div><div><ul><li><strong>volume</strong>: <code>Number</code> <em>(<code>1.0</code> by default)</em> The volume of the specific track, from <code>0.0</code> to <code>1.0</code>.
+  </li><li><strong>urls</strong>: <code>Array</code> <em>(<code>[]</code> by default)</em> The source URLs to the track(s) to be loaded for the sound. These should be in order of preference, howler.js will automatically load the first one that is compatible with the current browser.
+  </li><li><strong>onend</strong>: <code>Function</code> <em>(<code>function(){}</code> by default)</em> Fire when the sound finishes playing (if it is looping, it'll fire at the end of each loop).
+  </li><li><strong>onload</strong>: <code>Function</code> <em>(<code>function(){}</code> by default)</em> Fires when the sound is loaded.
+  </li><li><strong>onloaderror</strong>: <code>Function</code> <em>(<code>function(){}</code> by default)</em> Fires when the sound fails to load.
+  </li><li><strong>onpause</strong>: <code>Function</code> <em>(<code>function(){}</code> by default)</em> Fires when the sound has been paused.
+  </li><li><strong>onplay</strong>: <code>Function</code> <em>(<code>function(){}</code> by default)</em> Fires when the sound begins playing.
+  </li></ul></div>
+  <br/><b style="font-size: 18px;">Methods</b>
+  <br/><div><ul><li><strong>play</strong>: Begins playback of sound. Will continue from previous point if sound has been previously paused.
+  <ul style="margin: 0"><li><em>sprite</em>: <code>String</code> (optional) Plays from the defined sprite key.</li></ul></li>
+  <li><strong>pause</strong>: Pauses playback of sound, saving the <code>pos</code> of playback.
+  <ul style="margin: 0"><li><em>id</em>: <code>Number</code> (optional) The play instance ID.</li></ul></li>
+  <li><strong>stop</strong>: Stops playback of sound, resetting <code>pos</code> to <code>0</code>.
+  <ul style="margin: 0"><li><em>id</em>: <code>Number</code> (optional) The play instance ID.</li></ul>
+  </li><li><strong>mute</strong>: Mutes the sound, but doesn't pause the playback.
+  <ul style="margin: 0"><li><em>id</em>: <code>Number</code> (optional) The play instance ID.</li></ul>
+  </li><li><strong>unmute</strong>: Unmutes the sound.
+  <ul style="margin: 0"><li><em>id</em>: <code>Number</code> (optional) The play instance ID.</li></ul>
+  </li><li><strong>fadeIn</strong>: Fade in the current sound.
+  <ul style="margin: 0"><li><em>to</em>: <code>Number</code> Volume to fade to (<code>0.0</code> to <code>1.0</code>).</li>
+  <li><em>duration</em>: <code>Number</code> Time in milliseconds to fade.</li>
+  <li><em>callback</em>: <code>Function</code> (optional) Fires when fade is complete.</li></ul>
+  <li><strong>fadeOut</strong>: Fade out the current sound and pause when finished.
+  <ul style="margin: 0"><li><em>to</em>: <code>Number</code> Volume to fade to (<code>0.0</code> to <code>1.0</code>).</li>
+  <li><em>duration</em>: <code>Number</code> Time in milliseconds to fade.</li>
+  <li><em>callback</em>: <code>Function</code> (optional) Fires when fade is complete.</li>
+  <li><em>id</em>: <code>Number</code> (optional) The play instance ID.</li></ul>
+  <li><strong>loop</strong>: Get/set whether to loop the sound.
+  </li>
+  <ul style="margin: 0"><li><em>loop</em>: <code>Boolean</code> (optional) To loop or not to loop, that is the question.</li></ul>
+  <li><strong>pos</strong>: Get/set the position of playback.
+  </li>
+  <ul style="margin: 0"><li><em>position</em>: <code>Number</code> (optional) The position to move current playback to.</li>
+  <li><em>id</em>: <code>Number</code> (optional) The play instance ID.</li></ul>
+  </li><li><strong>sprite</strong>: Get/set sound sprite definition.
+  <ul style="margin: 0"><li><em>sprite</em>: <code>Object</code> (optional) See above for sound sprite definition.</li></ul>
+  </li><li><strong>pos3d</strong>: Get/set the 3D position of the audio source. The most common usage is to set the <code>x</code> position to affect the left/right ear panning. Setting the value higher than <code>1.0</code> will begin to decrease the volume of the sound as it moves further away. <b>This only works with Web Audio API.</b>
+  <ul style="margin: 0"><li><em>x</em>: <code>Number</code> The x-position of the sound.</li>
+  <li><em>y</em>: <code>Number</code> The y-position of the sound.</li>
+  <li><em>z</em>: <code>Number</code> The z-position of the sound.</li>
+  <li><em>id</em>: <code>Number</code> (optional) The play instance ID.</li></ul>
+  </li><li><strong>volume</strong>: Get/set volume of this sound.
+  <ul style="margin: 0"><li><em>volume</em>: <code>Number</code> (optional) Volume from <code>0.0</code> to <code>1.0</code>.</li>
+  <li><em>id</em>: <code>Number</code> (optional) The play instance ID.</li></ul>
+  </li><li><strong>urls</strong>: Get/set the URLs to be pulled from to play in this source.
+  <ul style="margin: 0"><li><em>urls</em>: <code>Array</code> (optional) Changes the source files for this <code>Howl</code> object.</li></ul>
+  </li><li><strong>on</strong>: Call/set custom events. Multiple events can be added by calling this multiple times.
+  <ul style="margin: 0"><li><em>event</em>: <code>String</code> Name of event to fire/set.</li>
+  <li><em>function</em>: <code>Function</code> (optional) Define function to fire on event.</li></ul>
+  </li><li><strong>off</strong>: Remove custom events that you've set.
+  <ul style="margin: 0"><li><em>event</em>: <code>String</code> Name of event.</li>
+  <li><em>function</em>: <code>Function</code> (optional) The listener to remove.</li></ul>
+  </li><li><strong>unload</strong>: Unload and destroy a Howl object. This will immediately stop all play instances attached to this sound and remove it from the cache.</li></ul></div>
+  <br/><b style="font-size: 18px;">Global Methods</b>
+  <br/>The following methods are used to modify all sounds globally, and are called from the <code>Howler</code> object.
+  <br/><div><ul><li><strong>mute</strong>: Mutes all sounds.
+  </li><li><strong>unmute</strong>: Unmutes all sounds and restores them to their previous volume.
+  </li><li><strong>volume</strong>: Get/set the global volume for all sounds.
+  </li>
+  <ul style="margin: 0"><li><em>volume</em>: <code>Number</code> (optional) Volume from <code>0.0</code> to <code>1.0</code>.</li></ul></ul></div>
+  <br/>
+  <script type="text/javascript" src="../howler.min.js"></script>
+  <script type="text/javascript">
+  $(function(){
+
+    $('#ex1-play').on('click', function(){
+      sound1.stop().play();
+    });
+    $('#ex1-pause').on('click', function(){
+      sound1.pause();
+    });
+    $('#ex1-stop').on('click', function(){
+      sound1.stop();
+    });
+    $('#ex1-loop').on('click', function(){
+      sound1.loop(true);
+    });
+
+    $('#ex2-play').on('click', function(){
+      sound2.stop().play();
+    });
+    $('#ex2-pause').on('click', function(){
+      sound2.pause();
+    });
+    $('#ex2-fadein').on('click', function(){
+      sound2.pause().fadeIn(0.5, 2000);
+    });
+    $('#ex2-fadeout').on('click', function(){
+      sound2.fadeOut(0, 2000);
+    });
+
+    $('#ex3-play1').on('click', function(){
+      sound3.play('blast');
+    });
+    $('#ex3-play2').on('click', function(){
+      sound3.play('laser');
+    });
+    $('#ex3-play3').on('click', function(){
+      sound3.play('winner');
+    });
+  });
+
+  var sound1 = new Howl({
+    urls: ['fixture/sound/sound.mp3', 'fixture/sound/sound.ogg']
+  });
+  var sound2 = new Howl({
+    urls: ['fixture/sound/sound.mp3', 'fixture/sound/sound.ogg'],
+    loop: true,
+    volume: 0.5,
+    onend: function() {
+      alert('Finished!');
+    }
+  });
+  var sound3 = new Howl({
+    urls: ['fixture/sound/sounds.mp3', 'fixture/sound/sounds.ogg'],
+    sprite: {
+      blast: [0, 2000],
+      laser: [3000, 700],
+      winner: [5000, 9000]
+    }
+  });
+  </script>
+</body>
+</html>

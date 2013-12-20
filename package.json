@@ -1,0 +1,42 @@
+{
+  "name": "howler.js",
+  "version": "1.1.14",
+  "description": "howler.js is an audio library for the modern web. It defaults to Web Audio API and falls back to HTML5 Audio.",
+  "main": "howler.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/goldfire/howler.js.git"
+  },
+  "author": "James Simpson",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/goldfire/howler.js/issues"
+  },
+  "devDependencies": {
+    "jshint": "~2.3.0",
+    "karma-script-launcher": "~0.1.0",
+    "karma-chrome-launcher": "~0.1.1",
+    "karma-html2js-preprocessor": "~0.1.0",
+    "karma-firefox-launcher": "~0.1.2",
+    "karma-jasmine": "~0.1.5",
+    "requirejs": "~2.1.9",
+    "karma-requirejs": "~0.2.0",
+    "karma-coffee-preprocessor": "~0.1.1",
+    "karma-phantomjs-launcher": "~0.1.1",
+    "karma": "~0.10.8",
+    "mocha": "~1.16.1",
+    "karma-mocha": "~0.1.1",
+    "grunt": "~0.4.2",
+    "grunt-contrib-jshint": "~0.7.2",
+    "grunt-contrib-uglify": "~0.2.7",
+    "grunt-karma": "~0.6.2",
+    "karma-sinon-chai": "~0.1.4",
+    "karma-coverage": "~0.1.4"
+  }
+}
