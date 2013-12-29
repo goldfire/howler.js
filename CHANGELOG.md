@@ -1,3 +1,11 @@
+# 1.1.15 (December 28, 2013)
+- `FIXED`: Fix bug that prevented master volume from being set to 0.
+- `FIXED`: Fix bug that prevented initial volume from being set to 0.
+- `FIXED`: Update the README to accurately show `autoplay` as defaulting to `false`.
+- `FIXED`: Call `loaderror` when decodeAudioData fails.
+- `FIXED`: Fix bug in setting position on an active playing WebAudio node through 'pos(position, id)' (thanks Arjun Mehta).
+- `FIXED`: Fix an issue with looping after resuming playback when in WebAudio playback (thanks anzev).
+
 # 1.1.14 (October 18, 2013)
 - `FIXED`: Critical bug fix that was breaking support on some browsers and some codecs.
 
