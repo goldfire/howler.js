@@ -157,7 +157,7 @@
     self._sprite = o.sprite || {};
     self._src = o.src || '';
     self._pos3d = o.pos3d || [0, 0, -0.5];
-    self._volume = o.volume || 1;
+    self._volume = o.volume !== undefined ? o.volume : 1;
     self._urls = o.urls || [];
     self._rate = o.rate || 1;
 
