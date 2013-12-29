@@ -1,5 +1,5 @@
 /*!
- *  howler.js v1.1.14
+ *  howler.js v1.1.15
  *  howlerjs.com
  *
  *  (c) 2013, James Simpson of GoldFire Studios
@@ -689,8 +689,9 @@
       if (activeNode) {
         if (self._webAudio) {
           if (pos >= 0) {
+            self.pause(id);
             activeNode._pos = pos;
-            self.pause(id).play(activeNode._sprite, id);
+            self.play(activeNode._sprite, id);
 
             return self;
           } else {
