@@ -689,8 +689,9 @@
       if (activeNode) {
         if (self._webAudio) {
           if (pos >= 0) {
+            self.pause(id);
             activeNode._pos = pos;
-            self.pause(id).play(activeNode._sprite, id);
+            self.play(activeNode._sprite, id);
 
             return self;
           } else {
