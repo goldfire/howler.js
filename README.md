@@ -69,7 +69,7 @@ sound.play('laser');
 ```
 
 ### Properties
-* **autoplay**: `Boolean` *(`true` by default)* Set to `true` to automatically start playback when sound is loaded.
+* **autoplay**: `Boolean` *(`false` by default)* Set to `true` to automatically start playback when sound is loaded.
 * **buffer**: `Boolean` *(`false` by default)* Set to `true` to force HTML5 Audio. This should be used for large audio files so that you don't have to wait for the full file to be downloaded and decoded before playing.
 * **format**: `String` *(`null` by default)* howler.js automatically detects your file format from the URL, but you may also specify a format in situations where URL extraction won't work.
 * **loop**: `Boolean` *(`false` by default)* Set to `true` to automatically loop the sound forever.
