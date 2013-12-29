@@ -1096,12 +1096,18 @@
         xhr.responseType = 'arraybuffer';
         xhr.onload = function() {
           // decode the buffer into an audio source
-          ctx.decodeAudioData(xhr.response, function(buffer) {
-            if (buffer) {
-              cache[url] = buffer;
-              loadSound(obj, buffer);
+          ctx.decodeAudioData(
+            xhr.response,
+            function(buffer) {
+              if (buffer) {
+                cache[url] = buffer;
+                loadSound(obj, buffer);
+              }
+            },
+            function(err) {
+              obj.on('loaderror');
             }
-          });
+          );
         };
         xhr.onerror = function() {
           // if there is an error, switch the sound to HTML Audio
