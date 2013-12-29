@@ -1,6 +1,3 @@
-# 1.1.15 (November 1, 2013)
-- `FIXED`: Fix bug in setting position on an active playing WebAudio node through 'pos(position, id)'.
-
 # 1.1.14 (October 18, 2013)
 - `FIXED`: Critical bug fix that was breaking support on some browsers and some codecs.
 
