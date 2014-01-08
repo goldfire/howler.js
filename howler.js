@@ -1067,7 +1067,7 @@
 
       // remove the reference in the global Howler object
       var index = Howler._howls.indexOf(self);
-      if (index) {
+      if (index !== null && index >= 0) {
         Howler._howls.splice(index, 1);
       }
 
