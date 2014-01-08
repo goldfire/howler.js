@@ -1,3 +1,7 @@
+## 1.1.16 (January 8, 2014)
+- `FIXED`: Prevent InvalidStateError when unloading a sound that has already been stopped.
+- `FIXED`: Fix bug in unload method that prevented the first sound from being unloaded.
+
 ## 1.1.15 (December 28, 2013)
 - `FIXED`: Fix bug that prevented master volume from being set to 0.
 - `FIXED`: Fix bug that prevented initial volume from being set to 0.
