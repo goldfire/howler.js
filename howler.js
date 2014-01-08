@@ -427,9 +427,9 @@
           }
         }
 
-        // fire the play event and send the soundId back in the callback
+        // fire the play event and send the soundId and timerId back in the callback
         self.on('play');
-        if (typeof callback === 'function') callback(soundId);
+        if (typeof callback === 'function') callback(soundId, timerId);
 
         return self;
       });
