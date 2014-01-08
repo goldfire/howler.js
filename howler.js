@@ -1051,7 +1051,10 @@
       // stop playing any active nodes
       var nodes = self._audioNode;
       for (var i=0; i<self._audioNode.length; i++) {
-        self.stop(nodes[i].id);
+        // stop the sound if it is currently playing
+        if (!nodes[i].paused) {
+          self.stop(nodes[i].id);
+        }
 
         if (!self._webAudio) {
            // remove the source if using HTML5 Audio
