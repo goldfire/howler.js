@@ -1192,6 +1192,13 @@
       };
     });
   }
+  /**
+   * Add support for CommonJS libraries such as browserify.
+   */
+  else if (typeof exports !== 'undefined') {
+    exports.Howler = Howler;
+    exports.Howl = Howl;
+  }
   
   // define globally in case AMD is not available or available but not used
   window.Howler = Howler;
