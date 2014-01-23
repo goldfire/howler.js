@@ -140,9 +140,13 @@ Example:
   * *function*: `Function` (optional) The listener to remove.
 * **unload**: Unload and destroy a Howl object. This will immediately stop all play instances attached to this sound and remove it from the cache.
 
+### Global Properties
+* **autoload**: If set to true, stops a Howl object from auto loading sounds when they are instantiated. Autoload is **true** by default.
+
 ### Global Methods
 The following methods are used to modify all sounds globally, and are called from the `Howler` object.
 
+* **load**: If the global **autoload** property is set to false, this method must be called to load all sounds.
 * **mute**: Mutes all sounds.
 * **unmute**: Unmutes all sounds and restores them to their previous volume.
 * **volume**: Get/set the global volume for all sounds.
