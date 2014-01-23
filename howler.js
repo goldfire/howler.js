@@ -13,14 +13,12 @@
   var cache = {};
 
   // setup the audio context
-  var ctx = null,
-    usingWebAudio = true,
-    noAudio = false;
-  if(typeof AudioContext !== 'undefined') {
+  var ctx = null, usingWebAudio = true, noAudio = false;
+  if (typeof AudioContext !== 'undefined') {
     ctx = new AudioContext();
-  } else if(typeof webkitAudioContext !== 'undefined') {
+  } else if (typeof webkitAudioContext !== 'undefined') {
     ctx = new webkitAudioContext();
-  } else if(typeof Audio !== 'undefined') {
+  } else if (typeof Audio !== 'undefined') {
     usingWebAudio = false;
     try {
       new Audio();
@@ -33,7 +31,7 @@
   }
 
   // create a master gain node
-  if(usingWebAudio) {
+  if (usingWebAudio) {
     var masterGain = (typeof ctx.createGain === 'undefined') ? ctx.createGainNode() : ctx.createGain();
     masterGain.gain.value = 1;
     masterGain.connect(ctx.destination);
@@ -59,18 +57,18 @@
       // make sure volume is a number
       vol = parseFloat(vol);
 
-      if(vol >= 0 && vol <= 1) {
+      if (vol >= 0 && vol <= 1) {
         self._volume = vol;
 
-        if(usingWebAudio) {
+        if (usingWebAudio) {
           masterGain.gain.value = vol;
         }
 
         // loop through cache and change volume of all nodes that are using HTML5 Audio
-        for(var key in self._howls) {
-          if(self._howls.hasOwnProperty(key) && self._howls[key]._webAudio === false) {
+        for (var key in self._howls) {
+          if (self._howls.hasOwnProperty(key) && self._howls[key]._webAudio === false) {
             // loop through the audio nodes
-            for(var i = 0; i < self._howls[key]._audioNode.length; i++) {
+            for (var i = 0; i < self._howls[key]._audioNode.length; i++) {
               self._howls[key]._audioNode[i].volume = self._howls[key]._volume * self._volume;
             }
           }
@@ -112,14 +110,14 @@
 
       self._muted = muted;
 
-      if(usingWebAudio) {
+      if (usingWebAudio) {
         masterGain.gain.value = muted ? 0 : self._volume;
       }
 
-      for(var key in self._howls) {
-        if(self._howls.hasOwnProperty(key) && self._howls[key]._webAudio === false) {
+      for (var key in self._howls) {
+        if (self._howls.hasOwnProperty(key) && self._howls[key]._webAudio === false) {
           // loop through the audio nodes
-          for(var i = 0; i < self._howls[key]._audioNode.length; i++) {
+          for (var i = 0; i < self._howls[key]._audioNode.length; i++) {
             self._howls[key]._audioNode[i].muted = muted;
           }
         }
@@ -127,8 +125,8 @@
     },
 
     load: function() {
-      for(var i = 0; i < this._howls.length; i++) {
-        if(!this._howls[i]._loaded) {
+      for (var i = 0; i < this._howls.length; i++) {
+        if (!this._howls[i]._loaded) {
           this._howls[i].load();
         }
       }
@@ -140,7 +138,7 @@
 
   // check for browser codec support
   var audioTest = null;
-  if(!noAudio) {
+  if (!noAudio) {
     audioTest = new Audio();
     var codecs = {
       mp3: !!audioTest.canPlayType('audio/mpeg;').replace(/^no$/, ''),
@@ -190,7 +188,7 @@
 
     // check if we need to fall back to HTML5 Audio
     self._audioNode = [];
-    if(self._webAudio) {
+    if (self._webAudio) {
       self._setupAudioNode();
     }
 
@@ -198,7 +196,7 @@
     Howler._howls.push(self);
 
     // load the track
-    if(self._autoload) {
+    if (self._autoload) {
       self.load();
     }
   };
@@ -210,20 +208,19 @@
      * @return {Howl}
      */
     load: function() {
-      var self = this,
-        url = null;
+      var self = this, url = null;
 
       // if no audio is available, quit immediately
-      if(noAudio) {
+      if (noAudio) {
         self.on('loaderror');
         return;
       }
 
       // loop through source URLs and pick the first one that is compatible
-      for(var i = 0; i < self._urls.length; i++) {
+      for (var i = 0; i < self._urls.length; i++) {
         var ext, urlItem;
 
-        if(self._format) {
+        if (self._format) {
           // use specified audio format if available
           ext = self._format;
         } else {
@@ -232,7 +229,7 @@
           ext = urlItem.match(/.+\.([^?]+)(\?|$)/);
           ext = (ext && ext.length >= 2) ? ext : urlItem.match(/data\:audio\/([^?]+);/);
 
-          if(ext) {
+          if (ext) {
             ext = ext[1];
           } else {
             self.on('loaderror');
@@ -240,20 +237,20 @@
           }
         }
 
-        if(codecs[ext]) {
+        if (codecs[ext]) {
           url = self._urls[i];
           break;
         }
       }
 
-      if(!url) {
+      if (!url) {
         self.on('loaderror');
         return;
       }
 
       self._src = url;
 
-      if(self._webAudio) {
+      if (self._webAudio) {
         loadBuffer(self, url);
       } else {
         var newNode = new Audio();
@@ -274,16 +271,16 @@
           self._duration = newNode.duration;
 
           // setup a sprite if none is defined
-          if(Object.getOwnPropertyNames(self._sprite).length === 0) {
+          if (Object.getOwnPropertyNames(self._sprite).length === 0) {
             self._sprite = {_default: [0, self._duration * 1000]};
           }
 
-          if(!self._loaded) {
+          if (!self._loaded) {
             self._loaded = true;
             self.on('load');
           }
 
-          if(self._autoplay) {
+          if (self._autoplay) {
             self.play();
           }
 
@@ -305,7 +302,7 @@
     urls: function(urls) {
       var self = this;
 
-      if(urls) {
+      if (urls) {
         self.stop();
         self._urls = (typeof urls === 'string') ? [urls] : urls;
         self._loaded = false;
@@ -327,17 +324,17 @@
       var self = this;
 
       // if no sprite was passed but a callback was, update the variables
-      if(typeof sprite === 'function') {
+      if (typeof sprite === 'function') {
         callback = sprite;
       }
 
       // use the default sprite if none is passed
-      if(!sprite || typeof sprite === 'function') {
+      if (!sprite || typeof sprite === 'function') {
         sprite = '_default';
       }
 
       // if the sound hasn't been loaded, add it to the event queue
-      if(!self._loaded) {
+      if (!self._loaded) {
         self.on('load', function() {
           self.play(sprite, callback);
         });
@@ -346,8 +343,8 @@
       }
 
       // if the sprite doesn't exist, play nothing
-      if(!self._sprite[sprite]) {
-        if(typeof callback === 'function') callback();
+      if (!self._sprite[sprite]) {
+        if (typeof callback === 'function') callback();
         return self;
       }
 
@@ -357,15 +354,13 @@
         node._sprite = sprite;
 
         // determine where to start playing from
-        var pos = (node._pos > 0) ? node._pos : self._sprite[sprite][0] / 1000,
-          duration = self._sprite[sprite][1] / 1000 - node._pos;
+        var pos = (node._pos > 0) ? node._pos : self._sprite[sprite][0] / 1000, duration = self._sprite[sprite][1] / 1000 - node._pos;
 
         // determine if this sound should be looped
         var loop = !!(self._loop || self._sprite[sprite][2]);
 
         // set timer to fire the 'onend' event
-        var soundId = (typeof callback === 'string') ? callback : Math.round(Date.now() * Math.random()) + '',
-          timerId;
+        var soundId = (typeof callback === 'string') ? callback : Math.round(Date.now() * Math.random()) + '', timerId;
         (function() {
           var data = {
             id: soundId,
@@ -374,18 +369,18 @@
           };
           timerId = setTimeout(function() {
             // if looping, restart the track
-            if(!self._webAudio && loop) {
+            if (!self._webAudio && loop) {
               self.stop(data.id, data.timer).play(sprite, data.id);
             }
 
             // set web audio node to paused at end
-            if(self._webAudio && !loop) {
+            if (self._webAudio && !loop) {
               self._nodeById(data.id).paused = true;
               self._nodeById(data.id)._pos = 0;
             }
 
             // end the track if it is HTML audio and a sprite
-            if(!self._webAudio && !loop) {
+            if (!self._webAudio && !loop) {
               self.stop(data.id, data.timer);
             }
 
@@ -400,9 +395,8 @@
           data.timer = self._onendTimer[self._onendTimer.length - 1];
         })();
 
-        if(self._webAudio) {
-          var loopStart = self._sprite[sprite][0] / 1000,
-            loopEnd = self._sprite[sprite][1] / 1000;
+        if (self._webAudio) {
+          var loopStart = self._sprite[sprite][0] / 1000, loopEnd = self._sprite[sprite][1] / 1000;
 
           // set the play id to this node and load into context
           node.id = soundId;
@@ -411,13 +405,13 @@
           self._playStart = ctx.currentTime;
           node.gain.value = self._volume;
 
-          if(typeof node.bufferSource.start === 'undefined') {
+          if (typeof node.bufferSource.start === 'undefined') {
             node.bufferSource.noteGrainOn(0, pos, duration);
           } else {
             node.bufferSource.start(0, pos, duration);
           }
         } else {
-          if(node.readyState === 4) {
+          if (node.readyState === 4) {
             node.id = soundId;
             node.currentTime = pos;
             node.muted = Howler._muted;
@@ -429,10 +423,7 @@
             self._clearEndTimer(timerId);
 
             (function() {
-              var sound = self,
-                playSprite = sprite,
-                fn = callback,
-                newNode = node;
+              var sound = self, playSprite = sprite, fn = callback, newNode = node;
               var listener = function() {
                 sound.play(playSprite, fn);
 
@@ -448,7 +439,7 @@
 
         // fire the play event and send the soundId back in the callback
         self.on('play');
-        if(typeof callback === 'function') callback(soundId);
+        if (typeof callback === 'function') callback(soundId);
 
         return self;
       });
@@ -466,7 +457,7 @@
       var self = this;
 
       // if the sound hasn't been loaded, add it to the event queue
-      if(!self._loaded) {
+      if (!self._loaded) {
         self.on('play', function() {
           self.pause(id);
         });
@@ -478,17 +469,17 @@
       self._clearEndTimer(timerId || 0);
 
       var activeNode = (id) ? self._nodeById(id) : self._activeNode();
-      if(activeNode) {
+      if (activeNode) {
         activeNode._pos = self.pos(null, id);
 
-        if(self._webAudio) {
+        if (self._webAudio) {
           // make sure the sound has been created
-          if(!activeNode.bufferSource) {
+          if (!activeNode.bufferSource) {
             return self;
           }
 
           activeNode.paused = true;
-          if(typeof activeNode.bufferSource.stop === 'undefined') {
+          if (typeof activeNode.bufferSource.stop === 'undefined') {
             activeNode.bufferSource.noteOff(0);
           } else {
             activeNode.bufferSource.stop(0);
@@ -513,7 +504,7 @@
       var self = this;
 
       // if the sound hasn't been loaded, add it to the event queue
-      if(!self._loaded) {
+      if (!self._loaded) {
         self.on('play', function() {
           self.stop(id);
         });
@@ -525,18 +516,18 @@
       self._clearEndTimer(timerId || 0);
 
       var activeNode = (id) ? self._nodeById(id) : self._activeNode();
-      if(activeNode) {
+      if (activeNode) {
         activeNode._pos = 0;
 
-        if(self._webAudio) {
+        if (self._webAudio) {
           // make sure the sound has been created
-          if(!activeNode.bufferSource) {
+          if (!activeNode.bufferSource) {
             return self;
           }
 
           activeNode.paused = true;
 
-          if(typeof activeNode.bufferSource.stop === 'undefined') {
+          if (typeof activeNode.bufferSource.stop === 'undefined') {
             activeNode.bufferSource.noteOff(0);
           } else {
             activeNode.bufferSource.stop(0);
@@ -559,7 +550,7 @@
       var self = this;
 
       // if the sound hasn't been loaded, add it to the event queue
-      if(!self._loaded) {
+      if (!self._loaded) {
         self.on('play', function() {
           self.mute(id);
         });
@@ -568,8 +559,8 @@
       }
 
       var activeNode = (id) ? self._nodeById(id) : self._activeNode();
-      if(activeNode) {
-        if(self._webAudio) {
+      if (activeNode) {
+        if (self._webAudio) {
           activeNode.gain.value = 0;
         } else {
           activeNode.volume = 0;
@@ -588,7 +579,7 @@
       var self = this;
 
       // if the sound hasn't been loaded, add it to the event queue
-      if(!self._loaded) {
+      if (!self._loaded) {
         self.on('play', function() {
           self.unmute(id);
         });
@@ -597,8 +588,8 @@
       }
 
       var activeNode = (id) ? self._nodeById(id) : self._activeNode();
-      if(activeNode) {
-        if(self._webAudio) {
+      if (activeNode) {
+        if (self._webAudio) {
           activeNode.gain.value = self._volume;
         } else {
           activeNode.volume = self._volume;
@@ -620,11 +611,11 @@
       // make sure volume is a number
       vol = parseFloat(vol);
 
-      if(vol >= 0 && vol <= 1) {
+      if (vol >= 0 && vol <= 1) {
         self._volume = vol;
 
         // if the sound hasn't been loaded, add it to the event queue
-        if(!self._loaded) {
+        if (!self._loaded) {
           self.on('play', function() {
             self.volume(vol, id);
           });
@@ -633,8 +624,8 @@
         }
 
         var activeNode = (id) ? self._nodeById(id) : self._activeNode();
-        if(activeNode) {
-          if(self._webAudio) {
+        if (activeNode) {
+          if (self._webAudio) {
             activeNode.gain.value = vol;
           } else {
             activeNode.volume = vol * Howler.volume();
@@ -655,7 +646,7 @@
     loop: function(loop) {
       var self = this;
 
-      if(typeof loop === 'boolean') {
+      if (typeof loop === 'boolean') {
         self._loop = loop;
 
         return self;
@@ -675,7 +666,7 @@
     sprite: function(sprite) {
       var self = this;
 
-      if(typeof sprite === 'object') {
+      if (typeof sprite === 'object') {
         self._sprite = sprite;
 
         return self;
@@ -694,7 +685,7 @@
       var self = this;
 
       // if the sound hasn't been loaded, add it to the event queue
-      if(!self._loaded) {
+      if (!self._loaded) {
         self.on('load', function() {
           self.pos(pos);
         });
@@ -706,9 +697,9 @@
       pos = parseFloat(pos);
 
       var activeNode = (id) ? self._nodeById(id) : self._activeNode();
-      if(activeNode) {
-        if(self._webAudio) {
-          if(pos >= 0) {
+      if (activeNode) {
+        if (self._webAudio) {
+          if (pos >= 0) {
             self.pause(id);
             activeNode._pos = pos;
             self.play(activeNode._sprite, id);
@@ -718,7 +709,7 @@
             return activeNode._pos + (ctx.currentTime - self._playStart);
           }
         } else {
-          if(pos >= 0) {
+          if (pos >= 0) {
             activeNode.currentTime = pos;
 
             return self;
@@ -726,12 +717,12 @@
             return activeNode.currentTime;
           }
         }
-      } else if(pos >= 0) {
+      } else if (pos >= 0) {
         return self;
       } else {
         // find the first inactive node to return the pos for
-        for(var i = 0; i < self._audioNode.length; i++) {
-          if(self._audioNode[i].paused && self._audioNode[i].readyState === 4) {
+        for (var i = 0; i < self._audioNode.length; i++) {
+          if (self._audioNode[i].paused && self._audioNode[i].readyState === 4) {
             return (self._webAudio) ? self._audioNode[i]._pos : self._audioNode[i].currentTime;
           }
         }
@@ -759,7 +750,7 @@
       z = (typeof z === 'undefined' || !z) ? -0.5 : z;
 
       // if the sound hasn't been loaded, add it to the event queue
-      if(!self._loaded) {
+      if (!self._loaded) {
         self.on('play', function() {
           self.pos3d(x, y, z, id);
         });
@@ -767,10 +758,10 @@
         return self;
       }
 
-      if(x >= 0 || x < 0) {
-        if(self._webAudio) {
+      if (x >= 0 || x < 0) {
+        if (self._webAudio) {
           var activeNode = (id) ? self._nodeById(id) : self._activeNode();
-          if(activeNode) {
+          if (activeNode) {
             self._pos3d = [x, y, z];
             activeNode.panner.setPosition(x, y, z);
           }
@@ -792,14 +783,10 @@
      * @return {Howl}
      */
     fade: function(from, to, len, callback, id) {
-      var self = this,
-        diff = Math.abs(from - to),
-        dir = from > to ? 'down' : 'up',
-        steps = diff / 0.01,
-        stepTime = len / steps;
+      var self = this, diff = Math.abs(from - to), dir = from > to ? 'down' : 'up', steps = diff / 0.01, stepTime = len / steps;
 
       // if the sound hasn't been loaded, add it to the event queue
-      if(!self._loaded) {
+      if (!self._loaded) {
         self.on('load', function() {
           self.fade(from, to, len, callback, id);
         });
@@ -810,17 +797,15 @@
       // set the volume to the start position
       self.volume(from, id);
 
-      for(var i = 1; i <= steps; i++) {
+      for (var i = 1; i <= steps; i++) {
         (function() {
-          var change = self._volume + (dir === 'up' ? 0.01 : -0.01) * i,
-            vol = Math.round(1000 * change) / 1000,
-            toVol = to;
+          var change = self._volume + (dir === 'up' ? 0.01 : -0.01) * i, vol = Math.round(1000 * change) / 1000, toVol = to;
 
           setTimeout(function() {
             self.volume(vol, id);
 
-            if(vol === toVol) {
-              if(callback) callback();
+            if (vol === toVol) {
+              if (callback) callback();
             }
           }, stepTime * i);
         })();
@@ -850,7 +835,7 @@
       var self = this;
 
       return self.fade(self._volume, to, len, function() {
-        if(callback) callback();
+        if (callback) callback();
         self.pause(id);
 
         // fire ended event
@@ -863,12 +848,11 @@
      * @return {Howl} Audio node.
      */
     _nodeById: function(id) {
-      var self = this,
-        node = self._audioNode[0];
+      var self = this, node = self._audioNode[0];
 
       // find the node with this ID
-      for(var i = 0; i < self._audioNode.length; i++) {
-        if(self._audioNode[i].id === id) {
+      for (var i = 0; i < self._audioNode.length; i++) {
+        if (self._audioNode[i].id === id) {
           node = self._audioNode[i];
           break;
         }
@@ -882,12 +866,11 @@
      * @return {Howl} Audio node.
      */
     _activeNode: function() {
-      var self = this,
-        node = null;
+      var self = this, node = null;
 
       // find the first playing node
-      for(var i = 0; i < self._audioNode.length; i++) {
-        if(!self._audioNode[i].paused) {
+      for (var i = 0; i < self._audioNode.length; i++) {
+        if (!self._audioNode[i].paused) {
           node = self._audioNode[i];
           break;
         }
@@ -905,12 +888,11 @@
      * @param  {Function} callback Function to call when the audio node is ready.
      */
     _inactiveNode: function(callback) {
-      var self = this,
-        node = null;
+      var self = this, node = null;
 
       // find first inactive node to recycle
-      for(var i = 0; i < self._audioNode.length; i++) {
-        if(self._audioNode[i].paused && self._audioNode[i].readyState === 4) {
+      for (var i = 0; i < self._audioNode.length; i++) {
+        if (self._audioNode[i].paused && self._audioNode[i].readyState === 4) {
           callback(self._audioNode[i]);
           node = true;
           break;
@@ -920,13 +902,13 @@
       // remove excess inactive nodes
       self._drainPool();
 
-      if(node) {
+      if (node) {
         return;
       }
 
       // create new node if there are no inactives
       var newNode;
-      if(self._webAudio) {
+      if (self._webAudio) {
         newNode = self._setupAudioNode();
         callback(newNode);
       } else {
@@ -942,26 +924,24 @@
      * If there are more than 5 inactive audio nodes in the pool, clear out the rest.
      */
     _drainPool: function() {
-      var self = this,
-        inactive = 0,
-        i;
+      var self = this, inactive = 0, i;
 
       // count the number of inactive nodes
-      for(i = 0; i < self._audioNode.length; i++) {
-        if(self._audioNode[i].paused) {
+      for (i = 0; i < self._audioNode.length; i++) {
+        if (self._audioNode[i].paused) {
           inactive++;
         }
       }
 
       // remove excess inactive nodes
-      for(i = self._audioNode.length - 1; i >= 0; i--) {
-        if(inactive <= 5) {
+      for (i = self._audioNode.length - 1; i >= 0; i--) {
+        if (inactive <= 5) {
           break;
         }
 
-        if(self._audioNode[i].paused) {
+        if (self._audioNode[i].paused) {
           // disconnect the audio source if using Web Audio
-          if(self._webAudio) {
+          if (self._webAudio) {
             self._audioNode[i].disconnect(0);
           }
 
@@ -976,13 +956,12 @@
      * @param  {Number} timerId The ID of the sound to be cancelled.
      */
     _clearEndTimer: function(timerId) {
-      var self = this,
-        timer = self._onendTimer.indexOf(timerId);
+      var self = this, timer = self._onendTimer.indexOf(timerId);
 
       // make sure the timer gets cleared
       timer = timer >= 0 ? timer : 0;
 
-      if(self._onendTimer[timer]) {
+      if (self._onendTimer[timer]) {
         clearTimeout(self._onendTimer[timer]);
         self._onendTimer.splice(timer, 1);
       }
@@ -993,9 +972,7 @@
      * @return {Object} The new audio node.
      */
     _setupAudioNode: function() {
-      var self = this,
-        node = self._audioNode,
-        index = self._audioNode.length;
+      var self = this, node = self._audioNode, index = self._audioNode.length;
 
       // create gain node
       node[index] = (typeof ctx.createGain === 'undefined') ? ctx.createGainNode() : ctx.createGain();
@@ -1020,14 +997,13 @@
      * @return {Howl}
      */
     on: function(event, fn) {
-      var self = this,
-        events = self['_on' + event];
+      var self = this, events = self['_on' + event];
 
-      if(typeof fn === "function") {
+      if (typeof fn === "function") {
         events.push(fn);
       } else {
-        for(var i = 0; i < events.length; i++) {
-          if(fn) {
+        for (var i = 0; i < events.length; i++) {
+          if (fn) {
             events[i].call(self, fn);
           } else {
             events[i].call(self);
@@ -1045,13 +1021,11 @@
      * @return {Howl}
      */
     off: function(event, fn) {
-      var self = this,
-        events = self['_on' + event],
-        fnString = fn.toString();
+      var self = this, events = self['_on' + event], fnString = fn.toString();
 
       // loop through functions in the event for comparison
-      for(var i = 0; i < events.length; i++) {
-        if(fnString === events[i].toString()) {
+      for (var i = 0; i < events.length; i++) {
+        if (fnString === events[i].toString()) {
           events.splice(i, 1);
           break;
         }
@@ -1069,13 +1043,13 @@
 
       // stop playing any active nodes
       var nodes = self._audioNode;
-      for(var i = 0; i < self._audioNode.length; i++) {
+      for (var i = 0; i < self._audioNode.length; i++) {
         // stop the sound if it is currently playing
-        if(!nodes[i].paused) {
+        if (!nodes[i].paused) {
           self.stop(nodes[i].id);
         }
 
-        if(!self._webAudio) {
+        if (!self._webAudio) {
           // remove the source if using HTML5 Audio
           nodes[i].src = '';
         } else {
@@ -1086,7 +1060,7 @@
 
       // remove the reference in the global Howler object
       var index = Howler._howls.indexOf(self);
-      if(index !== null && index >= 0) {
+      if (index !== null && index >= 0) {
         Howler._howls.splice(index, 1);
       }
 
@@ -1098,7 +1072,7 @@
   };
 
   // only define these functions when using WebAudio
-  if(usingWebAudio) {
+  if (usingWebAudio) {
 
     /**
      * Buffer a sound from URL (or from cache) and decode to audio source (Web Audio API).
@@ -1107,7 +1081,7 @@
      */
     var loadBuffer = function(obj, url) {
       // check if the buffer has already been cached
-      if(url in cache) {
+      if (url in cache) {
         // set the duration from the cache
         obj._duration = cache[url].duration;
 
@@ -1120,22 +1094,18 @@
         xhr.responseType = 'arraybuffer';
         xhr.onload = function() {
           // decode the buffer into an audio source
-          ctx.decodeAudioData(
-            xhr.response,
-            function(buffer) {
-              if(buffer) {
+          ctx.decodeAudioData(xhr.response, function(buffer) {
+              if (buffer) {
                 cache[url] = buffer;
                 loadSound(obj, buffer);
               }
-            },
-            function(err) {
+            }, function(err) {
               obj.on('loaderror');
-            }
-          );
+            });
         };
         xhr.onerror = function() {
           // if there is an error, switch the sound to HTML Audio
-          if(obj._webAudio) {
+          if (obj._webAudio) {
             obj._buffer = true;
             obj._webAudio = false;
             obj._audioNode = [];
@@ -1161,17 +1131,17 @@
       obj._duration = (buffer) ? buffer.duration : obj._duration;
 
       // setup a sprite if none is defined
-      if(Object.getOwnPropertyNames(obj._sprite).length === 0) {
+      if (Object.getOwnPropertyNames(obj._sprite).length === 0) {
         obj._sprite = {_default: [0, obj._duration * 1000]};
       }
 
       // fire the loaded event
-      if(!obj._loaded) {
+      if (!obj._loaded) {
         obj._loaded = true;
         obj.on('load');
       }
 
-      if(obj._autoplay) {
+      if (obj._autoplay) {
         obj.play();
       }
     };
@@ -1191,7 +1161,7 @@
       node.bufferSource.buffer = cache[obj._src];
       node.bufferSource.connect(node.panner);
       node.bufferSource.loop = loop[0];
-      if(loop[0]) {
+      if (loop[0]) {
         node.bufferSource.loopStart = loop[1];
         node.bufferSource.loopEnd = loop[1] + loop[2];
       }
@@ -1203,7 +1173,7 @@
   /**
    * Add support for AMD (Asynchronous Module Definition) libraries such as require.js.
    */
-  if(typeof define === 'function' && define.amd) {
+  if (typeof define === 'function' && define.amd) {
     define(function() {
       return {
         Howler: Howler,
