@@ -92,9 +92,9 @@ Example:
 * **play**: Begins playback of sound. Will continue from previous point if sound has been previously paused.
   * *sprite*: `String` (optional) Plays from the defined sprite key.
   * *callback*: `Function` (optional) Fires when playback begins and returns the `soundId`, which is the unique identifier for this specific playback instance.
-* **pause**: Pauses playback of sound, saving the `pos` of playback.
+* **pause**: Pauses playback of sound, saving the `offset` of playback.
   * *id*: `Number` (optional) The play instance ID.
-* **stop**: Stops playback of sound, resetting `pos` to `0`.
+* **stop**: Stops playback of sound, resetting `offset` to `0`.
   * *id*: `Number` (optional) The play instance ID.
 * **mute**: Mutes the sound, but doesn't pause the playback.
   * *id*: `Number` (optional) The play instance ID.
@@ -117,13 +117,27 @@ Example:
   * *id*: `Number` (optional) The play instance ID.
 * **loop**: Get/set whether to loop the sound.
   * *loop*: `Boolean` (optional) To loop or not to loop, that is the question.
-* **pos**: Get/set the position of playback.
-  * *position*: `Number` (optional) The position to move current playback to.
+* **offset**: Get/set the position of playback.
+  * *offset*: `Number` (optional) The offset to move current playback to.
   * *id*: `Number` (optional) The play instance ID.
-* **pos3d**: Get/set the 3D position of the audio source. The most common usage is to set the `x` position to affect the left/right ear panning. Setting the value higher than `1.0` will begin to decrease the volume of the sound as it moves further away. **This only works with Web Audio API.**
+* **position**: Get/set the 3D position of the audio source. The most common usage is to set the `x` position to affect the left/right ear panning. Setting the value higher than `1.0` will begin to decrease the volume of the sound as it moves further away. **This only works with Web Audio API.**
   * *x*: `Number` The x-position of the sound.
   * *y*: `Number` The y-position of the sound.
   * *z*: `Number` The z-position of the sound.
+  * *id*: `Number` (optional) The play instance ID.
+* **velocity**: Get/set the 3D velocity of the audio source. **This only works with Web Audio API.**
+  * *x*: `Number` The x-velocity of the sound.
+  * *y*: `Number` The y-velocity of the sound.
+  * *z*: `Number` The z-velocity of the sound.
+  * *id*: `Number` (optional) The play instance ID.
+* **refDistance**: Get/set the reference distance of the audio source. **This only works with Web Audio API.**
+  * *refDistance*: `Number` The reference distance of the sound.
+  * *id*: `Number` (optional) The play instance ID.
+* **maxDistance**: Get/set the maximum distance of the audio source. **This only works with Web Audio API.**
+  * *maxDistance*: `Number` The maximum distance of the sound.
+  * *id*: `Number` (optional) The play instance ID.
+* **rolloffFactor**: Get/set the rolloff factor of the audio source. **This only works with Web Audio API.**
+  * *rolloffFactor*: `Number` The rolloff factor of the sound.
   * *id*: `Number` (optional) The play instance ID.
 * **sprite**: Get/set sound sprite definition.
   * *sprite*: `Object` (optional) See above for sound sprite definition.
@@ -147,6 +161,18 @@ The following methods are used to modify all sounds globally, and are called fro
 * **unmute**: Unmutes all sounds and restores them to their previous volume.
 * **volume**: Get/set the global volume for all sounds.
   * *volume*: `Number` (optional) Volume from `0.0` to `1.0`.
+* **position**: Get/set the 3D position of the listener. **This only works with Web Audio API.**
+  * *x*: `Number` The x-position of the listener.
+  * *y*: `Number` The y-position of the listener.
+  * *z*: `Number` The z-position of the listener.
+* **velocity**: Get/set the 3D velocity of the listener. **This only works with Web Audio API.**
+  * *x*: `Number` The x-velocity of the listener.
+  * *y*: `Number` The y-velocity of the listener.
+  * *z*: `Number` The z-velocity of the listener.
+* **dopplerFactor**: Get/set the Doppler factor. **This only works with Web Audio API.**
+  * *factor*: `Number` The Doppler factor.
+* **speedOfSound**: Get/set the speed of sound. **This only works with Web Audio API.**
+  * *speed*: `Number` The speed of sound.
 
 ## License
 

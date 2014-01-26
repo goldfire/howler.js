@@ -123,7 +123,108 @@
           }
         }
       }
-    }
+    },
+
+    /**
+     * Set the 3D position of the listener.
+     * NOTE: This only works with Web Audio API, HTML5 Audio playback
+     * will not be affected.
+     * @param  {Float}  x  The x-position of the listener
+     * @param  {Float}  y  The y-position of the listener
+     * @param  {Float}  z  The z-position of the listener
+     * @return {Howler}
+     */
+    position: function(x, y, z) {
+
+      if (x >= 0 || x < 0) {
+        if (usingWebAudio) {
+          ctx.listener.setPosition(x, y, z);
+        }
+      }
+
+      return Howler;
+    },
+
+    /**
+     * Set the 3D velocity of the listener.
+     * NOTE: This only works with Web Audio API, HTML5 Audio playback
+     * will not be affected.
+     * @param  {Float}  x  The x-velocity of the listener
+     * @param  {Float}  y  The y-velocity of the listener
+     * @param  {Float}  z  The z-velocity of the listener
+     * @return {Howler}
+     */
+    velocity: function(x, y, z) {
+
+      if (x >= 0 || x < 0) {
+        if (usingWebAudio) {
+          ctx.listener.setVelocity(x, y, z);
+        }
+      }
+
+      return Howler;
+    },
+
+    /**
+     * Set the 3D orientation of the listener.
+     * NOTE: This only works with Web Audio API, HTML5 Audio playback
+     * will not be affected.
+     * @param  {Float}  x  The x-orientation of the listener
+     * @param  {Float}  y  The y-orientation of the listener
+     * @param  {Float}  z  The z-orientation of the listener
+     * @param  {Float}  xUp  The x-orientation of up for the listener
+     * @param  {Float}  yUp  The y-orientation of up for the listener
+     * @param  {Float}  zUp  The z-orientation of up for the listener
+     * @return {Howler}
+     */
+    orientation: function(x, y, z, xUp, yUp, zUp) {
+      if (x >= 0 || x < 0) {
+        if (usingWebAudio) {
+          ctx.listener.setOrientation(x, y, z, xUp, yUp, zUp);
+        }
+      }
+      return Howler;
+    },
+
+    /**
+     * Get/set the Doppler factor.
+     * NOTE: This only works with Web Audio API, HTML5 Audio playback
+     * will not be affected.
+     * @param  {Float}  factor  Doppler factor to use
+     * @return {Float}   Returns {Howler} or the current Doppler factor
+     */
+    dopplerFactor: function(factor) {
+
+      if (factor >= 0 || factor < 0) {
+        if (usingWebAudio) {
+          ctx.listener.dopplerFactor = factor;
+        }
+      } else {
+        return ctx.listener.dopplerFactor;
+      }
+
+      return Howler;
+    },
+
+    /**
+     * Get/set the speed of sound.
+     * NOTE: This only works with Web Audio API, HTML5 Audio playback
+     * will not be affected.
+     * @param  {Float}  speed  Speed of sound to use
+     * @return {Float}   Returns {Howler} or the current speed of sound
+     */
+    speedOfSound: function(speed) {
+
+      if (speed >= 0 || speed < 0) {
+        if (usingWebAudio) {
+          ctx.listener.speedOfSound = speed;
+        }
+      } else {
+        return ctx.listener.speedOfSound;
+      }
+
+      return Howler;
+    },
   };
 
   // allow access to the global audio controls
@@ -156,7 +257,11 @@
     self._loaded = false;
     self._sprite = o.sprite || {};
     self._src = o.src || '';
-    self._pos3d = o.pos3d || [0, 0, -0.5];
+    self._position = o.position || [0, 0, -0.5];
+    self._velocity = o.velocity || [0, 0, 0];
+    self._refDistance = o.refDistance || 1;
+    self._maxDistance = o.maxDistance || 10000;
+    self._rolloffFactor = o.rolloffFactor || 1;
     self._volume = o.volume !== undefined ? o.volume : 1;
     self._urls = o.urls || [];
     self._rate = o.rate || 1;
@@ -244,7 +349,7 @@
 
         // setup the new audio node
         newNode.src = url;
-        newNode._pos = 0;
+        newNode._offset = 0;
         newNode.preload = 'auto';
         newNode.volume = (Howler._muted) ? 0 : self._volume * Howler.volume();
        
@@ -340,8 +445,8 @@
         node._sprite = sprite;
 
         // determine where to start playing from
-        var pos = (node._pos > 0) ? node._pos : self._sprite[sprite][0] / 1000,
-          duration = self._sprite[sprite][1] / 1000 - node._pos;
+        var offset = (node._offset > 0) ? node._offset : self._sprite[sprite][0] / 1000,
+          duration = self._sprite[sprite][1] / 1000 - node._offset;
 
         // determine if this sound should be looped
         var loop = !!(self._loop || self._sprite[sprite][2]);
@@ -364,7 +469,7 @@
             // set web audio node to paused at end
             if (self._webAudio && !loop) {
               self._nodeById(data.id).paused = true;
-              self._nodeById(data.id)._pos = 0;
+              self._nodeById(data.id)._offset = 0;
             }
 
             // end the track if it is HTML audio and a sprite
@@ -395,14 +500,14 @@
           node.gain.value = self._volume;
 
           if (typeof node.bufferSource.start === 'undefined') {
-            node.bufferSource.noteGrainOn(0, pos, duration);
+            node.bufferSource.noteGrainOn(0, offset, duration);
           } else {
-            node.bufferSource.start(0, pos, duration);
+            node.bufferSource.start(0, offset, duration);
           }
         } else {
           if (node.readyState === 4) {
             node.id = soundId;
-            node.currentTime = pos;
+            node.currentTime = offset;
             node.muted = Howler._muted;
             node.volume = self._volume * Howler.volume();
             setTimeout(function() { node.play(); }, 0);
@@ -460,7 +565,7 @@
 
       var activeNode = (id) ? self._nodeById(id) : self._activeNode();
       if (activeNode) {
-        activeNode._pos = self.pos(null, id);
+        activeNode._offset = self.offset(null, id);
 
         if (self._webAudio) {
           // make sure the sound has been created
@@ -507,7 +612,7 @@
 
       var activeNode = (id) ? self._nodeById(id) : self._activeNode();
       if (activeNode) {
-        activeNode._pos = 0;
+        activeNode._offset = 0;
 
         if (self._webAudio) {
           // make sure the sound has been created
@@ -666,54 +771,54 @@
     },
 
     /**
-     * Get/set the position of playback.
-     * @param  {Float}  pos The position to move current playback to.
+     * Get/set the offset of playback.
+     * @param  {Float}  offset The offset to move current playback to.
      * @param  {String} id  (optional) The play instance ID.
      * @return {Howl/Float}      Returns self or current playback position.
      */
-    pos: function(pos, id) {
+    offset: function(offset, id) {
       var self = this;
 
       // if the sound hasn't been loaded, add it to the event queue
       if (!self._loaded) {
         self.on('load', function() {
-          self.pos(pos);
+          self.offset(offset);
         });
 
-        return typeof pos === 'number' ? self : self._pos || 0;
+        return typeof offset === 'number' ? self : self._offset || 0;
       }
 
-      // make sure we are dealing with a number for pos
-      pos = parseFloat(pos);
+      // make sure we are dealing with a number for offset
+      offset = parseFloat(offset);
 
       var activeNode = (id) ? self._nodeById(id) : self._activeNode();
       if (activeNode) {
         if (self._webAudio) {
-          if (pos >= 0) {
+          if (offset >= 0) {
             self.pause(id);
-            activeNode._pos = pos;
+            activeNode._offset = offset;
             self.play(activeNode._sprite, id);
 
             return self;
           } else {
-            return activeNode._pos + (ctx.currentTime - self._playStart);
+            return activeNode._offset + (ctx.currentTime - self._playStart);
           }
         } else {
-          if (pos >= 0) {
-            activeNode.currentTime = pos;
+          if (offset >= 0) {
+            activeNode.currentTime = offset;
 
             return self;
           } else {
             return activeNode.currentTime;
           }
         }
-      } else if (pos >= 0) {
+      } else if (offset >= 0) {
         return self;
       } else {
-        // find the first inactive node to return the pos for
+        // find the first inactive node to return the offset for
         for (var i=0; i<self._audioNode.length; i++) {
           if (self._audioNode[i].paused && self._audioNode[i].readyState === 4) {
-            return (self._webAudio) ? self._audioNode[i]._pos : self._audioNode[i].currentTime;
+            return (self._webAudio) ? self._audioNode[i]._offset : self._audioNode[i].currentTime;
           }
         }
       }
@@ -732,7 +837,7 @@
      * @param  {String} id (optional) The play instance ID.
      * @return {Howl/Array}   Returns self or the current 3D position: [x, y, z]
      */
-    pos3d: function(x, y, z, id) {
+    position: function(x, y, z, id) {
       var self = this;
 
       // set a default for the optional 'y' & 'z'
@@ -742,7 +847,7 @@
       // if the sound hasn't been loaded, add it to the event queue
       if (!self._loaded) {
         self.on('play', function() {
-          self.pos3d(x, y, z, id);
+          self.position(x, y, z, id);
         });
 
         return self;
@@ -752,12 +857,154 @@
         if (self._webAudio) {
           var activeNode = (id) ? self._nodeById(id) : self._activeNode();
           if (activeNode) {
-            self._pos3d = [x, y, z];
+            self._position = [x, y, z];
             activeNode.panner.setPosition(x, y, z);
           }
         }
       } else {
-        return self._pos3d;
+        return self._position;
+      }
+
+      return self;
+    },
+
+    /**
+     * Get/set the 3D velocity of the audio source.
+     * NOTE: This only works with Web Audio API, HTML5 Audio playback
+     * will not be affected.
+     * @param  {Float}  x  The x-velocity of the playback
+     * @param  {Float}  y  The y-velocity of the playback
+     * @param  {Float}  z  The z-velocity of the playback
+     * @param  {String} id (optional) The play instance ID.
+     * @return {Howl/Array}   Returns self or the current 3D velocity: [x, y, z]
+     */
+    velocity: function(x, y, z, id) {
+      var self = this;
+
+      // if the sound hasn't been loaded, add it to the event queue
+      if (!self._loaded) {
+        self.on('play', function() {
+          self.velocity(x, y, z, id);
+        });
+
+        return self;
+      }
+
+      if (x >= 0 || x < 0) {
+        if (self._webAudio) {
+          var activeNode = (id) ? self._nodeById(id) : self._activeNode();
+          if (activeNode) {
+            self._velocity = [x, y, z];
+            activeNode.panner.setVelocity(x, y, z);
+          }
+        }
+      } else {
+        return self._velocity;
+      }
+
+      return self;
+    },
+
+    /**
+     * Get/set the reference distance of the audio source.
+     * NOTE: This only works with Web Audio API, HTML5 Audio playback
+     * will not be affected.
+     * @param  {Float}  refDistance  The reference distance of the playback
+     * @param  {String} id (optional) The play instance ID.
+     * @return {Float}   Returns self or the current reference distance
+     */
+    refDistance: function(refDistance, id) {
+      var self = this;
+
+      // if the sound hasn't been loaded, add it to the event queue
+      if (!self._loaded) {
+        self.on('play', function() {
+          self.refDistance(refDistance, id);
+        });
+
+        return self;
+      }
+
+      if (refDistance >= 0 || refDistance < 0) {
+        if (self._webAudio) {
+          var activeNode = (id) ? self._nodeById(id) : self._activeNode();
+          if (activeNode) {
+            self._refDistance = refDistance;
+            activeNode.panner.refDistance = refDistance;
+          }
+        }
+      } else {
+        return self._refDistance;
+      }
+
+      return self;
+    },
+
+    /**
+     * Get/set the maximum distance of the audio source.
+     * NOTE: This only works with Web Audio API, HTML5 Audio playback
+     * will not be affected.
+     * @param  {Float}  maxDistance  The maximum distance of the playback
+     * @param  {String} id (optional) The play instance ID.
+     * @return {Float}   Returns self or the current maximum distance
+     */
+    maxDistance: function(maxDistance, id) {
+      var self = this;
+
+      // if the sound hasn't been loaded, add it to the event queue
+      if (!self._loaded) {
+        self.on('play', function() {
+          self.maxDistance(maxDistance, id);
+        });
+
+        return self;
+      }
+
+      if (maxDistance >= 0 || maxDistance < 0) {
+        if (self._webAudio) {
+          var activeNode = (id) ? self._nodeById(id) : self._activeNode();
+          if (activeNode) {
+            self._maxDistance = maxDistance;
+            activeNode.panner.maxDistance = maxDistance;
+          }
+        }
+      } else {
+        return self._maxDistance;
+      }
+
+      return self;
+    },
+
+    /**
+     * Get/set the rolloff factor of the audio source.
+     * NOTE: This only works with Web Audio API, HTML5 Audio playback
+     * will not be affected.
+     * @param  {Float}  rolloffFactor  The rolloff factor of the playback
+     * @param  {String} id (optional) The play instance ID.
+     * @return {Float}   Returns self or the current rolloff factor
+     */
+    rolloffFactor: function(rolloffFactor, id) {
+      var self = this;
+
+      // if the sound hasn't been loaded, add it to the event queue
+      if (!self._loaded) {
+        self.on('play', function() {
+          self.rolloffFactor(rolloffFactor, id);
+        });
+
+        return self;
+      }
+
+      if (rolloffFactor >= 0 || rolloffFactor < 0) {
+        if (self._webAudio) {
+          var activeNode = (id) ? self._nodeById(id) : self._activeNode();
+          if (activeNode) {
+            self._rolloffFactor = rolloffFactor;
+            activeNode.panner.rolloffFactor = rolloffFactor;
+          }
+        }
+      } else {
+        return self._rolloffFactor;
       }
 
       return self;
@@ -982,13 +1229,17 @@
       node[index] = (typeof ctx.createGain === 'undefined') ? ctx.createGainNode() : ctx.createGain();
       node[index].gain.value = self._volume;
       node[index].paused = true;
-      node[index]._pos = 0;
+      node[index]._offset = 0;
       node[index].readyState = 4;
       node[index].connect(masterGain);
 
       // create the panner
       node[index].panner = ctx.createPanner();
-      node[index].panner.setPosition(self._pos3d[0], self._pos3d[1], self._pos3d[2]);
+      node[index].panner.setPosition(self._position[0], self._position[1], self._position[2]);
+      node[index].panner.setVelocity(self._velocity[0], self._velocity[1], self._velocity[2]);
+      node[index].panner.refDistance = self._refDistance;
+      node[index].panner.maxDistance = self._maxDistance;
+      node[index].panner.rolloffFactor = self._rolloffFactor;
       node[index].panner.connect(node[index]);
 
       return node[index];
