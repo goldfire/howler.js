@@ -469,7 +469,7 @@
             // set web audio node to paused at end
             if (self._webAudio && !loop) {
               self._nodeById(data.id).paused = true;
-              self._nodeById(data.id)._pos = 0;
+              self._nodeById(data.id)._offset = 0;
             }
 
             // end the track if it is HTML audio and a sprite
