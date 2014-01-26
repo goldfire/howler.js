@@ -1,8 +1,8 @@
 /*!
- *  howler.js v1.1.14
+ *  howler.js v1.1.16
  *  howlerjs.com
  *
- *  (c) 2013, James Simpson of GoldFire Studios
+ *  (c) 2013-2014, James Simpson of GoldFire Studios
  *  goldfirestudios.com
  *
  *  MIT License
@@ -58,7 +58,7 @@
       // make sure volume is a number
       vol = parseFloat(vol);
 
-      if (vol && vol >= 0 && vol <= 1) {
+      if (vol >= 0 && vol <= 1) {
         self._volume = vol;
 
         if (usingWebAudio) {
@@ -262,7 +262,7 @@
     self._refDistance = o.refDistance || 1;
     self._maxDistance = o.maxDistance || 10000;
     self._rolloffFactor = o.rolloffFactor || 1;
-    self._volume = o.volume || 1;
+    self._volume = o.volume !== undefined ? o.volume : 1;
     self._urls = o.urls || [];
     self._rate = o.rate || 1;
 
@@ -469,6 +469,7 @@
             // set web audio node to paused at end
             if (self._webAudio && !loop) {
               self._nodeById(data.id).paused = true;
+              self._nodeById(data.id)._pos = 0;
             }
 
             // end the track if it is HTML audio and a sprite
@@ -794,8 +795,9 @@
       if (activeNode) {
         if (self._webAudio) {
           if (offset >= 0) {
+            self.pause(id);
             activeNode._offset = offset;
-            self.pause(id).play(activeNode._sprite, id);
+            self.play(activeNode._sprite, id);
 
             return self;
           } else {
@@ -1300,7 +1302,10 @@
       // stop playing any active nodes
       var nodes = self._audioNode;
       for (var i=0; i<self._audioNode.length; i++) {
-        self.stop(nodes[i].id);
+        // stop the sound if it is currently playing
+        if (!nodes[i].paused) {
+          self.stop(nodes[i].id);
+        }
 
         if (!self._webAudio) {
            // remove the source if using HTML5 Audio
@@ -1313,7 +1318,7 @@
 
       // remove the reference in the global Howler object
       var index = Howler._howls.indexOf(self);
-      if (index) {
+      if (index !== null && index >= 0) {
         Howler._howls.splice(index, 1);
       }
 
@@ -1347,12 +1352,18 @@
         xhr.responseType = 'arraybuffer';
         xhr.onload = function() {
           // decode the buffer into an audio source
-          ctx.decodeAudioData(xhr.response, function(buffer) {
-            if (buffer) {
-              cache[url] = buffer;
-              loadSound(obj, buffer);
+          ctx.decodeAudioData(
+            xhr.response,
+            function(buffer) {
+              if (buffer) {
+                cache[url] = buffer;
+                loadSound(obj, buffer);
+              }
+            },
+            function(err) {
+              obj.on('loaderror');
             }
-          });
+          );
         };
         xhr.onerror = function() {
           // if there is an error, switch the sound to HTML Audio

@@ -69,7 +69,7 @@ sound.play('laser');
 ```
 
 ### Properties
-* **autoplay**: `Boolean` *(`true` by default)* Set to `true` to automatically start playback when sound is loaded.
+* **autoplay**: `Boolean` *(`false` by default)* Set to `true` to automatically start playback when sound is loaded.
 * **buffer**: `Boolean` *(`false` by default)* Set to `true` to force HTML5 Audio. This should be used for large audio files so that you don't have to wait for the full file to be downloaded and decoded before playing.
 * **format**: `String` *(`null` by default)* howler.js automatically detects your file format from the URL, but you may also specify a format in situations where URL extraction won't work.
 * **loop**: `Boolean` *(`false` by default)* Set to `true` to automatically loop the sound forever.
@@ -81,7 +81,7 @@ Example:
 }
 ```
 * **volume**: `Number` *(`1.0` by default)* The volume of the specific track, from `0.0` to `1.0`.
-* **urls**: `Array` *(`[]` by default)* The source URLs to the track(s) to be loaded for the sound. These should be in order of preference, howler.js will automatically load the first one that is compatible with the current browser.
+* **urls**: `Array` *(`[]` by default)* The source URLs to the track(s) to be loaded for the sound. These should be in order of preference, howler.js will automatically load the first one that is compatible with the current browser. If your files have no extensions, you will need to explicitly specify the format using the `format` property.
 * **onend**: `Function` *(`function(){}` by default)* Fire when the sound finishes playing (if it is looping, it'll fire at the end of each loop).
 * **onload**: `Function` *(`function(){}` by default)* Fires when the sound is loaded.
 * **onloaderror**: `Function` *(`function(){}` by default)* Fires when the sound is unable to load.
