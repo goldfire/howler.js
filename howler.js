@@ -139,6 +139,7 @@
       ogg: !!audioTest.canPlayType('audio/ogg; codecs="vorbis"').replace(/^no$/, ''),
       wav: !!audioTest.canPlayType('audio/wav; codecs="1"').replace(/^no$/, ''),
       m4a: !!(audioTest.canPlayType('audio/x-m4a;') || audioTest.canPlayType('audio/aac;')).replace(/^no$/, ''),
+      mp4: !!(audioTest.canPlayType('audio/x-mp4;') || audioTest.canPlayType('audio/aac;')).replace(/^no$/, ''),
       weba: !!audioTest.canPlayType('audio/webm; codecs="vorbis"').replace(/^no$/, '')
     };
   }
