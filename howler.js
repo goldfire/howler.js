@@ -691,24 +691,14 @@
 
       var activeNode = (id) ? self._nodeById(id) : self._activeNode();
       if (activeNode) {
-        if (self._webAudio) {
-          if (pos >= 0) {
-            self.pause(id);
-            activeNode._pos = pos;
-            self.play(activeNode._sprite, id);
+        if (pos >= 0) {
+          self.pause(id);
+          activeNode._pos = pos;
+          self.play(activeNode._sprite, id);
 
-            return self;
-          } else {
-            return activeNode._pos + (ctx.currentTime - self._playStart);
-          }
+          return self;
         } else {
-          if (pos >= 0) {
-            activeNode.currentTime = pos;
-
-            return self;
-          } else {
-            return activeNode.currentTime;
-          }
+          return self._webAudio ? activeNode._pos + (ctx.currentTime - self._playStart) : activeNode.currentTime;
         }
       } else if (pos >= 0) {
         return self;
