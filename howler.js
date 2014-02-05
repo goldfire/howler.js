@@ -44,6 +44,7 @@
     this._volume = 1;
     this._muted = false;
     this.usingWebAudio = usingWebAudio;
+    this.noAudio = noAudio;
     this._howls = [];
   };
   HowlerGlobal.prototype = {
