@@ -12,6 +12,21 @@
   // setup
   var cache = {};
 
+  /*
+    Referenced from http://dev.w3.org/html5/spec-author-view/spec.html#mediaerror
+
+    1 = MEDIA_ERR_ABORTED - fetching process aborted by user
+    2 = MEDIA_ERR_NETWORK - error occurred when downloading
+    3 = MEDIA_ERR_DECODE - error occurred when decoding
+    4 = MEDIA_ERR_SRC_NOT_SUPPORTED - audio/video not supported
+  */
+  var HTMLAudioErrorType = {
+    MEDIA_ERR_ABORTED: 1,
+    MEDIA_ERR_NETWORK: 2,
+    MEDIA_ERR_DECODE: 3,
+    MEDIA_ERR_SRC_NOT_SUPPORTED: 4
+  };
+
   // setup the audio context
   var ctx = null,
     usingWebAudio = true,
@@ -205,7 +220,7 @@
       }
 
       // loop through source URLs and pick the first one that is compatible
-      for (var i=0; i<self._urls.length; i++) {        
+      for (var i=0; i<self._urls.length; i++) {
         var ext, urlItem;
 
         if (self._format) {
@@ -242,6 +257,18 @@
         loadBuffer(self, url);
       } else {
         var newNode = new Audio();
+
+        newNode.addEventListener('error', function () {
+          if(newNode.error.code === HTMLAudioErrorType.MEDIA_ERR_SRC_NOT_SUPPORTED) {
+            self.on('loaderror');
+            HowlerGlobal.noAudio = true;
+          }
+          else
+          {
+            self.on('error', {type: newNode.error.code});
+          }
+        }, false);
+
         self._audioNode.push(newNode);
 
         // setup the new audio node
@@ -249,7 +276,7 @@
         newNode._pos = 0;
         newNode.preload = 'auto';
         newNode.volume = (Howler._muted) ? 0 : self._volume * Howler.volume();
-       
+
         // add this sound to the cache
         cache[url] = self;
 
@@ -1193,9 +1220,9 @@
     exports.Howler = Howler;
     exports.Howl = Howl;
   }
-  
+
   // define globally in case AMD is not available or available but not used
   window.Howler = Howler;
   window.Howl = Howl;
-  
+
 })();
