@@ -12,6 +12,21 @@
   // setup
   var cache = {};
 
+  /*
+    Referenced from http://dev.w3.org/html5/spec-author-view/spec.html#mediaerror
+
+    1 = MEDIA_ERR_ABORTED - fetching process aborted by user
+    2 = MEDIA_ERR_NETWORK - error occurred when downloading
+    3 = MEDIA_ERR_DECODE - error occurred when decoding
+    4 = MEDIA_ERR_SRC_NOT_SUPPORTED - audio/video not supported
+  */
+  var HTMLAudioErrorType = {
+    MEDIA_ERR_ABORTED: 1,
+    MEDIA_ERR_NETWORK: 2,
+    MEDIA_ERR_DECODE: 3,
+    MEDIA_ERR_SRC_NOT_SUPPORTED: 4
+  };
+
   // setup the audio context
   var ctx = null,
     usingWebAudio = true,
@@ -242,6 +257,18 @@
         loadBuffer(self, url);
       } else {
         var newNode = new Audio();
+
+        newNode.addEventListener('error', function () {
+          if(newNode.error.code === HTMLAudioErrorType.MEDIA_ERR_SRC_NOT_SUPPORTED) {
+            self.on('loaderror');
+            HowlerGlobal.noAudio = true;
+          }
+          else
+          {
+            self.on('error', {type: self.error});
+          }
+        }, false);
+
         self._audioNode.push(newNode);
 
         // setup the new audio node
