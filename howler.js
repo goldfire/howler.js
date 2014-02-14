@@ -220,7 +220,7 @@
       }
 
       // loop through source URLs and pick the first one that is compatible
-      for (var i=0; i<self._urls.length; i++) {        
+      for (var i=0; i<self._urls.length; i++) {
         var ext, urlItem;
 
         if (self._format) {
@@ -265,7 +265,7 @@
           }
           else
           {
-            self.on('error', {type: self.error});
+            self.on('error', {type: newNode.error.code});
           }
         }, false);
 
@@ -276,7 +276,7 @@
         newNode._pos = 0;
         newNode.preload = 'auto';
         newNode.volume = (Howler._muted) ? 0 : self._volume * Howler.volume();
-       
+
         // add this sound to the cache
         cache[url] = self;
 
@@ -1220,9 +1220,9 @@
     exports.Howler = Howler;
     exports.Howl = Howl;
   }
-  
+
   // define globally in case AMD is not available or available but not used
   window.Howler = Howler;
   window.Howl = Howl;
-  
+
 })();
