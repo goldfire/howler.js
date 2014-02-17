@@ -158,6 +158,7 @@
     self._loaded = false;
     self._sprite = o.sprite || {};
     self._src = o.src || '';
+    self._host = o.host || '';
     self._pos3d = o.pos3d || [0, 0, -0.5];
     self._volume = o.volume !== undefined ? o.volume : 1;
     self._urls = o.urls || [];
@@ -226,7 +227,7 @@
         }
 
         if (codecs[ext]) {
-          url = self._urls[i];
+          url = self._host + self._urls[i];
           break;
         }
       }
