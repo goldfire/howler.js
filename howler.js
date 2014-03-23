@@ -213,7 +213,7 @@
       }
 
       // loop through source URLs and pick the first one that is compatible
-      for (var i=0; i<self._urls.length; i++) {        
+      for (var i=0; i<self._urls.length; i++) {
         var ext, urlItem;
 
         if (self._format) {
@@ -250,6 +250,16 @@
         loadBuffer(self, url);
       } else {
         var newNode = new Audio();
+
+        // listen for errors with HTML5 audio (http://dev.w3.org/html5/spec-author-view/spec.html#mediaerror)
+        newNode.addEventListener('error', function () {
+          if (newNode.error && newNode.error.code === 4) {
+            HowlerGlobal.noAudio = true;
+          }
+
+          self.on('loaderror', {type: newNode.error.code});
+        }, false);
+
         self._audioNode.push(newNode);
 
         // setup the new audio node
@@ -257,7 +267,7 @@
         newNode._pos = 0;
         newNode.preload = 'auto';
         newNode.volume = (Howler._muted) ? 0 : self._volume * Howler.volume();
-       
+
         // add this sound to the cache
         cache[url] = self;
 
@@ -1005,7 +1015,7 @@
       var self = this,
         events = self['_on' + event];
 
-      if (typeof fn === "function") {
+      if (typeof fn === 'function') {
         events.push(fn);
       } else {
         for (var i=0; i<events.length; i++) {
@@ -1201,9 +1211,9 @@
     exports.Howler = Howler;
     exports.Howl = Howl;
   }
-  
+
   // define globally in case AMD is not available or available but not used
   window.Howler = Howler;
   window.Howl = Howl;
-  
+
 })();
