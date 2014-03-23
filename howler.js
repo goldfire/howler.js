@@ -406,7 +406,7 @@
           if (node.readyState === 4) {
             node.id = soundId;
             node.currentTime = pos;
-            node.muted = Howler._muted;
+            node.muted = Howler._muted || node.muted;
             node.volume = self._volume * Howler.volume();
             setTimeout(function() { node.play(); }, 0);
           } else {
@@ -556,7 +556,7 @@
         if (self._webAudio) {
           activeNode.gain.value = 0;
         } else {
-          activeNode.volume = 0;
+          activeNode.muted = true;
         }
       }
 
@@ -585,7 +585,7 @@
         if (self._webAudio) {
           activeNode.gain.value = self._volume;
         } else {
-          activeNode.volume = self._volume;
+          activeNode.muted = false;
         }
       }
 
