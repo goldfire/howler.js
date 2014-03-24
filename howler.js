@@ -1,5 +1,5 @@
 /*!
- *  howler.js v1.1.17
+ *  howler.js v1.1.18
  *  howlerjs.com
  *
  *  (c) 2013-2014, James Simpson of GoldFire Studios
@@ -16,20 +16,28 @@
   var ctx = null,
     usingWebAudio = true,
     noAudio = false;
-  if (typeof AudioContext !== 'undefined') {
-    ctx = new AudioContext();
-  } else if (typeof webkitAudioContext !== 'undefined') {
-    ctx = new webkitAudioContext();
-  } else if (typeof Audio !== 'undefined') {
+  try {
+    if (typeof AudioContext !== 'undefined') {
+      ctx = new AudioContext();
+    } else if (typeof webkitAudioContext !== 'undefined') {
+      ctx = new webkitAudioContext();
+    } else {
+      usingWebAudio = false;
+    }
+  } catch(e) {
     usingWebAudio = false;
-    try {
-      new Audio();
-    } catch(e) {
+  }
+
+  if (!usingWebAudio) {
+    if (typeof Audio !== 'undefined') {
+      try {
+        new Audio();
+      } catch(e) {
+        noAudio = true;
+      }
+    } else {
       noAudio = true;
     }
-  } else {
-    usingWebAudio = false;
-    noAudio = true;
   }
 
   // create a master gain node
@@ -205,7 +213,7 @@
       }
 
       // loop through source URLs and pick the first one that is compatible
-      for (var i=0; i<self._urls.length; i++) {        
+      for (var i=0; i<self._urls.length; i++) {
         var ext, urlItem;
 
         if (self._format) {
@@ -242,6 +250,16 @@
         loadBuffer(self, url);
       } else {
         var newNode = new Audio();
+
+        // listen for errors with HTML5 audio (http://dev.w3.org/html5/spec-author-view/spec.html#mediaerror)
+        newNode.addEventListener('error', function () {
+          if (newNode.error && newNode.error.code === 4) {
+            HowlerGlobal.noAudio = true;
+          }
+
+          self.on('loaderror', {type: newNode.error.code});
+        }, false);
+
         self._audioNode.push(newNode);
 
         // setup the new audio node
@@ -249,7 +267,7 @@
         newNode._pos = 0;
         newNode.preload = 'auto';
         newNode.volume = (Howler._muted) ? 0 : self._volume * Howler.volume();
-       
+
         // add this sound to the cache
         cache[url] = self;
 
@@ -406,7 +424,7 @@
           if (node.readyState === 4) {
             node.id = soundId;
             node.currentTime = pos;
-            node.muted = Howler._muted;
+            node.muted = Howler._muted || node.muted;
             node.volume = self._volume * Howler.volume();
             setTimeout(function() { node.play(); }, 0);
           } else {
@@ -556,7 +574,7 @@
         if (self._webAudio) {
           activeNode.gain.value = 0;
         } else {
-          activeNode.volume = 0;
+          activeNode.muted = true;
         }
       }
 
@@ -585,7 +603,7 @@
         if (self._webAudio) {
           activeNode.gain.value = self._volume;
         } else {
-          activeNode.volume = self._volume;
+          activeNode.muted = false;
         }
       }
 
@@ -997,7 +1015,7 @@
       var self = this,
         events = self['_on' + event];
 
-      if (typeof fn === "function") {
+      if (typeof fn === 'function') {
         events.push(fn);
       } else {
         for (var i=0; i<events.length; i++) {
@@ -1193,9 +1211,9 @@
     exports.Howler = Howler;
     exports.Howl = Howl;
   }
-  
+
   // define globally in case AMD is not available or available but not used
   window.Howler = Howler;
   window.Howl = Howl;
-  
+
 })();

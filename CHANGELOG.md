@@ -1,3 +1,8 @@
+## 1.1.18 (March 23, 2014)
+- `FIXED`: Muting a looping sound now correctly keeps the sound muted when using HTML5 Audio.
+- `FIXED`: Wrap AudioContext creation in try/catch to gracefully handle browser bugs: [Chromium issue](https://code.google.com/p/chromium/issues/detail?id=308784) (thanks Chris Buckley).
+- `FIXED`: Listen for HTML5 Audio errors and fire `loaderror` if any are encountered (thanks digitaltonic).
+
 ## 1.1.17 (February 5, 2014)
 - `FIXED`: Fix another bug in Chrome that would throw an error when pausing/stopping when a source is already stopped.
 - `ADDED`: CommonJS support for things like Browserify (thanks Michal Kuklis).
