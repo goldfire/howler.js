@@ -257,7 +257,7 @@
             HowlerGlobal.noAudio = true;
           }
 
-          self.on('loaderror', {type: newNode.error.code});
+          self.on('loaderror', {type: newNode.error ? newNode.error.code : 0});
         }, false);
 
         self._audioNode.push(newNode);
@@ -421,7 +421,8 @@
             node.bufferSource.start(0, pos, duration);
           }
         } else {
-          if (node.readyState === 4) {
+          if (node.readyState === 4 || navigator.isCocoonJS) {
+            node.readyState = 4;
             node.id = soundId;
             node.currentTime = pos;
             node.muted = Howler._muted || node.muted;
@@ -924,7 +925,7 @@
       } else {
         self.load();
         newNode = self._audioNode[self._audioNode.length - 1];
-        newNode.addEventListener('loadedmetadata', function() {
+        newNode.addEventListener(navigator.isCocoonJS ? 'canplaythrough' : 'loadedmetadata', function() {
           callback(newNode);
         });
       }
