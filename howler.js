@@ -368,7 +368,7 @@
         var loop = !!(self._loop || self._sprite[sprite][2]);
 
         // set timer to fire the 'onend' event
-        var soundId = (typeof callback === 'string') ? callback : Math.round(Date.now() * Math.random()) + '',
+        var soundId = (typeof sprite === 'string' && sprite != "_default") ? sprite : Math.round(Date.now() * Math.random()) + '',
           timerId;
         (function() {
           var data = {
