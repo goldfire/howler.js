@@ -890,12 +890,12 @@
 			else
 			{
 			  // find the first playing node
-			  for (var i=0; i<self._audioNode.length; i++) {
+			  
 				if (!self._audioNode[i].paused) {
 				  node = self._audioNode[i];
 				  break;
 				}
-			  }
+			  
 			}
 		}
 		
