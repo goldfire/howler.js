@@ -251,16 +251,16 @@
       } else {
         var newNode = new Audio();
 
-        // listen for errors with HTML5 audio (http://dev.w3.org/html5/spec-author-view/spec.html#mediaerror)
-        newNode.addEventListener('error', function () {
-          if (newNode.error && newNode.error.code === 4) {
-            HowlerGlobal.noAudio = true;
-          }
+		// listen for errors with HTML5 audio (http://dev.w3.org/html5/spec-author-view/spec.html#mediaerror)
+		newNode.addEventListener('error', function () {
+		  if (newNode.error && newNode.error.code === 4) {
+			HowlerGlobal.noAudio = true;
+			
+			self.on('loaderror', {type: newNode.error.code});
+		  }		  
+		}, false);
 
-          self.on('loaderror', {type: newNode.error.code});
-        }, false);
-
-        self._audioNode.push(newNode);
+		self._audioNode.push(newNode);
 
         // setup the new audio node
         newNode.src = url;
@@ -421,7 +421,8 @@
             node.bufferSource.start(0, pos, duration);
           }
         } else {
-          if (node.readyState === 4) {
+			
+          if (node.readyState === 4 || navigator.isCocoonJS) { //CocoonJS seems to not update the readyState
             node.id = soundId;
             node.currentTime = pos;
             node.muted = Howler._muted || node.muted;
@@ -877,13 +878,28 @@
       var self = this,
         node = null;
 
-      // find the first playing node
-      for (var i=0; i<self._audioNode.length; i++) {
-        if (!self._audioNode[i].paused) {
-          node = self._audioNode[i];
-          break;
-        }
-      }
+		
+		if (navigator.isCocoonJS) 
+		{
+			//a workaround for cocoonJS failing to get active node
+			if (!self._audioNode[i].paused && self._audioNode[i].currentTime != 0) {
+			  node = self._audioNode[i];
+			  break;
+			}
+		}
+		else
+		{
+		  // find the first playing node
+		  for (var i=0; i<self._audioNode.length; i++) {
+			if (!self._audioNode[i].paused) {
+			  node = self._audioNode[i];
+			  break;
+			}
+		  }
+		}
+
+		
+
 
       // remove excess inactive nodes
       self._drainPool();
