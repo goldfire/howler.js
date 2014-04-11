@@ -999,6 +999,7 @@
 
       // create the panner
       node[index].panner = ctx.createPanner();
+	  node[index].panner.panningModel = "equalpower";
       node[index].panner.setPosition(self._pos3d[0], self._pos3d[1], self._pos3d[2]);
       node[index].panner.connect(node[index]);
 
