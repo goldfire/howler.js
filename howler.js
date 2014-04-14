@@ -903,6 +903,10 @@
       // find first inactive node to recycle
       for (var i=0; i<self._audioNode.length; i++) {
         if (self._audioNode[i].paused && self._audioNode[i].readyState === 4) {
+          // before using this node, reset its pos
+          self._audioNode[i]._pos = 0;
+
+          // send the node back for use by the new play instance
           callback(self._audioNode[i]);
           node = true;
           break;
