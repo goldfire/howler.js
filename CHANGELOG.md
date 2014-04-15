@@ -1,3 +1,8 @@
+## 1.1.19 (April 14, 2014)
+- `ADDED`: Added CocoonJS support (thanks Olivier Biot).
+- `FIXED`: Fixed several issues with pausing sprite instances by overhauling how end timers are tracked and cleared internally.
+- `FIXED`: Prevent error when using a server-side require where window is absent (thanks AlexMost).
+
 ## 1.1.18 (March 23, 2014)
 - `FIXED`: Muting a looping sound now correctly keeps the sound muted when using HTML5 Audio.
 - `FIXED`: Wrap AudioContext creation in try/catch to gracefully handle browser bugs: [Chromium issue](https://code.google.com/p/chromium/issues/detail?id=308784) (thanks Chris Buckley).
