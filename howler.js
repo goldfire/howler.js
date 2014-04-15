@@ -418,7 +418,7 @@
             node.bufferSource.start(0, pos, duration);
           }
         } else {
-          if (node.readyState === 4 || typeof node.readyState === 'undefined' && navigator.isCocoonJS) {
+          if (node.readyState === 4 || !node.readyState && navigator.isCocoonJS) {
             node.readyState = 4;
             node.id = soundId;
             node.currentTime = pos;
