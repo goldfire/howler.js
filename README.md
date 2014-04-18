@@ -83,6 +83,7 @@ Example:
 * **volume**: `Number` *(`1.0` by default)* The volume of the specific track, from `0.0` to `1.0`.
 * **urls**: `Array` *(`[]` by default)* The source URLs to the track(s) to be loaded for the sound. These should be in order of preference, howler.js will automatically load the first one that is compatible with the current browser. If your files have no extensions, you will need to explicitly specify the format using the `format` property.
 * **rate**: `Number` *(`1.0` by default)* The rate of playback (Web Audio API only). 1.0 is normal speed, while negative values play in reverse.
+* **model**: `String` *(`equalpower` by default)* Sets the `panningModel` used by Web Audio API. Usually this should not be touched as howler handles it automatically, but it can be overridden with `equalpower` or `HRTF`.
 * **onend**: `Function` *(`function(){}` by default)* Fire when the sound finishes playing (if it is looping, it'll fire at the end of each loop).
 * **onload**: `Function` *(`function(){}` by default)* Fires when the sound is loaded.
 * **onloaderror**: `Function` *(`function(){}` by default)* Fires when the sound is unable to load.

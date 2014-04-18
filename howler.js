@@ -171,6 +171,11 @@
     self._urls = o.urls || [];
     self._rate = o.rate || 1;
 
+    // allow forcing of a specific panningModel ('equalpower' or 'HRTF'),
+    // if none is specified, defaults to 'equalpower' and switches to 'HRTF'
+    // if 3d sound is used
+    self._model = o.model || null;
+
     // setup event functions
     self._onload = [o.onload || function() {}];
     self._onloaderror = [o.onloaderror || function() {}];
@@ -761,6 +766,7 @@
           if (activeNode) {
             self._pos3d = [x, y, z];
             activeNode.panner.setPosition(x, y, z);
+            activeNode.panner.panningModel = self._model || 'HRTF';
           }
         }
       } else {
@@ -1002,6 +1008,7 @@
 
       // create the panner
       node[index].panner = ctx.createPanner();
+      node[index].panner.panningModel = self._model || 'equalpower';
       node[index].panner.setPosition(self._pos3d[0], self._pos3d[1], self._pos3d[2]);
       node[index].panner.connect(node[index]);
 
