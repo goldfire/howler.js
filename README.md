@@ -120,7 +120,7 @@ Example:
 * **loop**: Get/set whether to loop the sound.
   * *loop*: `Boolean` (optional) To loop or not to loop, that is the question.
 * **pos**: Get/set the position of playback.
-  * *position*: `Number` (optional) The position to move current playback to.
+  * *position*: `Number` (optional) The position to move current playback to (in seconds).
   * *id*: `Number` (optional) The play instance ID.
 * **pos3d**: Get/set the 3D position of the audio source. The most common usage is to set the `x` position to affect the left/right ear panning. Setting the value higher than `1.0` will begin to decrease the volume of the sound as it moves further away. **This only works with Web Audio API.**
   * *x*: `Number` The x-position of the sound.
