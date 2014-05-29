@@ -1,3 +1,9 @@
+## 1.1.21 (May 28, 2014)
+- `ADDED`: Support for npm and bower (thanks Morantron).
+- `ADDED`: Support for audio/aac, audio/m4a and audio/mp4 mime types (thanks Federico Brigante).
+- `FIXED`: Fixed calculation of duration after pausing a sprite that was sometimes causing unexpected behavior.
+- `FIXED`: Clear the event listener when creating a new HTML5 Audio node.
+
 ## 1.1.20 (April 18, 2014)
 - `ADDED`: When using Web Audio API, the panningModel now defaults to 'equalpower' to give higher quality sound. It then automatically switches to 'HRTF' when using 3D sound. This can also be overridden with the new `model` property.
 - `FIXED`: Fixed another bug causing issues in CocoonJS (thanks Olivier Biot).

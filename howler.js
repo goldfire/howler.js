@@ -1,5 +1,5 @@
 /*!
- *  howler.js v1.1.20
+ *  howler.js v1.1.21
  *  howlerjs.com
  *
  *  (c) 2013-2014, James Simpson of GoldFire Studios
