@@ -82,6 +82,8 @@ Example:
 ```
 * **volume**: `Number` *(`1.0` by default)* The volume of the specific track, from `0.0` to `1.0`.
 * **urls**: `Array` *(`[]` by default)* The source URLs to the track(s) to be loaded for the sound. These should be in order of preference, howler.js will automatically load the first one that is compatible with the current browser. If your files have no extensions, you will need to explicitly specify the format using the `format` property.
+* **rate**: `Number` *(`1.0` by default)* The rate of playback (Web Audio API only). 1.0 is normal speed, while negative values play in reverse.
+* **model**: `String` *(`equalpower` by default)* Sets the `panningModel` used by Web Audio API. Usually this should not be touched as howler handles it automatically, but it can be overridden with `equalpower` or `HRTF`.
 * **onend**: `Function` *(`function(){}` by default)* Fire when the sound finishes playing (if it is looping, it'll fire at the end of each loop).
 * **onload**: `Function` *(`function(){}` by default)* Fires when the sound is loaded.
 * **onloaderror**: `Function` *(`function(){}` by default)* Fires when the sound is unable to load.
@@ -118,7 +120,7 @@ Example:
 * **loop**: Get/set whether to loop the sound.
   * *loop*: `Boolean` (optional) To loop or not to loop, that is the question.
 * **pos**: Get/set the position of playback.
-  * *position*: `Number` (optional) The position to move current playback to.
+  * *position*: `Number` (optional) The position to move current playback to (in seconds).
   * *id*: `Number` (optional) The play instance ID.
 * **pos3d**: Get/set the 3D position of the audio source. The most common usage is to set the `x` position to affect the left/right ear panning. Setting the value higher than `1.0` will begin to decrease the volume of the sound as it moves further away. **This only works with Web Audio API.**
   * *x*: `Number` The x-position of the sound.
