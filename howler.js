@@ -424,7 +424,7 @@
           // set the play id to this node and load into context
           node.id = soundId;
           node.paused = false;
-          refreshBuffer(self, [loop, loopStart, loopEnd], soundId);
+          refreshBuffer(self, [loop, loopStart, loopEnd], node);
           self._playStart = ctx.currentTime;
           node.gain.value = self._volume;
 
@@ -1203,12 +1203,9 @@
      * Load the sound back into the buffer source.
      * @param  {Object} obj   The sound to load.
      * @param  {Array}  loop  Loop boolean, pos, and duration.
-     * @param  {String} id    (optional) The play instance ID.
+     * @param  {Object} node  Object to refresh buffer for
      */
-    var refreshBuffer = function(obj, loop, id) {
-      // determine which node to connect to
-      var node = obj._nodeById(id);
-
+    var refreshBuffer = function(obj, loop, node) {
       // setup the buffer source for playback
       node.bufferSource = ctx.createBufferSource();
       node.bufferSource.buffer = cache[obj._src];
