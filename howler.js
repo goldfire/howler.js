@@ -383,6 +383,9 @@
         // determine if this sound should be looped
         var loop = !!(self._loop || self._sprite[sprite][2]);
 
+        // volume
+        var volume = (typeof self._sprite[sprite][3] !== 'undefined') ? self._sprite[sprite][3] : self._volume;
+
         // set timer to fire the 'onend' event
         var soundId = (typeof sprite === 'string' && sprite != "_default") ? sprite : Math.round(Date.now() * Math.random()) + '',
           timerId;
@@ -426,7 +429,7 @@
           node.paused = false;
           refreshBuffer(self, [loop, loopStart, loopEnd], node);
           self._playStart = ctx.currentTime;
-          node.gain.value = self._volume;
+          node.gain.value = volume;
 
           if (typeof node.bufferSource.start === 'undefined') {
             node.bufferSource.noteGrainOn(0, pos, duration);
@@ -439,7 +442,7 @@
             node.id = soundId;
             node.currentTime = pos;
             node.muted = Howler._muted || node.muted;
-            node.volume = self._volume * Howler.volume();
+            node.volume = volume * Howler.volume();
             setTimeout(function() { node.play(); }, 0);
           } else {
             self._clearEndTimer(soundId);
@@ -684,6 +687,7 @@
      *                @param {Integer} offset   Where to begin playback in milliseconds
      *                @param {Integer} duration How long to play in milliseconds
      *                @param {Boolean} loop     (optional) Set true to loop this sprite
+     *                @param {Float}   vol      (optional) Volume from 0.0 to 1.0
      * @return {Howl}        Returns current sprite sheet or self.
      */
     sprite: function(sprite) {
