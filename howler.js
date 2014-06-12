@@ -133,7 +133,6 @@
           }
         }
       }
-    
     },
 
     /**
@@ -142,7 +141,7 @@
      * http://paulbakaus.com/tutorials/html5/web-audio-on-ios/
      * @return {Howler}
      */
-    _enableiOSAudio: function () {
+    enableiOSAudioAsap: function () {
       var self = this;
       if (self._wasiOSAudioEnabled || !/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
         return;
@@ -154,13 +153,14 @@
         var source = ctx.createBufferSource();
         source.buffer = buffer;
         source.connect(ctx.destination);
-        source.noteOn(0);
-        document.documentElement.removeEventListener('touchstart', unlock);
+        source.start ? source.start(0) : source.noteOn(0);
 
         // by checking the play state after some time, we know if we're really unlocked
         setTimeout(function() {
           if((source.playbackState === source.PLAYING_STATE || source.playbackState === source.FINISHED_STATE)) {
             self._wasiOSAudioEnabled = true;
+            //no need to wait for the next touch anymore
+            document.documentElement.removeEventListener('touchstart', unlock);
           }
         }, 0);
       }
@@ -171,6 +171,7 @@
       unlock();
 
       return this;
+    }
   };
 
   // allow access to the global audio controls
@@ -185,8 +186,9 @@
       opus: !!audioTest.canPlayType('audio/ogg; codecs="opus"').replace(/^no$/, ''),
       ogg: !!audioTest.canPlayType('audio/ogg; codecs="vorbis"').replace(/^no$/, ''),
       wav: !!audioTest.canPlayType('audio/wav; codecs="1"').replace(/^no$/, ''),
-      m4a: !!(audioTest.canPlayType('audio/x-m4a;') || audioTest.canPlayType('audio/aac;')).replace(/^no$/, ''),
-      mp4: !!(audioTest.canPlayType('audio/x-mp4;') || audioTest.canPlayType('audio/aac;')).replace(/^no$/, ''),
+      aac: !!audioTest.canPlayType('audio/aac;').replace(/^no$/, ''),
+      m4a: !!(audioTest.canPlayType('audio/x-m4a;') || audioTest.canPlayType('audio/m4a;') || audioTest.canPlayType('audio/aac;')).replace(/^no$/, ''),
+      mp4: !!(audioTest.canPlayType('audio/x-mp4;') || audioTest.canPlayType('audio/mp4;') || audioTest.canPlayType('audio/aac;')).replace(/^no$/, ''),
       weba: !!audioTest.canPlayType('audio/webm; codecs="vorbis"').replace(/^no$/, '')
     };
   }
@@ -233,7 +235,7 @@
     }
 
     if (Howler.automaticallyEnableiOSAudio) {
-      Howler._enableiOSAudio();
+      Howler.enableiOSAudioAsap();
     }
 
     // add this to an array of Howl's to allow global control
