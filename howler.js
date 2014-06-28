@@ -409,6 +409,9 @@
               self.stop(data.id);
             }
 
+            // clear the end timer
+            self._clearEndTimer(data.id);
+
             // fire ended event
             self.on('end', soundId);
           }, duration * 1000);
