@@ -55,6 +55,7 @@
     this.noAudio = noAudio;
     this._howls = [];
     this._codecs = codecs;
+    this.automaticallyEnableiOSAudio = true;
   };
   HowlerGlobal.prototype = {
     /**
@@ -142,6 +143,44 @@
      */
     codecs: function(ext) {
       return this._codecs[ext];
+    },
+
+    /**
+     * Unmuted audio on iOS without playing/loading any sound
+     * On iOS audio is effectively muted until user activation
+     * http://paulbakaus.com/tutorials/html5/web-audio-on-ios/
+     * @return {Howler}
+     */
+    enableiOSAudioAsap: function () {
+      var self = this;
+      if (self._wasiOSAudioEnabled || !/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        return;
+      }
+      self._wasiOSAudioEnabled = false;
+      function unlock() {
+        // create empty buffer and play it
+        var buffer = ctx.createBuffer(1, 1, 22050);
+        var source = ctx.createBufferSource();
+        source.buffer = buffer;
+        source.connect(ctx.destination);
+        source.start ? source.start(0) : source.noteOn(0);
+
+        // by checking the play state after some time, we know if we're really unlocked
+        setTimeout(function() {
+          if((source.playbackState === source.PLAYING_STATE || source.playbackState === source.FINISHED_STATE)) {
+            self._wasiOSAudioEnabled = true;
+            //no need to wait for the next touch anymore
+            document.documentElement.removeEventListener('touchstart', unlock);
+          }
+        }, 0);
+      }
+
+      //schedule for the first touch
+      document.documentElement.addEventListener('touchstart', unlock);
+      //try to unlock now, we might already be in a touchstart handler
+      unlock();
+
+      return this;
     }
   };
 
@@ -204,6 +243,10 @@
     self._audioNode = [];
     if (self._webAudio) {
       self._setupAudioNode();
+    }
+
+    if (Howler.automaticallyEnableiOSAudio) {
+      Howler.enableiOSAudioAsap();
     }
 
     // add this to an array of Howl's to allow global control
