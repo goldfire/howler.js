@@ -149,6 +149,8 @@ The following methods are used to modify all sounds globally, and are called fro
 * **unmute**: Unmutes all sounds and restores them to their previous volume.
 * **volume**: Get/set the global volume for all sounds.
   * *volume*: `Number` (optional) Volume from `0.0` to `1.0`.
+* **codecs**: Check supported audio codecs.
+  * *ext*: `String` File extension. One of: "mp3", "opus", "ogg", "wav", "aac", "m4a", "mp4", "weba".
 
 ## License
 

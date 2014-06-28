@@ -48,12 +48,13 @@
   }
 
   // create global controller
-  var HowlerGlobal = function() {
+  var HowlerGlobal = function(codecs) {
     this._volume = 1;
     this._muted = false;
     this.usingWebAudio = usingWebAudio;
     this.noAudio = noAudio;
     this._howls = [];
+    this._codecs = codecs;
   };
   HowlerGlobal.prototype = {
     /**
@@ -132,17 +133,24 @@
           }
         }
       }
+    },
+
+    /**
+     * Check for codec support.
+     * @param  {String} ext Audio file extention.
+     * @return {Boolean}
+     */
+    codecs: function(ext) {
+      return this._codecs[ext];
     }
   };
 
-  // allow access to the global audio controls
-  var Howler = new HowlerGlobal();
-
   // check for browser codec support
   var audioTest = null;
+  var codecs = {};
   if (!noAudio) {
     audioTest = new Audio();
-    var codecs = {
+    codecs = {
       mp3: !!audioTest.canPlayType('audio/mpeg;').replace(/^no$/, ''),
       opus: !!audioTest.canPlayType('audio/ogg; codecs="opus"').replace(/^no$/, ''),
       ogg: !!audioTest.canPlayType('audio/ogg; codecs="vorbis"').replace(/^no$/, ''),
@@ -153,6 +161,9 @@
       weba: !!audioTest.canPlayType('audio/webm; codecs="vorbis"').replace(/^no$/, '')
     };
   }
+
+  // allow access to the global audio controls
+  var Howler = new HowlerGlobal(codecs);
 
   // setup the audio object
   var Howl = function(o) {
