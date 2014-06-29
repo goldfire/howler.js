@@ -151,7 +151,7 @@
      * Concept from: http://paulbakaus.com/tutorials/html5/web-audio-on-ios/
      * @return {Howler}
      */
-    enableiOSAudio: function() {
+    _enableiOSAudio: function() {
       var self = this;
 
       // only run this on iOS if audio isn't already eanbled
@@ -261,7 +261,7 @@
 
     // automatically try to enable audio on iOS
     if (Howler.iOSAutoEnable) {
-      Howler.enableiOSAudio();
+      Howler._enableiOSAudio();
     }
 
     // add this to an array of Howl's to allow global control
