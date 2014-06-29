@@ -15,7 +15,8 @@
   // setup the audio context
   var ctx = null,
     usingWebAudio = true,
-    noAudio = false;
+    noAudio = false,
+    isiOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
   try {
     if (typeof AudioContext !== 'undefined') {
       ctx = new AudioContext();
@@ -155,7 +156,7 @@
       var self = this;
 
       // only run this on iOS if audio isn't already eanbled
-      if (ctx && (self._iOSEnabled || !/iPhone|iPad|iPod/i.test(navigator.userAgent))) {
+      if (ctx && (self._iOSEnabled || !isiOS)) {
         return;
       }
 
@@ -1214,19 +1215,44 @@
         xhr.open('GET', url, true);
         xhr.responseType = 'arraybuffer';
         xhr.onload = function() {
+          //whether it actually ran, regardless of success
+          var decodeAudioDataRun = false;
+
           // decode the buffer into an audio source
-          ctx.decodeAudioData(
-            xhr.response,
-            function(buffer) {
-              if (buffer) {
-                cache[url] = buffer;
-                loadSound(obj, buffer);
-              }
-            },
-            function(err) {
-              obj.on('loaderror');
+          var decodeAudioData = function () {
+            if (!decodeAudioDataRun) {
+              ctx.decodeAudioData(
+                xhr.response,
+                function(buffer) {
+                  if (decodeAudioDataRun) {
+                    //this could happen with big files on slow devices:
+                    //the first run of ctx.decodeAudioData hadn't finished when the second one was started.
+                    //let's at least make sure that load/error callbacks are not fired twice
+                    return;
+                  }
+                  if (buffer) {
+                    decodeAudioDataRun = true;
+                    cache[url] = buffer;
+                    loadSound(obj, buffer);
+                  }
+                },
+                function(err) {
+                  if (!decodeAudioDataRun) {
+                    decodeAudioDataRun = true;
+                    obj.on('loaderror');
+                  }
+                }
+              );
             }
-          );
+          };
+
+          decodeAudioData();
+
+          //iOS 7 bug: RARELY, if the user has switched to a different tab before the xhr was done, ctx.decodeAudioData completely and silently fails.
+          //setTimeout will fire its callback when the tab is visible AND after a bit of time, to give it time to decode it the first time.
+          if (isiOS) {
+            setTimeout(decodeAudioData, 1000);
+          }
         };
         xhr.onerror = function() {
           // if there is an error, switch the sound to HTML Audio
