@@ -55,7 +55,7 @@
     this.noAudio = noAudio;
     this._howls = [];
     this._codecs = codecs;
-    this.automaticallyEnableiOSAudio = true;
+    this.iOSAutoEnable = true;
   };
   HowlerGlobal.prototype = {
     /**
@@ -146,41 +146,55 @@
     },
 
     /**
-     * Unmuted audio on iOS without playing/loading any sound
-     * On iOS audio is effectively muted until user activation
-     * http://paulbakaus.com/tutorials/html5/web-audio-on-ios/
+     * iOS will only allow audio to be played after a user interaction.
+     * Attempt to automatically unlock audio on the first user interaction.
+     * Concept from: http://paulbakaus.com/tutorials/html5/web-audio-on-ios/
      * @return {Howler}
      */
-    enableiOSAudioAsap: function () {
+    enableiOSAudio: function() {
       var self = this;
-      if (self._wasiOSAudioEnabled || !/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+
+      // only run this on iOS if audio isn't already eanbled
+      if (ctx && (self._iOSEnabled || !/iPhone|iPad|iPod/i.test(navigator.userAgent))) {
         return;
       }
-      self._wasiOSAudioEnabled = false;
-      function unlock() {
-        // create empty buffer and play it
+
+      self._iOSEnabled = false;
+
+      // call this method on touch start to create and play a buffer,
+      // then check if the audio actually played to determine if
+      // audio has now been unlocked on iOS
+      var unlock = function() {
+        // create an empty buffer
         var buffer = ctx.createBuffer(1, 1, 22050);
         var source = ctx.createBufferSource();
         source.buffer = buffer;
         source.connect(ctx.destination);
-        source.start ? source.start(0) : source.noteOn(0);
 
-        // by checking the play state after some time, we know if we're really unlocked
+        // play the empty buffer
+        if (typeof source.start === 'undefined') {
+          source.noteOn(0);
+        } else {
+          source.start(0);
+        }
+
+        // setup a timeout to check that we are unlocked on the next event loop
         setTimeout(function() {
-          if((source.playbackState === source.PLAYING_STATE || source.playbackState === source.FINISHED_STATE)) {
-            self._wasiOSAudioEnabled = true;
-            //no need to wait for the next touch anymore
-            document.documentElement.removeEventListener('touchstart', unlock);
+          if ((source.playbackState === source.PLAYING_STATE || source.playbackState === source.FINISHED_STATE)) {
+            // update the unlocked state and prevent this check from happening again
+            self._iOSEnabled = true;
+            self.iOSAutoEnable = false;
+
+            // remove the touch start listener
+            window.removeEventListener('touchstart', unlock, false);
           }
         }, 0);
-      }
+      };
 
-      //schedule for the first touch
-      document.documentElement.addEventListener('touchstart', unlock);
-      //try to unlock now, we might already be in a touchstart handler
-      unlock();
+      // setup a touch start listener to attempt an unlock in
+      window.addEventListener('touchstart', unlock, false);
 
-      return this;
+      return self;
     }
   };
 
@@ -245,8 +259,9 @@
       self._setupAudioNode();
     }
 
-    if (Howler.automaticallyEnableiOSAudio) {
-      Howler.enableiOSAudioAsap();
+    // automatically try to enable audio on iOS
+    if (Howler.iOSAutoEnable) {
+      Howler.enableiOSAudio();
     }
 
     // add this to an array of Howl's to allow global control
