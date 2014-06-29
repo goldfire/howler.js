@@ -1,3 +1,8 @@
+## 1.1.22 (June 28, 2014)
+- `ADDED`: Howler will now automatically attempt to unlock audio on iOS (thanks Federico Brigante).
+- `ADDED`: New `codecs` global Howler method to check for codec support in the current browser (thanks Jay Oster).
+- `FIXED`: End timers are now correctly cleaned up when a sound naturally completes rather than being forced to stop.
+
 ## 1.1.21 (May 28, 2014)
 - `ADDED`: Support for npm and bower (thanks Morantron).
 - `ADDED`: Support for audio/aac, audio/m4a and audio/mp4 mime types (thanks Federico Brigante).

@@ -161,6 +161,6 @@ Howler.iOSAutoEnable = false;
 
 ## License
 
-Copyright (c) 2013 - 2014 James Simpson and GoldFire Studios, Inc.
+Copyright (c) 2013-2014 James Simpson and GoldFire Studios, Inc.
 
 Released under the MIT License.
