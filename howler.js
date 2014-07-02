@@ -260,7 +260,7 @@
     }
 
     // automatically try to enable audio on iOS
-    if (Howler.iOSAutoEnable) {
+    if (typeof ctx !== 'undefined' && Howler.iOSAutoEnable) {
       Howler._enableiOSAudio();
     }
 
