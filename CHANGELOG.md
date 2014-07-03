@@ -1,3 +1,7 @@
+## 1.1.23 (July 2, 2014)
+- `FIXED`: Playing multiple sprites rapdily with HTML5 Audio cause the sprite to break due to a v1.1.22 update.
+- `FIXED`: Don't run the iOS test if there is no audio context, which prevents a breaking error.
+
 ## 1.1.22 (June 28, 2014)
 - `ADDED`: Howler will now automatically attempt to unlock audio on iOS (thanks Federico Brigante).
 - `ADDED`: New `codecs` global Howler method to check for codec support in the current browser (thanks Jay Oster).
