@@ -471,15 +471,15 @@
             if (self._webAudio && !loop) {
               self._nodeById(data.id).paused = true;
               self._nodeById(data.id)._pos = 0;
+
+              // clear the end timer
+              self._clearEndTimer(data.id);
             }
 
             // end the track if it is HTML audio and a sprite
             if (!self._webAudio && !loop) {
               self.stop(data.id);
             }
-
-            // clear the end timer
-            self._clearEndTimer(data.id);
 
             // fire ended event
             self.on('end', soundId);
