@@ -632,6 +632,9 @@
           activeNode.currentTime = 0;
         }
       }
+      
+      // fire ended event
+      self.on('end', id);
 
       return self;
     },
