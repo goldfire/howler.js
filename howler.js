@@ -1208,25 +1208,38 @@
 
         // load the sound into this object
         loadSound(obj);
+        return;
+      }
+      var createAudioDataFromArrayBuffer = function(arraybuffer) {
+        // decode the buffer into an audio source
+        ctx.decodeAudioData(
+          arraybuffer,
+          function(buffer) {
+            if (buffer) {
+              cache[url] = buffer;
+              loadSound(obj, buffer);
+            }
+          },
+          function(err) {
+            obj.on('loaderror');
+          }
+        );
+      };
+      if (/^data:[^;]+;base64,/.test(url)) {
+        // Decode base64 data-URIs because some browsers cannot load data-URIs with XMLHttpRequest.
+        var data = atob(url.split(',')[1]);
+        var dataView = new Uint8Array(data.length);
+        for (var i = 0; i < data.length; ++i) {
+          dataView[i] = data.charCodeAt(i);
+        }
+        createAudioDataFromArrayBuffer(dataView.buffer);
       } else {
         // load the buffer from the URL
         var xhr = new XMLHttpRequest();
         xhr.open('GET', url, true);
         xhr.responseType = 'arraybuffer';
         xhr.onload = function() {
-          // decode the buffer into an audio source
-          ctx.decodeAudioData(
-            xhr.response,
-            function(buffer) {
-              if (buffer) {
-                cache[url] = buffer;
-                loadSound(obj, buffer);
-              }
-            },
-            function(err) {
-              obj.on('loaderror');
-            }
-          );
+          createAudioDataFromArrayBuffer(xhr.response);
         };
         xhr.onerror = function() {
           // if there is an error, switch the sound to HTML Audio
