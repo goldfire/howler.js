@@ -1167,6 +1167,7 @@
         // stop the sound if it is currently playing
         if (!nodes[i].paused) {
           self.stop(nodes[i].id);
+          self.on('end', nodes[i].id);
         }
 
         if (!self._webAudio) {
