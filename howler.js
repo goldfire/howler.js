@@ -296,12 +296,14 @@
           ext = self._format;
         } else {
           // figure out the filetype (whether an extension or base64 data)
-          urlItem = self._urls[i].toLowerCase().split('?')[0];
-          ext = urlItem.match(/.+\.([^?]+)(\?|$)/);
-          ext = (ext && ext.length >= 2) ? ext : urlItem.match(/data\:audio\/([^?]+);/);
+          urlItem = self._urls[i];
+          ext = /^data:audio\/([^;,]+);/i.exec(urlItem);
+          if (!ext) {
+            ext = /\.([^.]+)$/.exec(urlItem.split('?', 1)[0]);
+          }
 
           if (ext) {
-            ext = ext[1];
+            ext = ext[1].toLowerCase();
           } else {
             self.on('loaderror');
             return;
