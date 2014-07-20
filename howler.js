@@ -1137,8 +1137,9 @@
     off: function(event, fn) {
       var self = this,
         events = self['_on' + event],
-        fnString = fn.toString();
+        fnString = fn ? fn.toString() : '';
 
+        if(fnString != '') {
       // loop through functions in the event for comparison
       for (var i=0; i<events.length; i++) {
         if (fnString === events[i].toString()) {
@@ -1146,6 +1147,9 @@
           break;
         }
       }
+        } else {
+            self['_on' + event] = [];
+        }
 
       return self;
     },
