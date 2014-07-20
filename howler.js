@@ -1,5 +1,5 @@
 /*!
- *  howler.js v1.1.23
+ *  howler.js v1.1.24
  *  howlerjs.com
  *
  *  (c) 2013-2014, James Simpson of GoldFire Studios
@@ -1226,14 +1226,14 @@
           dataView[i] = data.charCodeAt(i);
         }
         
-        decodeAudioData(dataView.buffer);
+        decodeAudioData(dataView.buffer, obj, url);
       } else {
         // load the buffer from the URL
         var xhr = new XMLHttpRequest();
         xhr.open('GET', url, true);
         xhr.responseType = 'arraybuffer';
         xhr.onload = function() {
-          decodeAudioData(xhr.response);
+          decodeAudioData(xhr.response, obj, url);
         };
         xhr.onerror = function() {
           // if there is an error, switch the sound to HTML Audio
@@ -1256,8 +1256,10 @@
     /**
      * Decode audio data from an array buffer.
      * @param  {ArrayBuffer} arraybuffer The audio data.
+     * @param  {Object} obj The Howl object for the sound to load.
+     * @param  {String} url The path to the sound file.
      */
-    var decodeAudioData = function(arraybuffer) {
+    var decodeAudioData = function(arraybuffer, obj, url) {
       // decode the buffer into an audio source
       ctx.decodeAudioData(
         arraybuffer,
