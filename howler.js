@@ -1137,14 +1137,18 @@
     off: function(event, fn) {
       var self = this,
         events = self['_on' + event],
-        fnString = fn.toString();
+        fnString = fn ? fn.toString() : null;
 
-      // loop through functions in the event for comparison
-      for (var i=0; i<events.length; i++) {
-        if (fnString === events[i].toString()) {
-          events.splice(i, 1);
-          break;
+      if (fnString) {
+        // loop through functions in the event for comparison
+        for (var i=0; i<events.length; i++) {
+          if (fnString === events[i].toString()) {
+            events.splice(i, 1);
+            break;
+          }
         }
+      } else {
+        self['_on' + event] = [];
       }
 
       return self;
