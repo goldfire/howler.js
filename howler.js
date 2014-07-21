@@ -454,8 +454,11 @@
         // determine if this sound should be looped
         var loop = !!(self._loop || self._sprite[sprite][2]);
 
+        // volume
+        var volume = (typeof self._sprite[sprite][3] !== 'undefined') ? self._sprite[sprite][3] : self._volume;
+
         // set timer to fire the 'onend' event
-        var soundId = (typeof callback === 'string') ? callback : Math.round(Date.now() * Math.random()) + '',
+        var soundId = (typeof sprite === 'string' && sprite != "_default") ? sprite : Math.round(Date.now() * Math.random()) + '',
           timerId;
         (function() {
           var data = {
@@ -498,9 +501,9 @@
           // set the play id to this node and load into context
           node.id = soundId;
           node.paused = false;
-          refreshBuffer(self, [loop, loopStart, loopEnd], soundId);
+          refreshBuffer(self, [loop, loopStart, loopEnd], node);
           self._playStart = ctx.currentTime;
-          node.gain.value = self._volume;
+          node.gain.value = volume;
 
           if (typeof node.bufferSource.start === 'undefined') {
             node.bufferSource.noteGrainOn(0, pos, duration);
@@ -513,7 +516,7 @@
             node.id = soundId;
             node.currentTime = pos;
             node.muted = Howler._muted || node.muted;
-            node.volume = self._volume * Howler.volume();
+            node.volume = volume * Howler.volume();
             setTimeout(function() { node.play(); }, 0);
           } else {
             self._clearEndTimer(soundId);
@@ -758,6 +761,7 @@
      *                @param {Integer} offset   Where to begin playback in milliseconds
      *                @param {Integer} duration How long to play in milliseconds
      *                @param {Boolean} loop     (optional) Set true to loop this sprite
+     *                @param {Float}   vol      (optional) Volume from 0.0 to 1.0
      * @return {Howl}        Returns current sprite sheet or self.
      */
     sprite: function(sprite) {
@@ -1304,12 +1308,9 @@
      * Load the sound back into the buffer source.
      * @param  {Object} obj   The sound to load.
      * @param  {Array}  loop  Loop boolean, pos, and duration.
-     * @param  {String} id    (optional) The play instance ID.
+     * @param  {Object} node  Object to refresh buffer for
      */
-    var refreshBuffer = function(obj, loop, id) {
-      // determine which node to connect to
-      var node = obj._nodeById(id);
-
+    var refreshBuffer = function(obj, loop, node) {
       // setup the buffer source for playback
       node.bufferSource = ctx.createBufferSource();
       node.bufferSource.buffer = cache[obj._src];
@@ -1345,10 +1346,8 @@
   }
 
   // define globally in case AMD is not available or available but not used
-
   if (typeof window !== 'undefined') {
     window.Howler = Howler;
     window.Howl = Howl;
   }
-
 })();
