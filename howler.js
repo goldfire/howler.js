@@ -229,6 +229,7 @@
     self._format = o.format || null;
     self._loop = o.loop || false;
     self._loaded = false;
+    self._beforeLoadQueue = [];
     self._sprite = o.sprite || {};
     self._src = o.src || '';
     self._pos3d = o.pos3d || [0, 0, -0.5];
@@ -361,6 +362,7 @@
 
           if (!self._loaded) {
             self._loaded = true;
+            self._drainBeforeLoadQueue();
             self.on('load');
           }
 
@@ -419,7 +421,7 @@
 
       // if the sound hasn't been loaded, add it to the event queue
       if (!self._loaded) {
-        self.on('load', function() {
+        self._queueBeforeLoad(function() {
           self.play(sprite, callback);
         });
 
@@ -556,7 +558,7 @@
 
       // if the sound hasn't been loaded, add it to the event queue
       if (!self._loaded) {
-        self.on('play', function() {
+        self._queueBeforeLoad(function() {
           self.pause(id);
         });
 
@@ -602,7 +604,7 @@
 
       // if the sound hasn't been loaded, add it to the event queue
       if (!self._loaded) {
-        self.on('play', function() {
+        self._queueBeforeLoad(function() {
           self.stop(id);
         });
 
@@ -648,7 +650,7 @@
 
       // if the sound hasn't been loaded, add it to the event queue
       if (!self._loaded) {
-        self.on('play', function() {
+        self._queueBeforeLoad(function() {
           self.mute(id);
         });
 
@@ -677,7 +679,7 @@
 
       // if the sound hasn't been loaded, add it to the event queue
       if (!self._loaded) {
-        self.on('play', function() {
+        self._queueBeforeLoad(function() {
           self.unmute(id);
         });
 
@@ -713,7 +715,7 @@
 
         // if the sound hasn't been loaded, add it to the event queue
         if (!self._loaded) {
-          self.on('play', function() {
+          self._queueBeforeLoad(function() {
             self.volume(vol, id);
           });
 
@@ -783,7 +785,7 @@
 
       // if the sound hasn't been loaded, add it to the event queue
       if (!self._loaded) {
-        self.on('load', function() {
+        self._queueBeforeLoad(function() {
           self.pos(pos);
         });
 
@@ -838,7 +840,7 @@
 
       // if the sound hasn't been loaded, add it to the event queue
       if (!self._loaded) {
-        self.on('play', function() {
+        self._queueBeforeLoad(function() {
           self.pos3d(x, y, z, id);
         });
 
@@ -879,7 +881,7 @@
 
       // if the sound hasn't been loaded, add it to the event queue
       if (!self._loaded) {
-        self.on('load', function() {
+        self._queueBeforeLoad(function() {
           self.fade(from, to, len, callback, id);
         });
 
@@ -1106,6 +1108,24 @@
     },
 
     /**
+     * Pushes fn in a queue. The methods will be called when _loaded == true.
+     * @param  {Function} fn   Function to queue.
+     */
+    _queueBeforeLoad: function(fn) {
+      this._beforeLoadQueue.push(fn);
+    },
+
+    /**
+     * Execute all queued functions.
+     */
+    _drainBeforeLoadQueue: function() {
+      var fn;
+      while ( (fn = this._beforeLoadQueue.shift()) ) {
+        fn();
+      }
+    },
+
+    /**
      * Call/set custom events.
      * @param  {String}   event Event type.
      * @param  {Function} fn    Function to call.
@@ -1292,6 +1312,7 @@
       // fire the loaded event
       if (!obj._loaded) {
         obj._loaded = true;
+        obj._drainBeforeLoadQueue();
         obj.on('load');
       }
 
