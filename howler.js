@@ -231,7 +231,7 @@
     self._loaded = false;
     self._sprite = o.sprite || {};
     self._src = o.src || '';
-    self._pos3d = o.pos3d || [0, 0, -0.5];
+    self._pos3d = o.pos3d || {x:0, y:0, z:-0.5};
     self._volume = o.volume !== undefined ? o.volume : 1;
     self._urls = o.urls || [];
     self._rate = o.rate || 1;
@@ -827,7 +827,7 @@
      * @param  {Float}  y  The y-position of the playback from -1000.0 to 1000.0
      * @param  {Float}  z  The z-position of the playback from -1000.0 to 1000.0
      * @param  {String} id (optional) The play instance ID.
-     * @return {Howl/Array}   Returns self or the current 3D position: [x, y, z]
+     * @return {Howl/Object}   Returns self or the current 3D position: {x, y, z}
      */
     pos3d: function(x, y, z, id) {
       var self = this;
@@ -849,7 +849,7 @@
         if (self._webAudio) {
           var activeNode = (id) ? self._nodeById(id) : self._activeNode();
           if (activeNode) {
-            self._pos3d = [x, y, z];
+            self._pos3d = {x:x, y:y, z:z};
             activeNode.panner.setPosition(x, y, z);
             activeNode.panner.panningModel = self._model || 'HRTF';
           }
@@ -1099,7 +1099,7 @@
       // create the panner
       node[index].panner = ctx.createPanner();
       node[index].panner.panningModel = self._model || 'equalpower';
-      node[index].panner.setPosition(self._pos3d[0], self._pos3d[1], self._pos3d[2]);
+      node[index].panner.setPosition(self._pos3d.x, self._pos3d.y, self._pos3d.z);
       node[index].panner.connect(node[index]);
 
       return node[index];
@@ -1217,7 +1217,7 @@
         loadSound(obj);
         return;
       }
-      
+
       if (/^data:[^;]+;base64,/.test(url)) {
         // Decode base64 data-URIs because some browsers cannot load data-URIs with XMLHttpRequest.
         var data = atob(url.split(',')[1]);
@@ -1225,7 +1225,7 @@
         for (var i=0; i<data.length; ++i) {
           dataView[i] = data.charCodeAt(i);
         }
-        
+
         decodeAudioData(dataView.buffer, obj, url);
       } else {
         // load the buffer from the URL
