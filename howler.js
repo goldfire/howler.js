@@ -52,6 +52,7 @@
     this._volume = 1;
     this._muted = false;
     this.usingWebAudio = usingWebAudio;
+    this.context = ctx; //only if usingWebAudio is true
     this.noAudio = noAudio;
     this._howls = [];
     this._codecs = codecs;
