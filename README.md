@@ -22,12 +22,12 @@ More documentation, examples and demos can be found at **[howlerjs.com](http://h
 
 ### Browser Compatibility
 Tested in the following browsers/versions:
-* Google Chrome 4.0+
+* Google Chrome 7.0+
 * Internet Explorer 9.0+
-* Firefox 3.5+
-* Safari 4.0+
+* Firefox 4.0+
+* Safari 5.1.4+
 * Mobile Safari 6.0+ (after user input)
-* Opera 10.5+
+* Opera 12.0+
 
 ## Documentation
 
@@ -36,14 +36,16 @@ Tested in the following browsers/versions:
 ##### Most basic, play an MP3:
 ```javascript
 var sound = new Howl({
-  urls: ['sound.mp3']
-}).play();
+  src: ['sound.mp3']
+});
+
+sound.play();
 ```
 
 ##### More playback options:
 ```javascript
 var sound = new Howl({
-  urls: ['sound.mp3', 'sound.ogg', 'sound.wav'],
+  src: ['sound.mp3', 'sound.ogg', 'sound.wav'],
   autoplay: true,
   loop: true,
   volume: 0.5,
@@ -56,7 +58,7 @@ var sound = new Howl({
 ##### Define and play a sound sprite:
 ```javascript
 var sound = new Howl({
-  urls: ['sounds.mp3', 'sounds.ogg'],
+  src: ['sounds.mp3', 'sounds.ogg'],
   sprite: {
     blast: [0, 1000],
     laser: [2000, 3000],
@@ -69,10 +71,12 @@ sound.play('laser');
 ```
 
 ### Properties
-* **autoplay**: `Boolean` *(`false` by default)* Set to `true` to automatically start playback when sound is loaded.
-* **buffer**: `Boolean` *(`false` by default)* Set to `true` to force HTML5 Audio. This should be used for large audio files so that you don't have to wait for the full file to be downloaded and decoded before playing.
-* **format**: `String` *(`null` by default)* howler.js automatically detects your file format from the URL, but you may also specify a format in situations where URL extraction won't work.
+* **src**: `Array` *(`[]` by default)* The sources to the track(s) to be loaded for the sound (URLs or base64 data URIs). These should be in order of preference, howler.js will automatically load the first one that is compatible with the current browser. If your files have no extensions, you will need to explicitly specify the extension using the `ext` property.
+* **volume**: `Number` *(`1.0` by default)* The volume of the specific track, from `0.0` to `1.0`.
+* **html5**: `Boolean` *(`false` by default)* Set to `true` to force HTML5 Audio. This should be used for large audio files so that you don't have to wait for the full file to be downloaded and decoded before playing.
 * **loop**: `Boolean` *(`false` by default)* Set to `true` to automatically loop the sound forever.
+* **preload**: `Boolean` *(`true` by default)* Automatically begin downloading the audio file when the `Howl` is defined.
+* **autoplay**: `Boolean` *(`false` by default)* Set to `true` to automatically start playback when sound is loaded.
 * **sprite**: `Object` *(`{}` by default)* Define a sound sprite for the sound. The offset and duration are defined in milliseconds. A third (optional) parameter is available to set a sprite as looping.
 ```
 Example:
@@ -80,15 +84,15 @@ Example:
   key: [offset, duration, (loop)]
 }
 ```
-* **volume**: `Number` *(`1.0` by default)* The volume of the specific track, from `0.0` to `1.0`.
-* **urls**: `Array` *(`[]` by default)* The source URLs to the track(s) to be loaded for the sound. These should be in order of preference, howler.js will automatically load the first one that is compatible with the current browser. If your files have no extensions, you will need to explicitly specify the format using the `format` property.
-* **rate**: `Number` *(`1.0` by default)* The rate of playback (Web Audio API only). 1.0 is normal speed, while negative values play in reverse.
-* **model**: `String` *(`equalpower` by default)* Sets the `panningModel` used by Web Audio API. Usually this should not be touched as howler handles it automatically, but it can be overridden with `equalpower` or `HRTF`.
-* **onend**: `Function` *(`function(){}` by default)* Fire when the sound finishes playing (if it is looping, it'll fire at the end of each loop).
-* **onload**: `Function` *(`function(){}` by default)* Fires when the sound is loaded.
-* **onloaderror**: `Function` *(`function(){}` by default)* Fires when the sound is unable to load.
-* **onpause**: `Function` *(`function(){}` by default)* Fires when the sound has been paused.
-* **onplay**: `Function` *(`function(){}` by default)* Fires when the sound begins playing.
+* **rate**: `Number` *(`1.0` by default)* The rate of playback. 0.5 to 4.0, with 1.0 being normal speed.
+* **pool**: `Number` *(`5` by default)* The size of the inactive sounds pool. Once sounds are stopped or finish playing, they are marked as ended and ready for cleanup. We keep a pool of these to recycle for improved performance. Generally this doesn't need to be changed. It is important to keep in mind that when a sound is paused, it won't be removed from the pool and will still be considered active so that it can be resumed later.
+* **ext**: `Array` *(`[]` by default)* howler.js automatically detects your file format from the extension, but you may also specify a format in situations where extraction won't work.
+* **onload**: `Function` Fires when the sound is loaded.
+* **onloaderror**: `Function` Fires when the sound is unable to load.
+* **onplay**: `Function` Fires when the sound begins playing. The first parameter is the ID of the sound.
+* **onend**: `Function` Fires when the sound finishes playing (if it is looping, it'll fire at the end of each loop). The first parameter is the ID of the sound.
+* **onpause**: `Function` Fires when the sound has been paused. The first parameter is the ID of the sound.
+* **onfaded**: `Function` Fires when the current sound finishes fading in/out. The first parameter is the ID of the sound.
 
 ### Methods
 * **play**: Begins playback of sound. Will continue from previous point if sound has been previously paused.
@@ -100,40 +104,20 @@ Example:
   * *id*: `Number` (optional) The play instance ID.
 * **mute**: Mutes the sound, but doesn't pause the playback.
   * *id*: `Number` (optional) The play instance ID.
-* **unmute**: Unmutes the sound.
-  * *id*: `Number` (optional) The play instance ID.
 * **fade**: Fade a currently playing sound between two volumes.
   * *from*: `Number` Volume to fade from (`0.0` to `1.0`).
   * *to*: `Number` Volume to fade to (`0.0` to `1.0`).
   * *duration*: `Number` Time in milliseconds to fade.
   * *callback*: `Function` (optional) Fires when fade is complete.
   * *id*: `Number` (optional) The play instance ID.
-* [DEPRECATED] **fadeIn**: Fade in the current sound.
-  * *to*: `Number` Volume to fade to (`0.0` to `1.0`).
-  * *duration*: `Number` Time in milliseconds to fade.
-  * *callback*: `Function` (optional) Fires when fade is complete.
-* [DEPRECATED] **fadeOut**: Fade out the current sound and pause when finished.
-  * *to*: `Number` Volume to fade to (`0.0` to `1.0`).
-  * *duration*: `Number` Time in milliseconds to fade.
-  * *callback*: `Function` (optional) Fires when fade is complete.
-  * *id*: `Number` (optional) The play instance ID.
 * **loop**: Get/set whether to loop the sound.
   * *loop*: `Boolean` (optional) To loop or not to loop, that is the question.
-* **pos**: Get/set the position of playback.
+* **seek**: Get/set the position of playback.
   * *position*: `Number` (optional) The position to move current playback to (in seconds).
   * *id*: `Number` (optional) The play instance ID.
-* **pos3d**: Get/set the 3D position of the audio source. The most common usage is to set the `x` position to affect the left/right ear panning. Setting the value higher than `1.0` will begin to decrease the volume of the sound as it moves further away. **This only works with Web Audio API.**
-  * *x*: `Number` The x-position of the sound.
-  * *y*: `Number` The y-position of the sound.
-  * *z*: `Number` The z-position of the sound.
-  * *id*: `Number` (optional) The play instance ID.
-* **sprite**: Get/set sound sprite definition.
-  * *sprite*: `Object` (optional) See above for sound sprite definition.
 * **volume**: Get/set volume of this sound.
   * *volume*: `Number` (optional) Volume from `0.0` to `1.0`.
   * *id*: `Number` (optional) The play instance ID.
-* **urls**: Get/set the URLs to be pulled from to play in this source.
-  * *urls*: `Array` (optional) Changes the source files for this `Howl` object.
 * **on**: Call/set custom events. Multiple events can be added by calling this multiple times.
   * *event*: `String` Name of event to fire/set.
   * *function*: `Function` (optional) Define function to fire on event.

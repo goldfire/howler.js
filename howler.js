@@ -345,9 +345,6 @@
         newNode.preload = 'auto';
         newNode.volume = (Howler._muted) ? 0 : self._volume * Howler.volume();
 
-        // add this sound to the cache
-        cache[url] = self;
-
         // setup the event listener to start playing the sound
         // as soon as it has buffered enough
         var listener = function() {
@@ -1242,6 +1239,7 @@
             obj._webAudio = false;
             obj._audioNode = [];
             delete obj._gainNode;
+            delete cache[url];
             obj.load();
           }
         };

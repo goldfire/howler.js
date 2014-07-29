@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang='en'>
+<head>
+  <meta charset='utf-8'>
+  <title>howler.js tests</title>
+  <style type='text/css'>
+    html {
+      width: 100%;
+      height: 100%;  
+      overflow: hidden;
+    }
+
+    body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #e2e0d8;
+      border: 10px solid #bab6a7;
+      margin: 0;
+      padding: 0;
+      outline: 0;
+      font-family: 'Lucida Grande', Arial;
+      font-weight: bold;
+      font-size: 30px;
+      color: #bab6a7;
+      -moz-box-sizing: border-box;
+      -webkit-box-sizing: border-box;
+      box-sizing: border-box;
+    }
+
+    #container {
+      position: absolute;
+      width: 100%;
+      top: 50%;
+      margin-top: -30px;
+      text-align: center;
+    }
+
+    #start {
+      background: #bab6a7;
+      border: none;
+      outline: 0;
+      padding: 20px 50px;
+      margin: 0;
+      font-family: 'Lucida Grande', Arial;
+      font-weight: bold;
+      font-size: 30px;
+      color: #e2e0d8;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #start:hover {
+      background: #a6a294;
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <button id="start">BEGIN TESTS</button>
+  </div>
+  <script src='../howler.core.js'></script>
+  <script src='./tests.js'></script>
+</body>
+</html>
