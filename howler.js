@@ -1,5 +1,5 @@
 /*!
- *  howler.js v1.1.24
+ *  howler.js v1.1.25
  *  howlerjs.com
  *
  *  (c) 2013-2014, James Simpson of GoldFire Studios
@@ -52,7 +52,7 @@
     this._volume = 1;
     this._muted = false;
     this.usingWebAudio = usingWebAudio;
-    this.context = ctx; //only if usingWebAudio is true
+    this.ctx = ctx;
     this.noAudio = noAudio;
     this._howls = [];
     this._codecs = codecs;

@@ -1,3 +1,7 @@
+## 1.1.25 (July 29, 2014)
+- `ADDED`: The `AudioContext` is now available on the global `Howler` object (thanks Matt DesLauriers).
+- `FIXED`: When falling back to HTML5 Audio due to XHR error, delete cache for source file to prevent multi-playback issues.
+
 ## 1.1.24 (July 20, 2014)
 - `FIXED`: Improved performance of loading files using data URIs (thanks Rob Wu).
 - `FIXED`: Data URIs now work with Web Audio API (thanks Rob Wu).
