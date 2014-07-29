@@ -1359,6 +1359,7 @@
             self._buffer = true;
             self._webAudio = false;
             self._sounds = [];
+            delete cache[url];
             self.load();
           }
         };
