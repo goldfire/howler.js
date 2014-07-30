@@ -853,7 +853,7 @@
           }
         }
       } else {
-        sound = self._soundById(id)
+        sound = self._soundById(id);
         return sound ? sound._loop : false;
       }
 
