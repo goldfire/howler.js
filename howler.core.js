@@ -445,7 +445,10 @@
         // Fire this when the sound is ready to play to begin Web Audio playback.
         var playWebAudio = function() {
           self._refreshBuffer(sound);
-          node.gain.value = (sound._muted || self._muted) ? 0 : sound._volume * Howler.volume();
+
+          // Setup the playback params.
+          var vol = (sound._muted || self._muted) ? 0 : sound._volume * Howler.volume();
+          node.gain.setValueAtTime(vol, ctx.currentTime);
           sound._playStart = ctx.currentTime;
 
           // Play the sound using the supported method.
@@ -655,7 +658,7 @@
           sound._muted = muted;
 
           if (self._webAudio) {
-            sound._node.gain.value = muted ? 0 : sound._volume * Howler.volume();
+            sound._node.gain.setValueAtTime(muted ? 0 : sound._volume * Howler.volume(), ctx.currentTime);
           } else {
             sound._node.muted = muted;
           }
@@ -698,7 +701,7 @@
 
       // Update the volume or return the current volume.
       var sound;
-      if (typeof vol !== 'undefined' && vol >= 0 && vol < 1) {
+      if (typeof vol !== 'undefined' && vol >= 0 && vol <= 1) {
         // Wait for the sound to begin playing before changing the volume.
         if (!self._loaded) {
           self.once('play', function() {
@@ -718,7 +721,7 @@
             sound._volume = vol;
 
             if (self._webAudio) {
-              sound._node.gain.value = vol * Howler.volume();
+              sound._node.gain.setValueAtTime(vol * Howler.volume(), ctx.currentTime);
             } else {
               sound._node.volume = vol * Howler.volume();
             }
@@ -743,9 +746,9 @@
     fade: function(from, to, len, id) {
       var self = this;
 
-      // Wait for the sound to load before fading.
+      // Wait for the sound to play before fading.
       if (!self._loaded) {
-        self.once('load', function() {
+        self.once('play', function() {
           self.fade(from, to, len, id);
         });
 
@@ -765,13 +768,18 @@
         if (sound) {
           if (self._webAudio) {
             var currentTime = ctx.currentTime;
+            var end = currentTime + (len / 1000);
+            sound._volume = from;
             sound._node.gain.setValueAtTime(from, currentTime);
-            sound._node.gain.linearRampToValueAtTime(to, currentTime + (len / 1000));
+            sound._node.gain.linearRampToValueAtTime(to, end);
 
             // Fire the event when complete.
-            setTimeout(function(id) {
-              self._emit('faded', id);
-            }.bind(self, ids[i]), len);
+            setTimeout(function(id, sound) {
+              setTimeout(function() {
+                sound._volume = to;
+                self._emit('faded', id);
+              }, end - ctx.currentTime > 0 ? Math.ceil((end - ctx.currentTime) * 1000) : 0);
+            }.bind(self, ids[i], sound), len);
           } else {
             var diff = Math.abs(from - to);
             var dir = from > to ? 'out' : 'in';
@@ -783,6 +791,10 @@
               var interval = setInterval(function() {
                 // Update the volume amount.
                 vol += (dir === 'in' ? 0.01 : -0.01);
+
+                // Make sure the volume is in the right bounds.
+                vol = Math.max(0, vol);
+                vol = Math.min(1, vol);
 
                 // Change the volume.
                 self.volume(vol, id);
@@ -1232,7 +1244,7 @@
       if (parent._webAudio) {
         // Create the gain node for controlling volume (the source will connect to this).
         self._node = (typeof ctx.createGain === 'undefined') ? ctx.createGainNode() : ctx.createGain();
-        self._node.gain.value = volume;
+        self._node.gain.setValueAtTime(volume, ctx.currentTime);
         self._node.paused = true;
         self._node.connect(masterGain);
       } else {
