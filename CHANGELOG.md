@@ -10,7 +10,7 @@ Howler (global) ->
 ```
 
 - `ADDED`: Lots of general code cleanup, simplification and reogranziation.
-- `ADDED`: Howler.js has been modularized. The core represents the initial goal for howler.js with 100% compatibility across hTML5 Audio and Web Audio. The effects plugin adds many of the advanced features provided by the Web Audio API.
+- `ADDED`: Howler.js is now modularized. The core represents the initial goal for howler.js with 100% compatibility across hTML5 Audio and Web Audio. The effects plugin adds many of the advanced features provided by the Web Audio API.
 - `ADDED`: The new structure allows for full control of sprite playback (this was buggy or didn't work at all before).
 - `ADDED`: New `once` method to setup event listeners that will automatically remove themselves once fired.
 - `ADDED`: New `playing` method that will return `true` if the specified sound is currently playing.
@@ -19,6 +19,8 @@ Howler (global) ->
 - `ADDED`: New `pool` property to allow setting the inactive sound pool size (for advanced use, still defaults to 5).
 - `ADDED`: The following methods now alter all sounds within a `Howl` group when no `id` is passed: `pause`, `stop`, `volume`, `fade`, `mute`, `loop`.
 - `ADDED`: The `rate` property now changes the playback rate on both Web Audio and HTML5 Audio.
+- `ADDED`: Support for .webm extension in addition to .weba.
+- `ADDED`: New codec recommendations and notes have been added to the documentation.
 - `UPDATED`: The `play` method no longer takes a callback and immediately returns the playback sound id (this means you can no longer chain onto the `play` method, but all others work the same).
 - `UPDATED`: Changed property names `buffer` to `html5` and `pos` to `seek`.
 - `UPDATED`: The global, group and single sound `mute` and `unmute` methods have been combined into a single `mute` method.
@@ -26,12 +28,16 @@ Howler (global) ->
 - `UPDATED`: The deprecated `fadeIn` and `fadeOut` methods have been removed in favor of the single `fade` method.
 - `UPDATED`: The `fade` method now only uses timeouts as a fallback with HTML5 Audio.
 - `UPDATED`: Moved any needed try/catch statements into own methods to prevent de-optimization in V8 and others.
+- `UPDATED`: Updated and improved overall documentation.
 - `FIXED`: The event system has been overhauled to be more reliable.
+- `FIXED`: Methods called before a sound has loaded no longer cause events to stick in the queue.
 - `FIXED`: The `end` event correctly fires at the end of each loop when using Web Audio.
 - `FIXED`: Fixed several issues with playback of sprites.
 - `FIXED`: Fixed several issues with playback timing after pausing sounds.
 - `FIXED`: Improved support for seeking a sound while it is playing.
 - `FIXED`: When playback rate is changed, the `end` event now fires at the correct time.
+- `FIXED`: Calling `pause` on a sound that hasn't yet loaded now works correctly.
+- `FIXED`: Muting a sound while it is fading now works.
 
 ## 1.1.25 (July 29, 2014)
 - `ADDED`: The `AudioContext` is now available on the global `Howler` object (thanks Matt DesLauriers).

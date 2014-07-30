@@ -95,46 +95,58 @@ Example:
 * **onfaded**: `Function` Fires when the current sound finishes fading in/out. The first parameter is the ID of the sound.
 
 ### Methods
-* **play**: Begins playback of sound. Will continue from previous point if sound has been previously paused.
-  * *sprite*: `String` (optional) Plays from the defined sprite key.
-  * *callback*: `Function` (optional) Fires when playback begins and returns the `soundId`, which is the unique identifier for this specific playback instance.
-* **pause**: Pauses playback of sound, saving the `pos` of playback.
-  * *id*: `Number` (optional) The play instance ID.
+* **play**: Begins playback of a sound. Returns the sound id to be used with other methods. Only method that can't be chained.
+  * *sprite/id*: `String/Number` (optional) The `play` method takes one parameter that can either be a sprite ID or a sound ID. If a sprite is passed, a new sound will play based on the sprite's definition. If a sound ID is passed, the previously played sound will be played (for example after puasing it). However, if an ID of a sound that has been drained from the pool is passed, nothing will play.
+* **pause**: Pauses playback of sound or group, saving the `pos` of playback.
+  * *id*: `Number` (optional) The sound ID. If none is passed, all sounds in group are puased.
 * **stop**: Stops playback of sound, resetting `pos` to `0`.
-  * *id*: `Number` (optional) The play instance ID.
+  * *id*: `Number` (optional) The sound ID. If none is passed, all sounds in group are stopped.
 * **mute**: Mutes the sound, but doesn't pause the playback.
-  * *id*: `Number` (optional) The play instance ID.
-* **fade**: Fade a currently playing sound between two volumes.
+  * *muted*: `Boolean` True to mute and false to unmute.
+  * *id*: `Number` (optional) The sound ID. If none is passed, all sounds in group are stopped.
+* **volume**: Get/set volume of this sound or the group. This method optionally takes 0, 1 or 2 arguments.
+  * *volume*: `Number` (optional) Volume from `0.0` to `1.0`.
+  * *id*: `Number` (optional) The sound ID. If none is passed, all sounds in group have volume altered relative to their own volume.
+* **fade**: Fade a currently playing sound between two volumes. Fires the `faded` event when complete.
   * *from*: `Number` Volume to fade from (`0.0` to `1.0`).
   * *to*: `Number` Volume to fade to (`0.0` to `1.0`).
   * *duration*: `Number` Time in milliseconds to fade.
-  * *callback*: `Function` (optional) Fires when fade is complete.
-  * *id*: `Number` (optional) The play instance ID.
-* **loop**: Get/set whether to loop the sound.
-  * *loop*: `Boolean` (optional) To loop or not to loop, that is the question.
-* **seek**: Get/set the position of playback.
+  * *id*: `Number` (optional) The sound ID. If none is passed, all sounds ing roup will fade.
+* **seek**: Get/set the position of playback for a sound. This method optionally takes 0, 1 or 2 arguments.
   * *position*: `Number` (optional) The position to move current playback to (in seconds).
-  * *id*: `Number` (optional) The play instance ID.
-* **volume**: Get/set volume of this sound.
-  * *volume*: `Number` (optional) Volume from `0.0` to `1.0`.
-  * *id*: `Number` (optional) The play instance ID.
-* **on**: Call/set custom events. Multiple events can be added by calling this multiple times.
+  * *id*: `Number` (optional) The sound ID. If none is passed, the first sound will seek.
+* **loop**: Get/set whether to loop the sound or group. This method can optionally take 0, 1 or 2 arguments.
+  * *loop*: `Boolean` (optional) To loop or not to loop, that is the question.
+  * *id*: `Number` (optional) The sound ID. If none is passed, all sounds in group will have their `loop` property updated.
+* **playing**: Check if a sound is currently playing or not, returns a `Boolean`.
+  * *id*: `Number` The sound ID to check.
+* **on**: Listen for events. Multiple events can be added by calling this multiple times.
   * *event*: `String` Name of event to fire/set.
   * *function*: `Function` (optional) Define function to fire on event.
-* **off**: Remove custom events that you've set.
+* **once**: Same as `on`, but it removes itself after the callback is fired.
+  * *event*: `String` Name of event to fire/set.
+  * *function*: `Function` (optional) Define function to fire on event.
+* **off**: Remove event listener that you've set.
   * *event*: `String` Name of event.
   * *function*: `Function` (optional) The listener to remove.
-* **unload**: Unload and destroy a Howl object. This will immediately stop all play instances attached to this sound and remove it from the cache.
+* **load**: This is called by default, but if you set `preload` to false, you must call `load` before you can play any sounds.
+* **unload**: Unload and destroy a Howl object. This will immediately stop all sounds attached to this sound and remove it from the cache.
 
 ### Global Methods
 The following methods are used to modify all sounds globally, and are called from the `Howler` object.
 
-* **mute**: Mutes all sounds.
-* **unmute**: Unmutes all sounds and restores them to their previous volume.
-* **volume**: Get/set the global volume for all sounds.
+* **mute**: Mute or unmute all sounds.
+  * *muted*: `Boolean` True to mute and false to unmute.
+* **volume**: Get/set the global volume for all sounds, relative to their own volume.
   * *volume*: `Number` (optional) Volume from `0.0` to `1.0`.
 * **codecs**: Check supported audio codecs.
   * *ext*: `String` File extension. One of: "mp3", "opus", "ogg", "wav", "aac", "m4a", "mp4", "weba".
+
+### Global Properties
+* **usingWebAudio**: `Boolean` *(no default, auto detection)* `true` if the Web Audio API is available.
+* **noAudio**: `Boolean` *(no default, auto detection)* `true` if any audio is available.
+* **iOSAutoEnable**: `Boolean` *(`true` by default)* Automatically attempts to enable audio on iOS devices.
+* **ctx**: `Boolean` *(Web Audio only)* Exposes the `AudioContext` with Web Audio API.
 
 ### iOS Playback
 By default, audio on iOS is locked until a sound is played within a user interaction, and then it plays normally the rest of the page session ([Apple documentation](https://developer.apple.com/library/safari/documentation/audiovideo/conceptual/using_html5_audio_video/PlayingandSynthesizingSounds/PlayingandSynthesizingSounds.html)). The default behavior of howler.js is to attempt to silently unlock audio playback by playing an empty buffer on the first `touchstart` event. This behavior can be disabled by calling:
@@ -143,7 +155,12 @@ By default, audio on iOS is locked until a sound is played within a user interac
 Howler.iOSAutoEnable = false;
 ```
 
-## License
+### Format Recommendations
+Howler.js supports a wide array of audio codecs that have varying browser support ("mp3", "opus", "ogg", "wav", "aac", "m4a", "mp4", "weba", ...), but if you want full browser coverage you still need to use at least two of them. If your goal is to have the best balance of small filesize and high quality, based on extensive production testing, your best bet is to default to `ogg/webm` and fallback to `mp3`. Both `ogg` and `webm` have nearly full browser coverage with a great combination of compression and quality. You'll need the `mp3` fallback for Internet Explorer.
+
+It is important to remember that howler.js selects the first compatible sound from your array of sources. So if you want `ogg` or `webm` to be used before `mp3`, you need to put the sources in that order.
+
+### License
 
 Copyright (c) 2013-2014 James Simpson and GoldFire Studios, Inc.
 

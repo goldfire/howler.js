@@ -47,6 +47,9 @@
     // This will be true if the Web Audio API is available.
     self.usingWebAudio = usingWebAudio;
 
+    // Expose the AudioContext when using Web Audio.
+    self.ctx = ctx;
+
     // Check for supported codecs.
     if (!noAudio) {
       self._setupCodecs();
@@ -152,7 +155,8 @@
         aac: !!audioTest.canPlayType('audio/aac;').replace(/^no$/, ''),
         m4a: !!(audioTest.canPlayType('audio/x-m4a;') || audioTest.canPlayType('audio/m4a;') || audioTest.canPlayType('audio/aac;')).replace(/^no$/, ''),
         mp4: !!(audioTest.canPlayType('audio/x-mp4;') || audioTest.canPlayType('audio/mp4;') || audioTest.canPlayType('audio/aac;')).replace(/^no$/, ''),
-        weba: !!audioTest.canPlayType('audio/webm; codecs="vorbis"').replace(/^no$/, '')
+        weba: !!audioTest.canPlayType('audio/webm; codecs="vorbis"').replace(/^no$/, ''),
+        webm: !!audioTest.canPlayType('audio/webm; codecs="vorbis"').replace(/^no$/, '')
       };
 
       return self;
@@ -669,7 +673,7 @@
     },
 
     /**
-     * Get/set the volume of this sound or of the Howl group.
+     * Get/set the volume of this sound or of the Howl group. This method can optionally take 0, 1 or 2 arguments.
      *   volume() -> Returns the first sound node's current volume.
      *   volume(id) -> Returns the sound id's current volume.
      *   volume(vol) -> Set's the volume of all sounds in this Howl group.
@@ -814,7 +818,7 @@
     },
 
     /**
-     * Get/set the loop parameter on a sound.
+     * Get/set the loop parameter on a sound. This method can optionally take 0, 1 or 2 arguments.
      *   loop() -> Returns the first sound node's loop value.
      *   loop(id) -> Returns the sound id's loop value.
      *   loop(loop) -> Set's the loop value for all sounds in this Howl group.
