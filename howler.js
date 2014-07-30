@@ -1327,7 +1327,7 @@
    * Add support for AMD (Asynchronous Module Definition) libraries such as require.js.
    */
   if (typeof define === 'function' && define.amd) {
-    define(function() {
+    define('howler', function() {
       return {
         Howler: Howler,
         Howl: Howl
