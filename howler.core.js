@@ -788,7 +788,7 @@
             
             (function() {
               var vol = from;
-              var interval = setInterval(function() {
+              var interval = setInterval(function(id) {
                 // Update the volume amount.
                 vol += (dir === 'in' ? 0.01 : -0.01);
 
