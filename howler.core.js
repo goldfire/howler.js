@@ -480,7 +480,6 @@
       } else {
         // Fire this when the sound is ready to play to begin HTML5 Audio playback.
         var playHtml5 = function() {
-          node.readyState = 4;
           node.currentTime = seek;
           node.muted = sound._muted || self._muted || Howler._muted || node.muted;
           node.volume = sound._volume * Howler.volume();

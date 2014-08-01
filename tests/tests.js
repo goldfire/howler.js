@@ -44,10 +44,12 @@ var tests = [
    */
   
   function(fn) {
+    sound1.once('play', function() {
+      label.innerHTML = 'PLAYING';
+      setTimeout(fn, 2000);
+    });
+    
     id = sound1.play();
-
-    label.innerHTML = 'PLAYING';
-    setTimeout(fn, 2000);
   },
 
   function(fn) {
