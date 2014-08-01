@@ -552,7 +552,7 @@
         // Clear the end timer.
         self._clearTimer(ids[i]);
 
-        // Get the audio node.
+        // Get the sound.
         var sound = self._soundById(ids[i]);
 
         if (sound && !sound._paused) {
@@ -607,7 +607,7 @@
         // Clear the end timer.
         self._clearTimer(ids[i]);
 
-        // Get the audio node.
+        // Get the sound.
         var sound = self._soundById(ids[i]);
 
         if (sound && !sound._paused) {
@@ -667,7 +667,7 @@
       var ids = self._getSoundIds(id);
 
       for (var i=0; i<ids.length; i++) {
-        // Get the audio node.
+        // Get the sound.
         var sound = self._soundById(ids[i]);
 
         if (sound) {
@@ -730,7 +730,7 @@
         // Update one or all volumes.
         id = self._getSoundIds(id);
         for (var i=0; i<id.length; i++) {
-          // Get the audio node.
+          // Get the sound.
           sound = self._soundById(id[i]);
 
           if (sound) {
@@ -777,7 +777,7 @@
       // Fade the volume of one or all sounds.
       var ids = self._getSoundIds(id);
       for (var i=0; i<ids.length; i++) {
-        // Get the audio node.
+        // Get the sound.
         var sound = self._soundById(ids[i]);
 
         // Create a linear fade or fall back to timeouts with HTML5 Audio.
@@ -922,7 +922,7 @@
         return self;
       }
 
-      // Get the audio node.
+      // Get the sound.
       var sound = self._soundById(id);
 
       if (sound) {
@@ -1209,7 +1209,15 @@
       // Setup the buffer source for playback.
       sound._node.bufferSource = ctx.createBufferSource();
       sound._node.bufferSource.buffer = cache[self._src];
-      sound._node.bufferSource.connect(sound._node);
+
+      // Connect to the correct node.
+      if (sound._panner) {
+        sound._node.bufferSource.connect(sound._panner);
+      } else {
+        sound._node.bufferSource.connect(sound._node);
+      }
+
+      // Setup looping and playback rate.
       sound._node.bufferSource.loop = sound._loop;
       if (sound._loop) {
         sound._node.bufferSource.loopStart = sound._seek;
