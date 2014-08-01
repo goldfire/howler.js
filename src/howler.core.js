@@ -231,50 +231,63 @@
       return;
     }
 
-    // Setup user-defined default properties.
-    self._autoplay = o.autoplay || false;
-    self._ext = o.ext || null;
-    self._html5 = o.html5 || false;
-    self._loop = o.loop || false;
-    self._pool = o.pool || 5;
-    self._preload = (typeof o.preload === 'boolean') ? o.preload : true;
-    self._rate = o.rate || 1;
-    self._sprite = o.sprite || {};
-    self._src = (typeof o.src !== 'string') ? o.src : [o.src];
-    self._volume = o.volume !== undefined ? o.volume : 1;
-
-    // Setup all other default properties.
-    self._duration = 0;
-    self._muted = false;
-    self._loaded = false;
-    self._sounds = [];
-    self._endTimers = {};
-
-    // Setup event listeners.
-    self._onend = o.onend ? [o.onend] : [];
-    self._onfaded = o.onfaded ? [o.onfaded] : [];
-    self._onload = o.onload ? [o.onload] : [];
-    self._onloaderror = o.onloaderror ? [o.onloaderror] : [];
-    self._onpause = o.onpause ? [o.onpause] : [];
-    self._onplay = o.onplay ? [o.onplay] : [];
-
-    // Web Audio or HTML5 Audio?
-    self._webAudio = usingWebAudio && !self._html5;
-
-    // Automatically try to enable audio on iOS.
-    if (typeof ctx !== 'undefined' && ctx && Howler.iOSAutoEnable) {
-      Howler._enableiOSAudio();
-    }
-
-    // Keep track of this Howl group in the global controller.
-    Howler._howls.push(self);
-
-    // Load the source file unless otherwise specified.
-    if (self._preload) {
-      self.load();
-    }
+    self.init(o);
   };
   Howl.prototype = {
+    /**
+     * Initialize a new Howl group object.
+     * @param  {Object} o Passed in properties for this group.
+     * @return {Howl}
+     */
+    init: function(o) {
+      var self = this;
+
+      // Setup user-defined default properties.
+      self._autoplay = o.autoplay || false;
+      self._ext = o.ext || null;
+      self._html5 = o.html5 || false;
+      self._loop = o.loop || false;
+      self._pool = o.pool || 5;
+      self._preload = (typeof o.preload === 'boolean') ? o.preload : true;
+      self._rate = o.rate || 1;
+      self._sprite = o.sprite || {};
+      self._src = (typeof o.src !== 'string') ? o.src : [o.src];
+      self._volume = o.volume !== undefined ? o.volume : 1;
+
+      // Setup all other default properties.
+      self._duration = 0;
+      self._muted = false;
+      self._loaded = false;
+      self._sounds = [];
+      self._endTimers = {};
+
+      // Setup event listeners.
+      self._onend = o.onend ? [o.onend] : [];
+      self._onfaded = o.onfaded ? [o.onfaded] : [];
+      self._onload = o.onload ? [o.onload] : [];
+      self._onloaderror = o.onloaderror ? [o.onloaderror] : [];
+      self._onpause = o.onpause ? [o.onpause] : [];
+      self._onplay = o.onplay ? [o.onplay] : [];
+
+      // Web Audio or HTML5 Audio?
+      self._webAudio = usingWebAudio && !self._html5;
+
+      // Automatically try to enable audio on iOS.
+      if (typeof ctx !== 'undefined' && ctx && Howler.iOSAutoEnable) {
+        Howler._enableiOSAudio();
+      }
+
+      // Keep track of this Howl group in the global controller.
+      Howler._howls.push(self);
+
+      // Load the source file unless otherwise specified.
+      if (self._preload) {
+        self.load();
+      }
+
+      return self;
+    },
+
     /**
      * Load the audio file.
      * @return {Howler}
