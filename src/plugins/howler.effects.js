@@ -24,7 +24,7 @@
       var self = this;
 
       // Setup user-defined default properties.
-      self._pos = o.pos || [0, 0, -0.5];
+      self._pos = o.pos;
       self._pannerAttr = {
         coneInnerAngle: typeof o.coneInnerAngle !== 'undefined' ? o.coneInnerAngle : 360,
         coneOUterAngle: typeof o.coneOUterAngle !== 'undefined' ? o.coneOUterAngle : 360,
@@ -55,8 +55,13 @@
       self._pos = parent._pos;
       self._pannerAttr = parent._pannerAttr;
 
-      // Complete initilization with howler.js core's init function.
-      return _super.call(this);
+      // Complete initilization with howler.js core Sound's init function.
+      _super.call(this);
+
+      // If a position was specified, set it up.
+      if (self._pos) {
+        parent.pos(self._pos[0], self._pos[1], self._pos[2], self._id);
+      }
     };
   })(Sound.prototype.init);
 
@@ -242,6 +247,12 @@
           panner.refDistance = pa.refDistance;
           panner.rolloffFactor = pa.rolloffFactor;
         } else {
+          // Make sure we have a position to setup the node with.
+          if (!sound._pos) {
+            sound._pos = self._pos || [0, 0, -0.5];
+          }
+
+          // Create a new panner node.
           setupPanner(sound);
         }
       }
