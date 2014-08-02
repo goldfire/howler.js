@@ -686,10 +686,10 @@
 
     /**
      * Get/set the volume of this sound or of the Howl group. This method can optionally take 0, 1 or 2 arguments.
-     *   volume() -> Returns the first sound node's current volume.
+     *   volume() -> Returns the group's volume value.
      *   volume(id) -> Returns the sound id's current volume.
-     *   volume(vol) -> Set's the volume of all sounds in this Howl group.
-     *   volume(vol, id) -> Set's the volume of passed sound id.
+     *   volume(vol) -> Sets the volume of all sounds in this Howl group.
+     *   volume(vol, id) -> Sets the volume of passed sound id.
      * @return {Howl/Number} Returns self or current volume.
      */
     volume: function() {
@@ -699,8 +699,8 @@
 
       // Determine the values based on arguments.
       if (args.length === 0) {
-        // We will simply return the current volume of the first node.
-        id = self._sounds[0]._id;
+        // Return the value of the groups' volume.
+        return self._volume;
       } else if (args.length === 1) {
         // First check if this is an ID, and if not, assume it is a new volume.
         var ids = self._getSoundIds();
@@ -836,46 +836,42 @@
 
     /**
      * Get/set the loop parameter on a sound. This method can optionally take 0, 1 or 2 arguments.
-     *   loop() -> Returns the first sound node's loop value.
+     *   loop() -> Returns the group's loop value.
      *   loop(id) -> Returns the sound id's loop value.
-     *   loop(loop) -> Set's the loop value for all sounds in this Howl group.
-     *   loop(loop, id) -> Set's the loop value of passed sound id.
+     *   loop(loop) -> Sets the loop value for all sounds in this Howl group.
+     *   loop(loop, id) -> Sets the loop value of passed sound id.
      * @return {Howl/Boolean} Returns self or current loop value.
      */
     loop: function() {
       var self = this;
       var args = arguments;
-      var loop, id;
+      var loop, id, sound;
 
       // Determine the values for loop and id.
       if (args.length === 0) {
-        id = self._sounds[0]._id;
+        // Return the grou's loop value.
+        return self._loop;
       } else if (args.length === 1) {
         if (typeof args[0] === 'boolean') {
           loop = args[0];
         } else {
-          id = parseInt(args[0], 10);
+          // Return this sound's loop value.
+          sound = self._soundById(parseInt(args[0], 10));
+          return sound ? sound._loop : false;
         }
       } else if (args.length === 2) {
         loop = args[0];
         id = parseInt(args[1], 10);
       }
 
-      var sound;
-      if (typeof loop === 'boolean') {
-        // If no id is passed, get all ID's to be muted.
-        var ids = self._getSoundIds(id);
+      // If no id is passed, get all ID's to be looped.
+      var ids = self._getSoundIds(id);
+      for (var i=0; i<ids.length; i++) {
+        sound = self._soundById(ids[i]);
 
-        for (var i=0; i<ids.length; i++) {
-          sound = self._soundById(ids[i]);
-
-          if (sound) {
-            sound._loop = loop;
-          }
+        if (sound) {
+          sound._loop = loop;
         }
-      } else {
-        sound = self._soundById(id);
-        return sound ? sound._loop : false;
       }
 
       return self;
@@ -885,8 +881,8 @@
      * Get/set the seek position of a sound. This method can optionally take 0, 1 or 2 arguments.
      *   seek() -> Returns the first sound node's current seek position.
      *   seek(id) -> Returns the sound id's current seek position.
-     *   seek(seek) -> Set's the seek position of the first sound node.
-     *   seek(seek, id) -> Set's the seek position of passed sound id.
+     *   seek(seek) -> Sets the seek position of the first sound node.
+     *   seek(seek, id) -> Sets the seek position of passed sound id.
      * @return {Howl/Number} Returns self or the current seek position.
      */
     seek: function() {
