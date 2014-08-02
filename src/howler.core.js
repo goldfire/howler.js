@@ -727,6 +727,11 @@
           return self;
         }
 
+        // Set the group volume.
+        if (typeof id === 'undefined') {
+          self._volume = vol;
+        }
+
         // Update one or all volumes.
         id = self._getSoundIds(id);
         for (var i=0; i<id.length; i++) {
@@ -1234,28 +1239,39 @@
    * @param {Object} howl The Howl parent group.
    */
   var Sound = function(howl) {
-    var self = this;
-
-    // Setup the default parameters.
-    self._muted = howl._muted;
-    self._loop = howl._loop;
-    self._volume = howl._volume;
-    self._muted = howl._muted;
-    self._seek = 0;
-    self._paused = true;
-    self._ended = false;
-    self._parent = howl;
-
-    // Generate a unique ID for this sound.
-    self._id = Math.round(Date.now() * Math.random());
-
-    // Add itself to the parent's pool.
-    howl._sounds.push(self);
-
-    // Create the new node.
-    self.create();
+    this._parent = howl;
+    this.init();
   };
   Sound.prototype = {
+    /**
+     * Initialize a new Sound object.
+     * @return {Sound}
+     */
+    init: function() {
+      var self = this;
+      var parent = self._parent;
+
+      // Setup the default parameters.
+      self._muted = parent._muted;
+      self._loop = parent._loop;
+      self._volume = parent._volume;
+      self._muted = parent._muted;
+      self._seek = 0;
+      self._paused = true;
+      self._ended = false;
+
+      // Generate a unique ID for this sound.
+      self._id = Math.round(Date.now() * Math.random());
+
+      // Add itself to the parent's pool.
+      parent._sounds.push(self);
+
+      // Create the new node.
+      self.create();
+
+      return self;
+    },
+
     /**
      * Create and setup a new sound object, whether HTML5 Audio or Web Audio.
      * @return {Sound}
@@ -1511,5 +1527,6 @@
   if (typeof window !== 'undefined') {
     window.Howler = Howler;
     window.Howl = Howl;
+    window.Sound = Sound;
   }
 })();

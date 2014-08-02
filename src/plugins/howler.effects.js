@@ -24,13 +24,41 @@
       var self = this;
 
       // Setup user-defined default properties.
-      self._panModel = o.panModel || null;
       self._pos = o.pos || [0, 0, -0.5];
+      self._pannerAttr = {
+        coneInnerAngle: typeof o.coneInnerAngle !== 'undefined' ? o.coneInnerAngle : 360,
+        coneOUterAngle: typeof o.coneOUterAngle !== 'undefined' ? o.coneOUterAngle : 360,
+        coneOuterGain: typeof o.coneOuterGain !== 'undefined' ? o.coneOuterGain : 0,
+        distanceModel: typeof o.distanceModel !== 'undefined' ? o.distanceModel : 'inverse',
+        maxDistance: typeof o.maxDistance !== 'undefined' ? o.maxDistance : 10000,
+        panningModel: typeof o.panningModel !== 'undefined' ? o.panningModel : 'HRTF',
+        refDistance: typeof o.refDistance !== 'undefined' ? o.refDistance : 1,
+        rolloffFactor: typeof o.rolloffFactor !== 'undefined' ? o.rolloffFactor : 1
+      };
 
       // Complete initilization with howler.js core's init function.
       return _super.call(this, o);
     };
   })(Howl.prototype.init);
+
+  /**
+   * Add new properties to the core Sound init.
+   * @param  {Function} _super Core Sound init method.
+   * @return {Sound}
+   */
+  Sound.prototype.init = (function(_super) {
+    return function() {
+      var self = this;
+      var parent = self._parent;
+
+      // Setup user-defined default properties.
+      self._pos = parent._pos;
+      self._pannerAttr = parent._pannerAttr;
+
+      // Complete initilization with howler.js core's init function.
+      return _super.call(this);
+    };
+  })(Sound.prototype.init);
 
   /**
    * Override the Sound.reset method to clean up properties from the effects plugin.
@@ -43,8 +71,8 @@
       var parent = self._parent;
 
       // Reset all effects module properties on this sound.
-      self._panModel = parent._panModel;
       self._pos = parent._pos;
+      self._pannerAttr = parent._pannerAttr;
 
       // Complete resetting of the sound.
       return _super.call(this);
@@ -102,7 +130,6 @@
       if (sound) {
         if (typeof x === 'number') {
           sound._pos = [x, y, z];
-          sound._panModel = self._panModel;
 
           if (sound._node) {
             // Check if there is a panner setup and create a new one if not.
@@ -122,13 +149,132 @@
   };
 
   /**
+   * Get/set the panner node's attributes for a sound or group of sounds.
+   * This method can optionall take 0, 1 or 2 arguments.
+   *   pannerAttr() -> Returns the group's values.
+   *   pannerAttr(id) -> Returns the sound id's values.
+   *   pannerAttr(o) -> Set's the values of all sounds in this Howl group.
+   *   pannerAttr(o, id) -> Set's the values of passed sound id.
+   *
+   *   Attributes:
+   *     coneInnerAngle - (360 by default) There will be no volume reduction inside this angle.
+   *     coneOUterAngle - (360 by default) The volume will be reduced to a constant value of
+   *                      `coneOuterGain` outside this angle.
+   *     coneOuterGain - (0 by default) The amount of volume reduction outside of `coneOuterAngle`.
+   *     distanceModel - ('inverse' by default) 
+   *     maxDistance - (10000 by default) Volume won't reduce between source/listener beyond this distance.
+   *     panningModel - ('HRTF' by default) 
+   *     refDistance - (1 by default) A reference distance for reducing volume as the source
+   *                    moves away from the listener.
+   *     rolloffFactor - (1 by default) How quickly the volume reduces as source moves from listener.
+   * 
+   * @return {Howl/Object} Returns self or current panner attributes.
+   */
+  Howl.prototype.pannerAttr = function() {
+    var self = this;
+    var args = arguments;
+    var o, id, sound;
+
+    // Stop right here if not using Web Audio.
+    if (!self._webAudio) {
+      return self;
+    }
+
+    // Determine the values based on arguments.
+    if (args.length === 0) {
+      // Return the group's panner attribute values.
+      return self._pannerAttr;
+    } else if (args.length === 1) {
+      if (typeof args[0] === 'object') {
+        o = args[0];
+
+        // Set the grou's panner attribute values.
+        if (typeof id === 'undefined') {
+          self._pannerAttr = {
+            coneInnerAngle: typeof o.coneInnerAngle !== 'undefined' ? o.coneInnerAngle : self._coneInnerAngle,
+            coneOUterAngle: typeof o.coneOUterAngle !== 'undefined' ? o.coneOUterAngle : self._coneOUterAngle,
+            coneOuterGain: typeof o.coneOuterGain !== 'undefined' ? o.coneOuterGain : self._coneOuterGain,
+            distanceModel: typeof o.distanceModel !== 'undefined' ? o.distanceModel : self._distanceModel,
+            maxDistance: typeof o.maxDistance !== 'undefined' ? o.maxDistance : self._maxDistance,
+            panningModel: typeof o.panningModel !== 'undefined' ? o.panningModel : self._panningModel,
+            refDistance: typeof o.refDistance !== 'undefined' ? o.refDistance : self._refDistance,
+            rolloffFactor: typeof o.rolloffFactor !== 'undefined' ? o.rolloffFactor : self._rolloffFactor
+          };
+        }
+      } else {
+        // Return this sound's panner attribute values.
+        sound = self._soundById(parseInt(args[0], 10));
+        return sound ? sound._pannerAttr : self._pannerAttr;
+      }
+    } else if (args.length === 2) {
+      o = args[0];
+      id = parseInt(args[1], 10);
+    }
+
+    // Update the values of the specified sounds.
+    var ids = self._getSoundIds(id);
+    for (var i=0; i<ids.length; i++) {
+      sound = self._soundById(ids[i]);
+
+      if (sound) {
+        // Merge the new values into the sound.
+        var pa = sound._pannerAttr;
+        pa = {
+          coneInnerAngle: typeof o.coneInnerAngle !== 'undefined' ? o.coneInnerAngle : pa.coneInnerAngle,
+          coneOUterAngle: typeof o.coneOUterAngle !== 'undefined' ? o.coneOUterAngle : pa.coneOUterAngle,
+          coneOuterGain: typeof o.coneOuterGain !== 'undefined' ? o.coneOuterGain : pa.coneOuterGain,
+          distanceModel: typeof o.distanceModel !== 'undefined' ? o.distanceModel : pa.distanceModel,
+          maxDistance: typeof o.maxDistance !== 'undefined' ? o.maxDistance : pa.maxDistance,
+          panningModel: typeof o.panningModel !== 'undefined' ? o.panningModel : pa.panningModel,
+          refDistance: typeof o.refDistance !== 'undefined' ? o.refDistance : pa.refDistance,
+          rolloffFactor: typeof o.rolloffFactor !== 'undefined' ? o.rolloffFactor : pa.rolloffFactor
+        };
+
+        // Update the panner values or create a new panner if none exists.
+        var panner = sound._panner;
+        if (panner) {
+          panner.coneInnerAngle = pa.coneInnerAngle;
+          panner.coneOUterAngle = pa.coneOUterAngle;
+          panner.coneOuterGain = pa.coneOuterGain;
+          panner.distanceModel = pa.distanceModel;
+          panner.maxDistance = pa.maxDistance;
+          panner.panningModel = pa.panningModel;
+          panner.refDistance = pa.refDistance;
+          panner.rolloffFactor = pa.rolloffFactor;
+        } else {
+          setupPanner(sound);
+        }
+      }
+    }
+
+    return self;
+  };
+
+
+  Howl.prototype.orientation = function() {
+    
+  };
+
+
+  Howl.prototype.velocity = function() {
+    
+  };
+
+  /**
    * Create a new panner node and save it on the sound.
    * @param  {Sound} sound Specific sound to setup panning on.
    */
   var setupPanner = function(sound) {
     // Create the new panner node.
     sound._panner = Howler.ctx.createPanner();
-    sound._panner.panningModel = sound._panModel || 'HRTF';
+    sound._panner.coneInnerAngle = sound._pannerAttr.coneInnerAngle;
+    sound._panner.coneOUterAngle = sound._pannerAttr.coneOUterAngle;
+    sound._panner.coneOuterGain = sound._pannerAttr.coneOuterGain;
+    sound._panner.distanceModel = sound._pannerAttr.distanceModel;
+    sound._panner.maxDistance = sound._pannerAttr.maxDistance;
+    sound._panner.panningModel = sound._pannerAttr.panningModel;
+    sound._panner.refDistance = sound._pannerAttr.refDistance;
+    sound._panner.rolloffFactor = sound._pannerAttr.rolloffFactor;
     sound._panner.setPosition(sound._pos[0], sound._pos[1], sound._pos[2]);
     sound._panner.connect(sound._node);
 
