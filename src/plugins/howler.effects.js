@@ -30,6 +30,10 @@
       self._pos = [0, 0, 0];
       self._orientation = [0, 0, -1, 0, 1, 0];
       self._velocity = [0, 0, 0];
+      self._listenerAttr = {
+        dopplerFactor: 1,
+        speedOfSound: 343.3
+      };
 
       // Complete initilization with howler.js core's global init function.
       return _super.call(this, o);
@@ -54,7 +58,7 @@
 
     if (typeof x === 'number') {
       self._pos = [x, y || self._pos[1], z || self._pos[2]];
-      ctx.listener.setPosition(self._pos[0], self._pos[1], self._Pos[2]);
+      self.ctx.listener.setPosition(self._pos[0], self._pos[1], self._Pos[2]);
     } else {
       return self._pos;
     }
@@ -86,8 +90,8 @@
 
     var or = self._orientation;
     if (typeof x === 'number') {
-      or = [x, y || or[1], z || or[2], xUp || or[3], yUp || or[4], zUp || or[5]];
-      ctx.listener.setOrientation(or[0], or[1], or[2], or[3], or[4], or[5]);
+      self._orientation = [x, y || or[1], z || or[2], xUp || or[3], yUp || or[4], zUp || or[5]];
+      self.ctx.listener.setOrientation(or[0], or[1], or[2], or[3], or[4], or[5]);
     } else {
       return or;
     }
@@ -114,9 +118,43 @@
 
     if (typeof x === 'number') {
       self._velocity = [x, y || self._velocity[1], z || self._velocity[2]];
-      ctx.listener.setVelocity(self._velocity[0], self._velocity[1], self._velocity[2]);
+      self.ctx.listener.setVelocity(self._velocity[0], self._velocity[1], self._velocity[2]);
     } else {
       return self._velocity;
+    }
+
+    return self;
+  };
+
+  /**
+   * Get/set the audio listener attributes.
+   *   Attributes:
+   *     dopplerFactor - (`1` by default) Determines the amount of pitch shift from doppler effect.
+   *     speedOfSound - (`343.3` by default) Speed of sound used to calculate doppler shift.
+   * @param  {Object} o The attributes to set.
+   * @return {Howl/Object}   Returns self or current listener attributes.
+   */
+  Howler.prototype.listenerAttr = function(o) {
+    var self = this;
+
+    // Stop right here if not using Web Audio.
+    if (!self.ctx || !self.ctx.listener) {
+      return self;
+    }
+
+    var la = self._listenerAttr;
+    if (o) {
+      // Update the listener attribute values.
+      self._listenerAttr = {
+        dopplerFactor: typeof o.dopplerFactor !== 'undefined' ? o.dopplerFactor : la.dopplerFactor,
+        speedOfSound: typeof o.speedOfSound !== 'undefined' ? o.speedOfSound : la.speedOfSound
+      };
+
+      // Apply the new values.
+      self.ctx.listener.dopplerFactor = la.dopplerFactor;
+      self.ctx.listener.speedOfSound = la.speedOfSound;
+    } else {
+      return la;
     }
 
     return self;
