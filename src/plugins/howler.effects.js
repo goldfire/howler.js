@@ -24,6 +24,7 @@
       var self = this;
 
       // Setup user-defined default properties.
+      self._orientation = o.orientation || [1, 0, 0];
       self._pos = o.pos;
       self._pannerAttr = {
         coneInnerAngle: typeof o.coneInnerAngle !== 'undefined' ? o.coneInnerAngle : 360,
@@ -52,6 +53,7 @@
       var parent = self._parent;
 
       // Setup user-defined default properties.
+      self._orientation = parent._orientation;
       self._pos = parent._pos;
       self._pannerAttr = parent._pannerAttr;
 
@@ -151,6 +153,75 @@
     }
 
     return self;
+  };
+
+  /**
+   * Get/set the direction the audio source is pointing in the 3D cartesian coordinate
+   * space. Depending on how directional the sound is, based on the `cone` attributes,
+   * a sound pointing away from the listener can be quiet or silent.
+   * @param  {Number} x  The x-orientation of the source.
+   * @param  {Number} y  The y-orientation of the source.
+   * @param  {Number} z  The z-orientation of the source.
+   * @param  {Number} id (optional) The sound ID. If none is passed, all in group will be updated.
+   * @return {Howl/Array}    Returns self or the current 3D spatial orientation: [x, y, z].
+   */
+  Howl.prototype.orientation = function(x, y, z, id) {
+    var self = this;
+
+    // Stop right here if not using Web Audio.
+    if (!self._webAudio) {
+      return self;
+    }
+
+    // Wait for the sound to play before changing orientation.
+    if (!self._loaded) {
+      self.once('play', function() {
+        self.orientation(x, y, z, id);
+      });
+
+      return self;
+    }
+
+    // Setup the group's spatial orientation if no ID is passed.
+    if (typeof id === 'undefined') {
+      // Return the group's spatial orientation if no parameters are passed.
+      if (typeof x === 'number') {
+        self._orientation = [x, y, z];
+      } else {
+        return self._orientation;
+      }
+    }
+
+    // Change the spatial orientation of one or all sounds in group.
+    var ids = self._getSoundIds(id);
+    for (var i=0; i<ids.length; i++) {
+      // Get the sound.
+      var sound = self._soundById(ids[i]);
+
+      if (sound) {
+        if (typeof x === 'number') {
+          sound._orientation = [x, y, z];
+
+          if (sound._node) {
+            // Check if there is a panner setup and create a new one if not.
+            if (!sound._panner) {
+              setupPanner(sound);
+            }
+
+            sound._panner.setOrientation(x, y, z);
+          }
+        } else {
+          return sound._orientation;
+        }
+      }
+    }
+
+    return self;
+  };
+
+
+  Howl.prototype.velocity = function() {
+    
   };
 
   /**
@@ -261,16 +332,6 @@
     return self;
   };
 
-
-  Howl.prototype.orientation = function() {
-    
-  };
-
-
-  Howl.prototype.velocity = function() {
-    
-  };
-
   /**
    * Create a new panner node and save it on the sound.
    * @param  {Sound} sound Specific sound to setup panning on.
@@ -287,6 +348,7 @@
     sound._panner.refDistance = sound._pannerAttr.refDistance;
     sound._panner.rolloffFactor = sound._pannerAttr.rolloffFactor;
     sound._panner.setPosition(sound._pos[0], sound._pos[1], sound._pos[2]);
+    sound._panner.setOrientation(sound._orientation[0], sound._orientation[1], sound._orientation[2]);
     sound._panner.connect(sound._node);
 
     // Update the connections.
