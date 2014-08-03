@@ -36,7 +36,7 @@ Tested in the following browsers/versions:
 ##### Most basic, play an MP3:
 ```javascript
 var sound = new Howl({
-  src: ['sound.mp3']
+  src: ['sound.ogg']
 });
 
 sound.play();
@@ -45,7 +45,7 @@ sound.play();
 ##### More playback options:
 ```javascript
 var sound = new Howl({
-  src: ['sound.mp3', 'sound.ogg', 'sound.wav'],
+  src: ['sound.ogg', 'sound.mp3', 'sound.wav'],
   autoplay: true,
   loop: true,
   volume: 0.5,
@@ -58,7 +58,7 @@ var sound = new Howl({
 ##### Define and play a sound sprite:
 ```javascript
 var sound = new Howl({
-  src: ['sounds.mp3', 'sounds.ogg'],
+  src: ['sounds.ogg', 'sounds.mp3'],
   sprite: {
     blast: [0, 1000],
     laser: [2000, 3000],

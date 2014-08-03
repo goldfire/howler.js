@@ -15,6 +15,23 @@
   'use strict';
 
   /**
+   * Add new properties to the core global init.
+   * @param  {Function} _super Core global init method.
+   * @return {Howl}
+   */
+  Howler.prototype.init = (function(_super) {
+    return function() {
+      var self = this;
+
+      // Setup default effects properties.
+      
+
+      // Complete initilization with howler.js core's global init function.
+      return _super.call(this, o);
+    };
+  })(Howler.prototype.init);
+
+  /**
    * Add new properties to the core init.
    * @param  {Function} _super Core init method.
    * @return {Howl}

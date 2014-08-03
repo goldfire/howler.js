@@ -30,32 +30,42 @@
    * to all sounds that are currently playing or will be in the future.
    */
   var HowlerGlobal = function() {
-    var self = this;
-
-    // Internal properties.
-    self._codecs = {};
-    self._howls = [];
-    self._muted = false;
-    self._volume = 1;
-
-    // Set to false to disable the auto iOS enabler.
-    self.iOSAutoEnable = true;
-
-    // No audio is available on this system if this is set to true.
-    self.noAudio = noAudio;
-
-    // This will be true if the Web Audio API is available.
-    self.usingWebAudio = usingWebAudio;
-
-    // Expose the AudioContext when using Web Audio.
-    self.ctx = ctx;
-
-    // Check for supported codecs.
-    if (!noAudio) {
-      self._setupCodecs();
-    }
+    this.init();
   };
   HowlerGlobal.prototype = {
+    /**
+     * Initialize the global Howler object.
+     * @return {Howler}
+     */
+    init: function() {
+      var self = this;
+
+      // Internal properties.
+      self._codecs = {};
+      self._howls = [];
+      self._muted = false;
+      self._volume = 1;
+
+      // Set to false to disable the auto iOS enabler.
+      self.iOSAutoEnable = true;
+
+      // No audio is available on this system if this is set to true.
+      self.noAudio = noAudio;
+
+      // This will be true if the Web Audio API is available.
+      self.usingWebAudio = usingWebAudio;
+
+      // Expose the AudioContext when using Web Audio.
+      self.ctx = ctx;
+
+      // Check for supported codecs.
+      if (!noAudio) {
+        self._setupCodecs();
+      }
+
+      return self;
+    },
+
     /**
      * Get/set the global volume for all sounds.
      * @param  {Float} vol Volume from 0.0 to 1.0.
