@@ -25,6 +25,9 @@
     masterGain.connect(ctx.destination);
   }
 
+  /** Global Methods **/
+  /***************************************************************************/
+
   /**
    * Create the global controller. All contained methods and properties apply
    * to all sounds that are currently playing or will be in the future.
@@ -227,6 +230,9 @@
 
   // Setup the global audio controller.
   var Howler = new HowlerGlobal();
+
+  /** Group Methods **/
+  /***************************************************************************/
 
   /**
    * Create an audio group controller.
@@ -1240,6 +1246,9 @@
     }
   };
 
+  /** Single Sound Methods **/
+  /***************************************************************************/
+
   /**
    * Setup the sound object, which each node attached to a Howl group is contained in.
    * @param {Object} howl The Howl parent group.
@@ -1370,6 +1379,9 @@
       return self;
     }
   };
+
+  /** Helper Methods **/
+  /***************************************************************************/
 
   // Only define these methods when using Web Audio.
   if (usingWebAudio) {

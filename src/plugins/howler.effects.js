@@ -14,6 +14,9 @@
 
   'use strict';
 
+  /** Global Methods **/
+  /***************************************************************************/
+
   /**
    * Add new properties to the core global init.
    * @param  {Function} _super Core global init method.
@@ -30,6 +33,9 @@
       return _super.call(this, o);
     };
   })(Howler.prototype.init);
+
+  /** Group Methods **/
+  /***************************************************************************/
 
   /**
    * Add new properties to the core init.
@@ -59,53 +65,6 @@
       return _super.call(this, o);
     };
   })(Howl.prototype.init);
-
-  /**
-   * Add new properties to the core Sound init.
-   * @param  {Function} _super Core Sound init method.
-   * @return {Sound}
-   */
-  Sound.prototype.init = (function(_super) {
-    return function() {
-      var self = this;
-      var parent = self._parent;
-
-      // Setup user-defined default properties.
-      self._orientation = parent._orientation;
-      self._pos = parent._pos;
-      self._velocity = parent._velocity;
-      self._pannerAttr = parent._pannerAttr;
-
-      // Complete initilization with howler.js core Sound's init function.
-      _super.call(this);
-
-      // If a position was specified, set it up.
-      if (self._pos) {
-        parent.pos(self._pos[0], self._pos[1], self._pos[2], self._id);
-      }
-    };
-  })(Sound.prototype.init);
-
-  /**
-   * Override the Sound.reset method to clean up properties from the effects plugin.
-   * @param  {Function} _super Sound reset method.
-   * @return {Sound}
-   */
-  Sound.prototype.reset = (function(_super) {
-    return function() {
-      var self = this;
-      var parent = self._parent;
-
-      // Reset all effects module properties on this sound.
-      self._orientation = parent._orientation;
-      self._pos = parent._pos;
-      self._velocity = parent._velocity;
-      self._pannerAttr = parent._pannerAttr;
-
-      // Complete resetting of the sound.
-      return _super.call(this);
-    };
-  })(Sound.prototype.reset);
 
   /**
    * Get/set the 3D spatial position of the audio source for this sound or
@@ -413,6 +372,59 @@
 
     return self;
   };
+
+  /** Single Sound Methods **/
+  /***************************************************************************/
+
+  /**
+   * Add new properties to the core Sound init.
+   * @param  {Function} _super Core Sound init method.
+   * @return {Sound}
+   */
+  Sound.prototype.init = (function(_super) {
+    return function() {
+      var self = this;
+      var parent = self._parent;
+
+      // Setup user-defined default properties.
+      self._orientation = parent._orientation;
+      self._pos = parent._pos;
+      self._velocity = parent._velocity;
+      self._pannerAttr = parent._pannerAttr;
+
+      // Complete initilization with howler.js core Sound's init function.
+      _super.call(this);
+
+      // If a position was specified, set it up.
+      if (self._pos) {
+        parent.pos(self._pos[0], self._pos[1], self._pos[2], self._id);
+      }
+    };
+  })(Sound.prototype.init);
+
+  /**
+   * Override the Sound.reset method to clean up properties from the effects plugin.
+   * @param  {Function} _super Sound reset method.
+   * @return {Sound}
+   */
+  Sound.prototype.reset = (function(_super) {
+    return function() {
+      var self = this;
+      var parent = self._parent;
+
+      // Reset all effects module properties on this sound.
+      self._orientation = parent._orientation;
+      self._pos = parent._pos;
+      self._velocity = parent._velocity;
+      self._pannerAttr = parent._pannerAttr;
+
+      // Complete resetting of the sound.
+      return _super.call(this);
+    };
+  })(Sound.prototype.reset);
+
+  /** Helper Methods **/
+  /***************************************************************************/
 
   /**
    * Create a new panner node and save it on the sound.
