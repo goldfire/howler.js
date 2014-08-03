@@ -27,12 +27,100 @@
       var self = this;
 
       // Setup default effects properties.
-      
+      self._pos = [0, 0, 0];
+      self._orientation = [0, 0, -1, 0, 1, 0];
+      self._velocity = [0, 0, 0];
 
       // Complete initilization with howler.js core's global init function.
       return _super.call(this, o);
     };
   })(Howler.prototype.init);
+
+  /**
+   * Get/set the position of the listener in 3D cartesian space. Sounds using
+   * 3D position will be relative to the listener's position.
+   * @param  {Number} x The x-position of the listener.
+   * @param  {Number} y The y-position of the listener.
+   * @param  {Number} z The z-position of the listener.
+   * @return {Howler/Array}   Self or current listener position.
+   */
+  Howler.prototype.pos = function(x, y, z) {
+    var self = this;
+
+    // Stop right here if not using Web Audio.
+    if (!self.ctx || !self.ctx.listener) {
+      return self;
+    }
+
+    if (typeof x === 'number') {
+      self._pos = [x, y || self._pos[1], z || self._pos[2]];
+      ctx.listener.setPosition(self._pos[0], self._pos[1], self._Pos[2]);
+    } else {
+      return self._pos;
+    }
+
+    return self;
+  };
+
+  /**
+   * Get/set the direction the listener is pointing in the 3D cartesian space.
+   * A front and up vector must be provided. The front is the direction the
+   * face of the listener is pointing, and up is the direction the top of the
+   * listener is pointing. Thus, these values are expected to be at right angles
+   * from each other.
+   * @param  {Number} x   The x-orientation of the listener.
+   * @param  {Number} y   The y-orientation of the listener.
+   * @param  {Number} z   The z-orientation of the listener.
+   * @param  {Number} xUp The x-orientation of the top of the listener.
+   * @param  {Number} yUp The y-orientation of the top of the listener.
+   * @param  {Number} zUp The z-orientation of the top of the listener.
+   * @return {Howler/Array}     Returns self or the current orientation vectors.
+   */
+  Howler.prototype.orientatin = function(x, y, z, xUp, yUp, zUp) {
+    var self = this;
+
+    // Stop right here if not using Web Audio.
+    if (!self.ctx || !self.ctx.listener) {
+      return self;
+    }
+
+    var or = self._orientation;
+    if (typeof x === 'number') {
+      or = [x, y || or[1], z || or[2], xUp || or[3], yUp || or[4], zUp || or[5]];
+      ctx.listener.setOrientation(or[0], or[1], or[2], or[3], or[4], or[5]);
+    } else {
+      return or;
+    }
+
+    return self;
+  };
+
+  /**
+   * Get/set the velocity vector of the listener. This controls both direction and speed
+   * in 3D space, and is combined relative to a sound's velocity to determine how much
+   * doppler shift (pitch change) to apply.
+   * @param  {Number} x The x-velocity of the listener.
+   * @param  {Number} y The y-velocity of the listener.
+   * @param  {Number} z The z-velocity of the listener.
+   * @return {Howler/Array}   Self or current listener velocity.
+   */
+  Howler.prototype.velocity = function(x, y, z) {
+    var self = this;
+
+    // Stop right here if not using Web Audio.
+    if (!self.ctx || !self.ctx.listener) {
+      return self;
+    }
+
+    if (typeof x === 'number') {
+      self._velocity = [x, y || self._velocity[1], z || self._velocity[2]];
+      ctx.listener.setVelocity(self._velocity[0], self._velocity[1], self._velocity[2]);
+    } else {
+      return self._velocity;
+    }
+
+    return self;
+  };
 
   /** Group Methods **/
   /***************************************************************************/
