@@ -26,6 +26,7 @@
       // Setup user-defined default properties.
       self._orientation = o.orientation || [1, 0, 0];
       self._pos = o.pos;
+      self._velocity = o.velocity || [0, 0, 0];
       self._pannerAttr = {
         coneInnerAngle: typeof o.coneInnerAngle !== 'undefined' ? o.coneInnerAngle : 360,
         coneOUterAngle: typeof o.coneOUterAngle !== 'undefined' ? o.coneOUterAngle : 360,
@@ -55,6 +56,7 @@
       // Setup user-defined default properties.
       self._orientation = parent._orientation;
       self._pos = parent._pos;
+      self._velocity = parent._velocity;
       self._pannerAttr = parent._pannerAttr;
 
       // Complete initilization with howler.js core Sound's init function.
@@ -78,7 +80,9 @@
       var parent = self._parent;
 
       // Reset all effects module properties on this sound.
+      self._orientation = parent._orientation;
       self._pos = parent._pos;
+      self._velocity = parent._velocity;
       self._pannerAttr = parent._pannerAttr;
 
       // Complete resetting of the sound.
@@ -219,9 +223,68 @@
     return self;
   };
 
+  /**
+   * Get/set the velocity vector of the audio source or group. This controls both
+   * direction and speed in 3D space and is relative to the listener's velocity.
+   * The units are meters/second and are independent of position and orientation.
+   * @param  {Number} x  The x-velocity of the source.
+   * @param  {Number} y  The y-velocity of the source.
+   * @param  {Number} z  The z-velocity of the source.
+   * @param  {Number} id (optional) The sound ID. If none is passed, all in group will be updated.
+   * @return {Howl/Array}    Returns self or the current 3D spatial velocity: [x, y, z].
+   */
+  Howl.prototype.velocity = function(x, y, z, id) {
+    var self = this;
 
-  Howl.prototype.velocity = function() {
-    
+    // Stop right here if not using Web Audio.
+    if (!self._webAudio) {
+      return self;
+    }
+
+    // Wait for the sound to play before changing velocity.
+    if (!self._loaded) {
+      self.once('play', function() {
+        self.velocity(x, y, z, id);
+      });
+
+      return self;
+    }
+
+    // Setup the group's spatial velocity if no ID is passed.
+    if (typeof id === 'undefined') {
+      // Return the group's spatial velocity if no parameters are passed.
+      if (typeof x === 'number') {
+        self._velocity = [x, y, z];
+      } else {
+        return self._velocity;
+      }
+    }
+
+    // Change the spatial velocity of one or all sounds in group.
+    var ids = self._getSoundIds(id);
+    for (var i=0; i<ids.length; i++) {
+      // Get the sound.
+      var sound = self._soundById(ids[i]);
+
+      if (sound) {
+        if (typeof x === 'number') {
+          sound._velocity = [x, y, z];
+
+          if (sound._node) {
+            // Check if there is a panner setup and create a new one if not.
+            if (!sound._panner) {
+              setupPanner(sound);
+            }
+
+            sound._panner.setVelocity(x, y, z);
+          }
+        } else {
+          return sound._velocity;
+        }
+      }
+    }
+
+    return self;
   };
 
   /**
@@ -349,6 +412,7 @@
     sound._panner.rolloffFactor = sound._pannerAttr.rolloffFactor;
     sound._panner.setPosition(sound._pos[0], sound._pos[1], sound._pos[2]);
     sound._panner.setOrientation(sound._orientation[0], sound._orientation[1], sound._orientation[2]);
+    sound._panner.setVelocity(sound._velocity[0], sound._velocity[1], sound._velocity[2]);
     sound._panner.connect(sound._node);
 
     // Update the connections.
