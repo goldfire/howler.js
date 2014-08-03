@@ -148,6 +148,40 @@ The following methods are used to modify all sounds globally, and are called fro
 * **iOSAutoEnable**: `Boolean` *(`true` by default)* Automatically attempts to enable audio on iOS devices.
 * **ctx**: `Boolean` *(Web Audio only)* Exposes the `AudioContext` with Web Audio API.
 
+### Effects Plugin Methods
+* **pos**: Get/set the 3D spatial position of the audio source for this sound or group. The most common usage is to set the `x` position for left/right panning. Setting any value higher than `1.0` will begin to decrease the volume of the sound as it moves further away.
+  * *x*: `Number` The x-position of the audio from -1000.0 to 1000.0.
+  * *y*: `Number` The y-position of the audio from -1000.0 to 1000.0.
+  * *z*: `Number` The z-position of the audio from -1000.0 to 1000.0.
+  * *id*: `Number` (optional) The sound ID. If none is passed, all in group will be updated.
+* **orientation**: Get/set the direction the audio source is pointing in the 3D cartesian coordinate space. Depending on how direction the sound is, based on the `cone` attributes, a sound pointing away from the listener can be quiet or silent.
+  * *x*: `Number` The x-orientation of the source.
+  * *y*: `Number` The y-orientation of the source.
+  * *z*: `Number` The z-orientation of the source.
+  * *id*: `Number` (optional) The sound ID. If none is passed, all in group will be updated.
+* **velocity**: Get/set the velocity vector of the audio source or group. This controls both direction and speed in 3D space and is relative to the listener's velocity. The units are meters/second and are independent of position and orientation.
+  * *x*: `Number` The x-velocity of the source.
+  * *y*: `Number` The y-velocity of the source.
+  * *z*: `Number` The z-velocity of the source.
+  * *id*: `Number` (optional) The sound ID. If none is passed, all in group will be updated.
+* **pannerAttr**: Get/set the panner node's attributes for a sound or group of sounds. This method can optionall take 0, 1 or 2 arguments.
+  * *o*: `Object` All values to update.
+    * `coneInnerAngle` (`360` by default) There will be no volume reduction inside this angle.
+    * `coneOUterAngle` (`360` by default) The volume will be reduced to a constant value of `coneOuterGain` outside this angle.
+    * `coneOuterGain` (`0` by default) The amount of volume reduction outside of `coneOuterAngle`.
+    * `distanceModel` (`inverse` by default) Determines algorithm to use to reduce volume as audio moves away from listener. Can be `linear`, `inverse` or `exponential.
+    * `maxDistance` (`10000` by default) Volume won't reduce between source/listener beyond this distance.
+    * `panningModel` (`HRTF` by default) Determines which spatialization algorithm is used to position audio. Can be `HRTF` or `equalpower`.
+    * `refDistance` (`1` by default) A reference distance for reducing volume as the source moves away from the listener.
+    * `rolloffFactor` (`1` by default) How quickly the volume reduces as source moves from listener.
+  * *id*: `Number` (optional) The sound ID. If none is passed, all in group will be updated.
+
+### Effects Plugin Properties
+* **orientation**: `Array` *(`[1, 0, 0]` by default)* Sets the direction the audio source is pointing in the 3D cartesian coordinate space. Depending on how direction the sound is, based on the `cone` attributes, a sound pointing away from the listener can be quiet or silent.
+* **pos**: `Array` *('null' by default)* Sets the 3D spatial position of the audio source for this sound or group. The most common usage is to set the `x` position for left/right panning. Setting any value higher than `1.0` will begin to decrease the volume of the sound as it moves further away.
+* **velocity**: `Array` *(`[0, 0, 0]` by default)* Sets the velocity vector of the audio source or group. This controls both direction and speed in 3D space and is relative to the listener's velocity. The units are meters/second and are independent of position and orientation.
+* **pannerAttr**: `Object` *(see `pannerAttr` method for defaults)* Sets the panner node's attributes for a sound or group of sounds.
+
 ### iOS Playback
 By default, audio on iOS is locked until a sound is played within a user interaction, and then it plays normally the rest of the page session ([Apple documentation](https://developer.apple.com/library/safari/documentation/audiovideo/conceptual/using_html5_audio_video/PlayingandSynthesizingSounds/PlayingandSynthesizingSounds.html)). The default behavior of howler.js is to attempt to silently unlock audio playback by playing an empty buffer on the first `touchstart` event. This behavior can be disabled by calling:
 

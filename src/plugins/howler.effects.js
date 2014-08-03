@@ -25,7 +25,7 @@
 
       // Setup user-defined default properties.
       self._orientation = o.orientation || [1, 0, 0];
-      self._pos = o.pos;
+      self._pos = o.pos || null;
       self._velocity = o.velocity || [0, 0, 0];
       self._pannerAttr = {
         coneInnerAngle: typeof o.coneInnerAngle !== 'undefined' ? o.coneInnerAngle : 360,
@@ -161,7 +161,7 @@
 
   /**
    * Get/set the direction the audio source is pointing in the 3D cartesian coordinate
-   * space. Depending on how directional the sound is, based on the `cone` attributes,
+   * space. Depending on how direction the sound is, based on the `cone` attributes,
    * a sound pointing away from the listener can be quiet or silent.
    * @param  {Number} x  The x-orientation of the source.
    * @param  {Number} y  The y-orientation of the source.
@@ -300,9 +300,11 @@
    *     coneOUterAngle - (360 by default) The volume will be reduced to a constant value of
    *                      `coneOuterGain` outside this angle.
    *     coneOuterGain - (0 by default) The amount of volume reduction outside of `coneOuterAngle`.
-   *     distanceModel - ('inverse' by default) 
+   *     distanceModel - ('inverse' by default) Determines algorithm to use to reduce volume as audio moves
+   *                      away from listener. Can be `linear`, `inverse` or `exponential.
    *     maxDistance - (10000 by default) Volume won't reduce between source/listener beyond this distance.
-   *     panningModel - ('HRTF' by default) 
+   *     panningModel - ('HRTF' by default) Determines which spatialization algorithm is used to position audio.
+   *                     Can be `HRTF` or `equalpower`.
    *     refDistance - (1 by default) A reference distance for reducing volume as the source
    *                    moves away from the listener.
    *     rolloffFactor - (1 by default) How quickly the volume reduces as source moves from listener.
