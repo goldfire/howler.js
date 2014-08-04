@@ -539,7 +539,10 @@
         }
       }
 
-      self._emit('play', sound._id);
+      // Emit the play event on the next tick.
+      setTimeout(function() {
+        self._emit('play', sound._id);
+      }, 0);
 
       return sound._id;
     },
