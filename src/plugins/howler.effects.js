@@ -56,8 +56,12 @@
       return self;
     }
 
+    // Set the defaults for optional 'y' & 'z'.
+    y = (typeof y !== 'number') ? self._pos[1] : y;
+    z = (typeof z !== 'number') ? self._pos[2] : z;
+
     if (typeof x === 'number') {
-      self._pos = [x, y || self._pos[1], z || self._pos[2]];
+      self._pos = [x, y, z];
       self.ctx.listener.setPosition(self._pos[0], self._pos[1], self._Pos[2]);
     } else {
       return self._pos;
@@ -88,9 +92,16 @@
       return self;
     }
 
+    // Set the defaults for optional 'y' & 'z'.
     var or = self._orientation;
+    y = (typeof y !== 'number') ? or[1] : y;
+    z = (typeof z !== 'number') ? or[2] : z;
+    xUp = (typeof xUp !== 'number') ? or[3] : xUp;
+    yUp = (typeof yUp !== 'number') ? or[4] : yUp;
+    zUp = (typeof zUp !== 'number') ? or[5] : zUp;
+
     if (typeof x === 'number') {
-      self._orientation = [x, y || or[1], z || or[2], xUp || or[3], yUp || or[4], zUp || or[5]];
+      self._orientation = [x, y, z, xUp, yUp, zUp];
       self.ctx.listener.setOrientation(or[0], or[1], or[2], or[3], or[4], or[5]);
     } else {
       return or;
@@ -116,8 +127,12 @@
       return self;
     }
 
+    // Set the defaults for optional 'y' & 'z'.
+    y = (typeof y !== 'number') ? self._velocity[1] : y;
+    z = (typeof z !== 'number') ? self._velocity[2] : z;
+
     if (typeof x === 'number') {
-      self._velocity = [x, y || self._velocity[1], z || self._velocity[2]];
+      self._velocity = [x, y, z];
       self.ctx.listener.setVelocity(self._velocity[0], self._velocity[1], self._velocity[2]);
     } else {
       return self._velocity;
@@ -288,6 +303,10 @@
       return self;
     }
 
+    // Set the defaults for optional 'y' & 'z'.
+    y = (typeof y !== 'number') ? self._orientation[1] : y;
+    z = (typeof z !== 'number') ? self._orientation[1] : z;
+
     // Setup the group's spatial orientation if no ID is passed.
     if (typeof id === 'undefined') {
       // Return the group's spatial orientation if no parameters are passed.
@@ -351,6 +370,10 @@
 
       return self;
     }
+
+    // Set the defaults for optional 'y' & 'z'.
+    y = (typeof y !== 'number') ? self._velocity[1] : y;
+    z = (typeof z !== 'number') ? self._velocity[1] : z;
 
     // Setup the group's spatial velocity if no ID is passed.
     if (typeof id === 'undefined') {
