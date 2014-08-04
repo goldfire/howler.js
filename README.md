@@ -182,6 +182,27 @@ The following methods are used to modify all sounds globally, and are called fro
 * **velocity**: `Array` *(`[0, 0, 0]` by default)* Sets the velocity vector of the audio source or group. This controls both direction and speed in 3D space and is relative to the listener's velocity. The units are meters/second and are independent of position and orientation.
 * **pannerAttr**: `Object` *(see `pannerAttr` method for defaults)* Sets the panner node's attributes for a sound or group of sounds.
 
+### Global Effects Plugin Methods
+* **pos**: Get/set the position of the listener in 3D cartesian space. Sounds using 3D position will be relative to the listener's position.
+  * *x*: `Number` The x-position of the listener.
+  * *y*: `Number` The y-position of the listener.
+  * *z*: `Number` The z-position of the listener.
+* **orientation**: Get/set the direction the listener is pointing in the 3D cartesian space. A front and up vector must be provided. The front is the direction the face of the listener is pointing, and up is the direction the top of the listener is pointing. Thus, these values are expected to be at right angles from each other.
+  * *x*: `Number` The x-orientation of listener.
+  * *y*: `Number` The y-orientation of listener.
+  * *z*: `Number` The z-orientation of listener.
+  * *xUp*: `Number` The x-orientation of the top of the listener.
+  * *yUp*: `Number` The y-orientation of the top of the listener.
+  * *zUp*: `Number` The z-orientation of the top of the listener.
+* **velocity**: Get/set the velocity vector of the listener. This controls both direction and speed in 3D space, and is combined relative to a sound's velocity to determine how much doppler shift (pitch change) to apply.
+  * *x*: `Number` The x-velocity of listener.
+  * *y*: `Number` The y-velocity of listener.
+  * *z*: `Number` The z-velocity of listener.
+* **pannerAttr**: Get/set the audio listener attributes.
+  * *o*: `Object` All values to update.
+    * `dopplerFactor` (`1` by default) Determines the amount of pitch shift from doppler effect.
+    * `speedOfSound` (`343.3` by default) Speed of sound used to calculate doppler shift.
+
 ### iOS Playback
 By default, audio on iOS is locked until a sound is played within a user interaction, and then it plays normally the rest of the page session ([Apple documentation](https://developer.apple.com/library/safari/documentation/audiovideo/conceptual/using_html5_audio_video/PlayingandSynthesizingSounds/PlayingandSynthesizingSounds.html)). The default behavior of howler.js is to attempt to silently unlock audio playback by playing an empty buffer on the first `touchstart` event. This behavior can be disabled by calling:
 
