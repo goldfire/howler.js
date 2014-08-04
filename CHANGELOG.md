@@ -1,13 +1,15 @@
 ## 2.0.0 (TBD)
-This is a new major release that contains breaking changes to the API, check the migration guide (coming soon) for details. In short, this represents a complete rewrite of the library, taking into account everything that has been learned since the initial launch. There are many small and large updates in this release, and the below are just the highlights.
+This major release contains breaking changes (migration guide), but should be very familiar. Howler.js has been rewritten from the ground up using the knowledge and work since the initial release. There's a long list of additions and improvements, which I urge you to read through.
 
-The biggest change is how you should think about your audio when using howler.js. Previously, you had `Howler` for global and a `Howl` was both the definition and the playback itself. This was confusing and led to a lot of different bugs. Now, a `Howl` can be viewed as a group of sounds. Each time you play a sound, a new `Sound` object is created, which contains all of the specs for that specific playback. All of the methods called on `Howl` can then be used to update a single `Sound` playback or all of them in the group.
+The biggest change is how you should think about your audio when using howler.js. There is now the concept of global (`Howler`), group (`Howl`) and single sound (`Sound`). Each sound that is played gets its own `Sound` object that can be manipulated, giving much greater control over playback, whether using sprites or not. `Howl` method calls can then apply to one sound or all in the group.
 
 ```
 Howler (global) ->
         Howl (group) ->
                 Sound (single)
 ```
+
+Howler.js now also has the concept of plugins. The core represents 100% compatibility across hTML5 Audio and Web Audio, adhering to the initial goals of the library. There is also a new Effects Plugin that adds advanced features only available in the Web Audio API.
 
 - `ADDED`: Lots of general code cleanup, simplification and reogranziation.
 - `ADDED`: Howler.js is now modularized. The core represents the initial goal for howler.js with 100% compatibility across hTML5 Audio and Web Audio. The effects plugin adds many of the advanced features provided by the Web Audio API.
@@ -21,6 +23,10 @@ Howler (global) ->
 - `ADDED`: The `rate` property now changes the playback rate on both Web Audio and HTML5 Audio.
 - `ADDED`: Support for .webm extension in addition to .weba.
 - `ADDED`: New codec recommendations and notes have been added to the documentation.
+- `ADDED`: (Effects) New `Howler` listener methods `pos`, `orientation`, `velocity` and `listenerAttr`.
+- `ADDED`: (Effects) New `Howl` methods `pos`, `orientation`, `velocity` and `pannerAttr` to control spatial audio of single sounds or groups of sounds.
+- `ADDED`: (Effects) `pannerAttr` allows for control of `coneInnerAngle`, `coneOUterAngle`, `coneOuterGain`, `distanceModel`, `maxDistance`, `panningModel`, `refDistance` and `rolloffFactor`.
+- `UPDATED`: (Effects) When using Web Audio, a panner node is only added when spatial audio is used.
 - `UPDATED`: The `play` method no longer takes a callback and immediately returns the playback sound id (this means you can no longer chain onto the `play` method, but all others work the same).
 - `UPDATED`: Changed property names `buffer` to `html5` and `pos` to `seek`.
 - `UPDATED`: The global, group and single sound `mute` and `unmute` methods have been combined into a single `mute` method.
