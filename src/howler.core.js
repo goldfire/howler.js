@@ -1543,6 +1543,7 @@
 
   // Define globally in case AMD is not available or unused.
   if (typeof window !== 'undefined') {
+    window.HowlerGlobal = HowlerGlobal;
     window.Howler = Howler;
     window.Howl = Howl;
     window.Sound = Sound;

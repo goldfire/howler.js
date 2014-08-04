@@ -22,7 +22,7 @@
    * @param  {Function} _super Core global init method.
    * @return {Howl}
    */
-  Howler.prototype.init = (function(_super) {
+  HowlerGlobal.prototype.init = (function(_super) {
     return function() {
       var self = this;
 
@@ -38,7 +38,7 @@
       // Complete initilization with howler.js core's global init function.
       return _super.call(this, o);
     };
-  })(Howler.prototype.init);
+  })(HowlerGlobal.prototype.init);
 
   /**
    * Get/set the position of the listener in 3D cartesian space. Sounds using
@@ -48,7 +48,7 @@
    * @param  {Number} z The z-position of the listener.
    * @return {Howler/Array}   Self or current listener position.
    */
-  Howler.prototype.pos = function(x, y, z) {
+  HowlerGlobal.prototype.pos = function(x, y, z) {
     var self = this;
 
     // Stop right here if not using Web Audio.
@@ -84,7 +84,7 @@
    * @param  {Number} zUp The z-orientation of the top of the listener.
    * @return {Howler/Array}     Returns self or the current orientation vectors.
    */
-  Howler.prototype.orientatin = function(x, y, z, xUp, yUp, zUp) {
+  HowlerGlobal.prototype.orientatin = function(x, y, z, xUp, yUp, zUp) {
     var self = this;
 
     // Stop right here if not using Web Audio.
@@ -119,7 +119,7 @@
    * @param  {Number} z The z-velocity of the listener.
    * @return {Howler/Array}   Self or current listener velocity.
    */
-  Howler.prototype.velocity = function(x, y, z) {
+  HowlerGlobal.prototype.velocity = function(x, y, z) {
     var self = this;
 
     // Stop right here if not using Web Audio.
@@ -149,7 +149,7 @@
    * @param  {Object} o The attributes to set.
    * @return {Howl/Object}   Returns self or current listener attributes.
    */
-  Howler.prototype.listenerAttr = function(o) {
+  HowlerGlobal.prototype.listenerAttr = function(o) {
     var self = this;
 
     // Stop right here if not using Web Audio.
