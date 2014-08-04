@@ -833,6 +833,9 @@
                 vol = Math.max(0, vol);
                 vol = Math.min(1, vol);
 
+                // Round to within 2 decimal points.
+                vol = Math.round(vol * 100) / 100;
+
                 // Change the volume.
                 self.volume(vol, id);
 
