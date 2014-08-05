@@ -498,10 +498,7 @@
             self._endTimers[sound._id] = setTimeout(ended, (duration * 1000) / Math.abs(self._rate));
           }
 
-          // Emit the play event on the next tick.
-          setTimeout(function() {
-            self._emit('play', sound._id);
-          }, 0);
+          self._emit('play', sound._id);
         };
 
         if (self._loaded) {
@@ -1107,7 +1104,9 @@
       // Loop through event store and fire all functions.
       for (var i=0; i<events.length; i++) {
         if (!events[i].id || events[i].id === id) {
-          events[i].fn.call(self, id, msg);
+          setTimeout(function(fn) {
+            fn.call(this, id, msg);
+          }.bind(self, events[i].fn), 0);
         }
       }
 
