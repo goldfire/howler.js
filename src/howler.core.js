@@ -497,6 +497,11 @@
           if (!self._endTimers[sound._id]) {
             self._endTimers[sound._id] = setTimeout(ended, (duration * 1000) / Math.abs(self._rate));
           }
+
+          // Emit the play event on the next tick.
+          setTimeout(function() {
+            self._emit('play', sound._id);
+          }, 0);
         };
 
         if (self._loaded) {
@@ -517,6 +522,7 @@
           node.playbackRate = self._rate;
           setTimeout(function() {
             node.play();
+            self._emit('play', sound._id);
           }, 0);
         };
 
@@ -540,11 +546,6 @@
           self._clearTimer(sound._id);
         }
       }
-
-      // Emit the play event on the next tick.
-      setTimeout(function() {
-        self._emit('play', sound._id);
-      }, 0);
 
       return sound._id;
     },
