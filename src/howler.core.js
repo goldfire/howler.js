@@ -974,7 +974,7 @@
       var self = this;
       var sound = self._soundById(id);
 
-      return sound ? !!sound._paused : false;
+      return sound ? !sound._paused : false;
     },
 
     /**
