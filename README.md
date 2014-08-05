@@ -122,13 +122,16 @@ Example:
   * *id*: `Number` The sound ID to check.
 * **on**: Listen for events. Multiple events can be added by calling this multiple times.
   * *event*: `String` Name of event to fire/set.
-  * *function*: `Function` (optional) Define function to fire on event.
+  * *function*: `Function` Define function to fire on event.
+  * *id*: `Number` (optional) Only listen to events for this sound id.
 * **once**: Same as `on`, but it removes itself after the callback is fired.
   * *event*: `String` Name of event to fire/set.
-  * *function*: `Function` (optional) Define function to fire on event.
+  * *function*: `Function` Define function to fire on event.
+  * *id*: `Number` (optional) Only listen to events for this sound id.
 * **off**: Remove event listener that you've set.
   * *event*: `String` Name of event.
-  * *function*: `Function` (optional) The listener to remove.
+  * *function*: `Function` (optional) The listener to remove. Omit this to remove all events of type.
+  * *id*: `Number` (optional) Only remove events for this sound id.
 * **load**: This is called by default, but if you set `preload` to false, you must call `load` before you can play any sounds.
 * **unload**: Unload and destroy a Howl object. This will immediately stop all sounds attached to this sound and remove it from the cache.
 

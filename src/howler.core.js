@@ -278,12 +278,12 @@
       self._endTimers = {};
 
       // Setup event listeners.
-      self._onend = o.onend ? [o.onend] : [];
-      self._onfaded = o.onfaded ? [o.onfaded] : [];
-      self._onload = o.onload ? [o.onload] : [];
-      self._onloaderror = o.onloaderror ? [o.onloaderror] : [];
-      self._onpause = o.onpause ? [o.onpause] : [];
-      self._onplay = o.onplay ? [o.onplay] : [];
+      self._onend = o.onend ? [{fn: o.onend}] : [];
+      self._onfaded = o.onfaded ? [{fn: o.onfaded}] : [];
+      self._onload = o.onload ? [{fn: o.onload}] : [];
+      self._onloaderror = o.onloaderror ? [{fn: o.onloaderror}] : [];
+      self._onpause = o.onpause ? [{fn: o.onpause}] : [];
+      self._onplay = o.onplay ? [{fn: o.onplay}] : [];
 
       // Web Audio or HTML5 Audio?
       self._webAudio = usingWebAudio && !self._html5;
@@ -442,7 +442,7 @@
         // Restart this timer if on a Web Audio loop.
         if (self._webAudio && loop) {
           self._emit('play', sound._id);
-          self._endTimers[sound._id] = setTimeout(ended, (duration * 1000) / Math.abs(self._rate));
+          self._endTimers[sound._id] = setTimeout(ended, ((sound._stop - sound._start) * 1000) / Math.abs(self._rate));
         }
 
         // Mark the node as paused.
@@ -1025,14 +1025,15 @@
      * Listen to a custom event.
      * @param  {String}   event Event name.
      * @param  {Function} fn    Listener to call.
+     * @param  {Number}   id    (optional) Only listen to events for this sound.
      * @return {Howl}
      */
-    on: function(event, fn) {
+    on: function(event, fn, id) {
       var self = this;
       var events = self['_on' + event];
 
       if (typeof fn === 'function') {
-        events.push(fn);
+        events.push({id: id, fn: fn});
       }
 
       return self;
@@ -1041,17 +1042,18 @@
     /**
      * Remove a custom event.
      * @param  {String}   event Event name.
-     * @param  {Function} fn    Listener to remove.
+     * @param  {Function} fn    Listener to remove. Leave empty to remove all.
+     * @param  {Number}   id    (optional) Only remove events for this sound.
      * @return {Howl}
      */
-    off: function(event, fn) {
+    off: function(event, fn, id) {
       var self = this;
       var events = self['_on' + event];
 
       if (fn) {
         // Loop through event store and remove the passed function.
         for (var i=0; i<events.length; i++) {
-          if (fn === events[i]) {
+          if (fn === events[i].fn && id === events[i].id) {
             events.splice(i, 1);
             break;
           }
@@ -1068,9 +1070,10 @@
      * Listen to a custom event and remove it once fired.
      * @param  {String}   event Event name.
      * @param  {Function} fn    Listener to call.
+     * @param  {Number}   id    (optional) Only listen to events for this sound.
      * @return {Howl}
      */
-    once: function(event, fn) {
+    once: function(event, fn, id) {
       var self = this;
 
       // Create the listener method.
@@ -1079,11 +1082,11 @@
         fn();
 
         // Clear the listener.
-        self.off(event, listener);
+        self.off(event, listener, id);
       };
 
       // Setup the event listener.
-      self.on(event, listener);
+      self.on(event, listener, id);
 
       return self;
     },
@@ -1101,7 +1104,9 @@
       
       // Loop through event store and fire all functions.
       for (var i=0; i<events.length; i++) {
-        events[i].call(self, id, msg);
+        if (!events[i].id || events[i].id === id) {
+          events[i].fn.call(self, id, msg);
+        }
       }
 
       return self;
