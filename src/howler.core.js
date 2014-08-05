@@ -1009,14 +1009,13 @@
         if (index >= 0) {
           Howler._howls.splice(index, 1);
         }
-
-        // Delete this sound from the cache.
-        if (cache) {
-          delete cache[self._src];
-        }
-
-        self = null;
       }
+
+      // Delete this sound from the cache.
+      if (cache) {
+        delete cache[self._src];
+      }
+      self = null;
 
       return null;
     },
