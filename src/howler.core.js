@@ -442,6 +442,8 @@
         // Restart this timer if on a Web Audio loop.
         if (self._webAudio && loop) {
           self._emit('play', sound._id);
+          sound._seek = sound._start || 0;
+          sound._playStart = ctx.currentTime;
           self._endTimers[sound._id] = setTimeout(ended, ((sound._stop - sound._start) * 1000) / Math.abs(self._rate));
         }
 
