@@ -1079,7 +1079,7 @@
       // Create the listener method.
       var listener = function() {
         // Call the passed function.
-        fn();
+        fn.apply(self, arguments);
 
         // Clear the listener.
         self.off(event, listener, id);
