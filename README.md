@@ -77,6 +77,7 @@ sound.play('laser');
 * **loop**: `Boolean` *(`false` by default)* Set to `true` to automatically loop the sound forever.
 * **preload**: `Boolean` *(`true` by default)* Automatically begin downloading the audio file when the `Howl` is defined.
 * **autoplay**: `Boolean` *(`false` by default)* Set to `true` to automatically start playback when sound is loaded.
+* **mute**: `Boolean` *(`false` by default)* Set to `true` to load the audio muted.
 * **sprite**: `Object` *(`{}` by default)* Define a sound sprite for the sound. The offset and duration are defined in milliseconds. A third (optional) parameter is available to set a sprite as looping.
 ```
 Example:

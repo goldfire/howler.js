@@ -262,6 +262,7 @@
       self._autoplay = o.autoplay || false;
       self._ext = o.ext || null;
       self._html5 = o.html5 || false;
+      self._muted = o.mute || false;
       self._loop = o.loop || false;
       self._pool = o.pool || 5;
       self._preload = (typeof o.preload === 'boolean') ? o.preload : true;
@@ -272,7 +273,6 @@
 
       // Setup all other default properties.
       self._duration = 0;
-      self._muted = false;
       self._loaded = false;
       self._sounds = [];
       self._endTimers = {};
