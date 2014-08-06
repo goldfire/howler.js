@@ -427,7 +427,7 @@
       var duration = ((self._sprite[sprite][0] + self._sprite[sprite][1]) / 1000) - seek;
 
       // Should this sound loop?
-      var loop = !!(self._loop || self._sprite[sprite][2]);
+      var loop = !!(sound._loop || self._sprite[sprite][2]);
 
       // Create a timer to fire at the end of playback or the start of a new loop.
       var ended = function() {
