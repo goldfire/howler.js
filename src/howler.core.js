@@ -679,7 +679,11 @@
 
       // If applying mute/unmute to all sounds, update the group's value.
       if (typeof id === 'undefined') {
-        self._muted = muted;
+        if (typeof muted === 'boolean') {
+          self._muted = muted;
+        } else {
+          return self._muted;
+        }
       }
 
       // If no id is passed, get all ID's to be muted.
