@@ -555,6 +555,9 @@
     pause: function(id) {
       var self = this;
 
+      // Fire the pause event.
+      self._emit('pause', id);
+
       // Wait for the sound to begin playing before pausing it.
       if (!self._loaded) {
         self.once('play', function() {
