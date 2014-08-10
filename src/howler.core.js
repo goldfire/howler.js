@@ -961,7 +961,6 @@
           self.pause(id);
           sound._seek = seek;
           self._clearTimer(id);
-          self.play(id);
         } else {
           return (self._webAudio) ? sound._seek + (ctx.currentTime - sound._playStart) : sound._node.currentTime;
         }
