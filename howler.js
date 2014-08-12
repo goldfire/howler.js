@@ -1060,20 +1060,24 @@
      */
     _clearEndTimer: function(soundId) {
       var self = this,
-        index = 0;
+        index = 0,
+        foundTimer = false;
 
       // loop through the timers to find the one associated with this sound
       for (var i=0; i<self._onendTimer.length; i++) {
         if (self._onendTimer[i].id === soundId) {
           index = i;
+          foundTimer = true;
           break;
         }
       }
 
-      var timer = self._onendTimer[index];
-      if (timer) {
-        clearTimeout(timer.timer);
-        self._onendTimer.splice(index, 1);
+      if (foundTimer) {
+        var timer = self._onendTimer[index];
+        if (timer) {
+          clearTimeout(timer.timer);
+          self._onendTimer.splice(index, 1);
+        }
       }
     },
 
