@@ -94,7 +94,7 @@
 
             // Loop through all sounds and change the volumes.
             for (var j=0; j<ids.length; j++) {
-              var sound = self._howls[i]._soundById(ids[i]);
+              var sound = self._howls[i]._soundById(ids[j]);
 
               if (sound) {
                 sound._node.volume = sound._volume * vol;
@@ -131,7 +131,7 @@
 
           // Loop through all sounds and mark the audio node as muted.
           for (var j=0; j<ids.length; j++) {
-            var sound = self._howls[i]._soundById(ids[i]);
+            var sound = self._howls[i]._soundById(ids[j]);
 
             if (sound) {
               sound._node.muted = muted;
