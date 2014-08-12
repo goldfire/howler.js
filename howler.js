@@ -398,20 +398,32 @@
 
     /**
      * Play a sound from the current time (0 by default).
-     * @param  {String}   sprite   (optional) Plays from the specified position in the sound sprite definition.
-     * @param  {Function} callback (optional) Returns the unique playback id for this sound instance.
+     * @param  {String}   sprite    (optional) Plays from the specified position in the sound sprite definition.
+     * @param  {Function} callback  (optional) Returns the unique playback id for this sound instance.
+     * @param  {Boolean}  forceLoop (optional) Force the sound to loop.
      * @return {Howl}
      */
-    play: function(sprite, callback) {
+    play: function(sprite, callback, forceLoop) {
       var self = this;
 
       // if no sprite was passed but a callback was, update the variables
       if (typeof sprite === 'function') {
+        // in this case, check if the second param is a boolean and use for loop
+        if (typeof callback === 'boolean') {
+          forceLoop = callback;
+        }
         callback = sprite;
       }
 
+      // if a boolean is passed, use it for loop
+      if (typeof sprite === 'boolean') {
+        forceLoop = sprite;
+      } else if (typeof callback === 'boolean') {
+        forceLoop = callback;
+      }
+
       // use the default sprite if none is passed
-      if (!sprite || typeof sprite === 'function') {
+      if (!sprite || typeof sprite === 'function' || typeof sprite === 'boolean') {
         sprite = '_default';
       }
 
@@ -450,7 +462,7 @@
         }
 
         // determine if this sound should be looped
-        var loop = !!(self._loop || self._sprite[sprite][2]);
+        var loop = !!(forceLoop || self._loop || self._sprite[sprite][2]);
 
         // set timer to fire the 'onend' event
         var soundId = (typeof callback === 'string') ? callback : Math.round(Date.now() * Math.random()) + '',
