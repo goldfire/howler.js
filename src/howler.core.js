@@ -555,6 +555,9 @@
     pause: function(id) {
       var self = this;
 
+      // Fire the pause event.
+      self._emit('pause', id);
+
       // Wait for the sound to begin playing before pausing it.
       if (!self._loaded) {
         self.once('play', function() {
@@ -958,7 +961,6 @@
           self.pause(id);
           sound._seek = seek;
           self._clearTimer(id);
-          self.play(id);
         } else {
           return (self._webAudio) ? sound._seek + (ctx.currentTime - sound._playStart) : sound._node.currentTime;
         }
