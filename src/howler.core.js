@@ -1011,7 +1011,12 @@
 
         // Remove the source or disconnect.
         if (!self._webAudio) {
+          // Set the source to an empty string to stop any downloading.
           sounds[i]._node.src = '';
+
+          // Remove any event listeners.
+          sounds[i]._node.removeEventListener('error', sounds[i]._errorFn, false);
+          sounds[i]._node.removeEventListener('canplaythrough', sounds[i]._loadFn, false);
         } else {
           sounds[i]._node.disconnect(0);
         }
@@ -1336,42 +1341,12 @@
         self._node = new Audio();
 
         // Listen for errors (http://dev.w3.org/html5/spec-author-view/spec.html#mediaerror).
-        var errorListener = function () {
-          if (self._node.error && self._node.error.code === 4) {
-            Howler.noAudio = true;
-          }
-
-          // Fire an error event and pass back the code.
-          parent._emit('loaderror', self._id, self._node.error ? self._node.error.code : 0);
-          
-          // Clear the event listener.
-          self._node.removeEventListener('error', errorListener, false);
-        };
-        self._node.addEventListener('error', errorListener, false);
+        self._errorFn = self._errorListener.bind(self);
+        self._node.addEventListener('error', self._errorFn, false);
 
         // Listen for 'canplaythrough' event to let us know the sound is ready.
-        var loadListener = function() {
-          // Round up the duration to account for the lower precision in HTML5 Audio.
-          parent._duration = Math.ceil(self._node.duration * 10) / 10;
-
-          // Setup a sprite if none is defined.
-          if (Object.keys(parent._sprite).length === 0) {
-            parent._sprite = {__default: [0, parent._duration * 1000]};
-          }
-
-          if (!parent._loaded) {
-            parent._loaded = true;
-            parent._emit('load');
-          }
-
-          if (parent._autoplay) {
-            parent.play();
-          }
-
-          // Clear the event listener.
-          self._node.removeEventListener('canplaythrough', loadListener, false);
-        };
-        self._node.addEventListener('canplaythrough', loadListener, false);
+        self._loadFn = self._loadListener.bind(self);
+        self._node.addEventListener('canplaythrough', self._loadFn, false);
 
         // Setup the new audio node.
         self._node.src = parent._src;
@@ -1407,6 +1382,51 @@
       self._id = Math.round(Date.now() * Math.random());
 
       return self;
+    },
+
+    /**
+     * HTML5 Audio error listener callback.
+     */
+    _errorListener: function() {
+      var self = this;
+
+      if (self._node.error && self._node.error.code === 4) {
+        Howler.noAudio = true;
+      }
+
+      // Fire an error event and pass back the code.
+      parent._emit('loaderror', self._id, self._node.error ? self._node.error.code : 0);
+      
+      // Clear the event listener.
+      self._node.removeEventListener('error', self._errorListener, false);
+    },
+
+    /**
+     * HTML5 Audio canplaythrough listener callback.
+     */
+    _loadListener: function() {
+      var self = this;
+      var parent = self._parent;
+
+      // Round up the duration to account for the lower precision in HTML5 Audio.
+      parent._duration = Math.ceil(self._node.duration * 10) / 10;
+
+      // Setup a sprite if none is defined.
+      if (Object.keys(parent._sprite).length === 0) {
+        parent._sprite = {__default: [0, parent._duration * 1000]};
+      }
+
+      if (!parent._loaded) {
+        parent._loaded = true;
+        parent._emit('load');
+      }
+
+      if (parent._autoplay) {
+        parent.play();
+      }
+
+      // Clear the event listener.
+      self._node.removeEventListener('canplaythrough', self._loadListener, false);
     }
   };
 
