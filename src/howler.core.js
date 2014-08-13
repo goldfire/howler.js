@@ -318,7 +318,7 @@
         return;
       }
 
-      // Loop through the sources and pick the first on that is compatible.
+      // Loop through the sources and pick the first one that is compatible.
       for (var i=0; i<self._src.length; i++) {
         var ext, str;
 
@@ -969,12 +969,12 @@
 
     /**
      * Check if a specific sound is currently playing or not.
-     * @param  {Number} id The sound id to check.
+     * @param  {Number} id The sound id to check. If none is passed, first sound is used.
      * @return {Boolean}    True if playing and false if not.
      */
     playing: function(id) {
       var self = this;
-      var sound = self._soundById(id);
+      var sound = self._soundById(id) || self._sounds[0];
 
       return sound ? !sound._paused : false;
     },
