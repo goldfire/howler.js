@@ -597,8 +597,10 @@
             sound._node.pause();
           }
 
-          // Fire the pause event.
-          self._emit('pause', sound._id);
+          // Fire the pause event, unless `true` is passed as the 2nd argument.
+          if (!arguments[1]) {
+            self._emit('pause', sound._id);
+          }
         }
       }
 
@@ -958,10 +960,19 @@
       if (sound) {
         if (seek >= 0) {
           // Pause the sound and update position for restarting playback.
-          self.pause(id);
+          var playing = self.playing(id);
+          if (playing) {
+            self.pause(id, true);
+          }
+
+          // Move the position of the track and cancel timer.
           sound._seek = seek;
           self._clearTimer(id);
-          self.play(id);
+
+          // Restart the playback if the sound was playing.
+          if (playing) {
+            self.play(id);
+          }
         } else {
           return (self._webAudio) ? sound._seek + (ctx.currentTime - sound._playStart) : sound._node.currentTime;
         }

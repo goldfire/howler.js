@@ -143,9 +143,9 @@ Fade a currently playing sound between two volumes. Fires the `faded` event when
 * **duration**: `Number` Time in milliseconds to fade.
 * **id**: `Number` `optional` The sound ID. If none is passed, all sounds ing roup will fade.
 
-#### seek([position], [id])
+#### seek([seek], [id])
 Get/set the position of playback for a sound. This method optionally takes 0, 1 or 2 arguments.
-* **position**: `Number` `optional` The position to move current playback to (in seconds).
+* **seek**: `Number` `optional` The position to move current playback to (in seconds).
 * **id**: `Number` `optional` The sound ID. If none is passed, the first sound will seek.
 
 #### loop([loop], [id])
