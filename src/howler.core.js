@@ -41,7 +41,7 @@
      * @return {Howler}
      */
     init: function() {
-      var self = this;
+      var self = this || Howler;
 
       // Internal properties.
       self._codecs = {};
@@ -75,7 +75,7 @@
      * @return {Howler/Float}     Returns self or current volume.
      */
     volume: function(vol) {
-      var self = this;
+      var self = this || Howler;
       vol = parseFloat(vol);
 
       if (typeof vol !== 'undefined' && vol >= 0 && vol <= 1) {
@@ -114,7 +114,7 @@
      * @param  {Boolean} muted Is muted or not.
      */
     mute: function(muted) {
-      var self = this;
+      var self = this || Howler;
 
       self._muted = muted;
 
@@ -149,7 +149,7 @@
      * @return {Boolean}
      */
     codecs: function(ext) {
-      return this._codecs[ext];
+      return (this || Howler)._codecs[ext];
     },
 
     /**
@@ -157,7 +157,7 @@
      * @return {Howler}
      */
     _setupCodecs: function() {
-      var self = this;
+      var self = this || Howler;
       var audioTest = new Audio();
 
       self._codecs = {
@@ -182,7 +182,7 @@
      * @return {Howler}
      */
     _enableiOSAudio: function() {
-      var self = this;
+      var self = this || Howler;
 
       // Only run this on iOS if audio isn't already eanbled.
       if (ctx && (self._iOSEnabled || !/iPhone|iPad|iPod/i.test(navigator.userAgent))) {
