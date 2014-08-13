@@ -1017,8 +1017,6 @@
           // Remove any event listeners.
           sounds[i]._node.removeEventListener('error', sounds[i]._errorFn, false);
           sounds[i]._node.removeEventListener('canplaythrough', sounds[i]._loadFn, false);
-        } else {
-          sounds[i]._node.disconnect(0);
         }
 
         // Empty out all of the nodes.
@@ -1038,6 +1036,8 @@
       if (cache) {
         delete cache[self._src];
       }
+
+      // Clear out `self`.
       self = null;
 
       return null;
