@@ -596,6 +596,9 @@
           } else if (!isNaN(sound._node.duration)) {
             sound._node.pause();
           }
+
+          // Fire the pause event.
+          self._emit('pause', sound._id);
         }
       }
 
