@@ -502,7 +502,9 @@
         };
 
         if (self._loaded) {
-          playWebAudio();
+          setTimeout(function() {
+            playWebAudio();
+          }, 0);
         } else {
           // Wait for the audio to load and then begin playback.
           self.once('load', playWebAudio);
