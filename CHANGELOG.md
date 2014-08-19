@@ -16,6 +16,7 @@ Howler.js now also has the concept of plugins. The core represents 100% compatib
 - `ADDED`: The new structure allows for full control of sprite playback (this was buggy or didn't work at all before).
 - `ADDED`: New `once` method to setup event listeners that will automatically remove themselves once fired.
 - `ADDED`: New `playing` method that will return `true` if the specified sound is currently playing.
+- `ADDED`: New `duration` method that will return the duration of the audio source.
 - `ADDED`: New `preload` property to allow disabling the auto-preload functionality.
 - `ADDED`: New `faded` event that fires at the completion of a fade-in or fade-out.
 - `ADDED`: New `pool` property to allow setting the inactive sound pool size (for advanced use, still defaults to 5).

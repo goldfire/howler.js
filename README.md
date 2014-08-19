@@ -157,6 +157,9 @@ Get/set whether to loop the sound or group. This method can optionally take 0, 1
 Check if a sound is currently playing or not, returns a `Boolean`.
 * **id**: `Number` The sound ID to check.
 
+#### duration()
+Get the duration of the audio source. Will return 0 until after the `load` event fires.
+
 #### on(event, function, [id])
 Listen for events. Multiple events can be added by calling this multiple times.
 * **event**: `String` Name of event to fire/set.

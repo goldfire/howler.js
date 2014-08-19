@@ -996,6 +996,14 @@
     },
 
     /**
+     * Get the duration of this sound.
+     * @return {Number} Audio duration.
+     */
+    duration: function() {
+      return this._duration;
+    },
+
+    /**
      * Unload and destroy the current Howl object.
      * This will immediately stop all sound instances attached to this group.
      */
