@@ -1282,7 +1282,7 @@
       // Setup looping and playback rate.
       sound._node.bufferSource.loop = sound._loop;
       if (sound._loop) {
-        sound._node.bufferSource.loopStart = sound._seek;
+        sound._node.bufferSource.loopStart = sound._start || 0;
         sound._node.bufferSource.loopEnd = sound._stop;
       }
       sound._node.bufferSource.playbackRate.value = self._rate;
