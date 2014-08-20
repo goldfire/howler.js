@@ -84,7 +84,7 @@
    * @param  {Number} zUp The z-orientation of the top of the listener.
    * @return {Howler/Array}     Returns self or the current orientation vectors.
    */
-  HowlerGlobal.prototype.orientatin = function(x, y, z, xUp, yUp, zUp) {
+  HowlerGlobal.prototype.orientation = function(x, y, z, xUp, yUp, zUp) {
     var self = this;
 
     // Stop right here if not using Web Audio.
