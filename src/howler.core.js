@@ -498,13 +498,13 @@
             self._endTimers[sound._id] = setTimeout(ended, (duration * 1000) / Math.abs(self._rate));
           }
 
-          self._emit('play', sound._id);
+          setTimeout(function() {
+            self._emit('play', sound._id);
+          }, 0);
         };
 
         if (self._loaded) {
-          setTimeout(function() {
-            playWebAudio();
-          }, 0);
+          playWebAudio();
         } else {
           // Wait for the audio to load and then begin playback.
           self.once('load', playWebAudio);

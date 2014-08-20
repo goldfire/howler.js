@@ -44,6 +44,7 @@ Howler.js now also has the concept of plugins. The core represents 100% compatib
 - `FIXED`: Fixed several issues with playback timing after pausing sounds.
 - `FIXED`: Improved support for seeking a sound while it is playing.
 - `FIXED`: When playback rate is changed, the `end` event now fires at the correct time.
+- `FIXED`: Fixed a potential memory leak when using the `unload` method.
 - `FIXED`: Calling `pause` on a sound that hasn't yet loaded now works correctly.
 - `FIXED`: Muting a sound while it is fading now works.
 
