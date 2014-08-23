@@ -38,7 +38,7 @@ var sound4 = new Howl({
 
 // Define the tests to run.
 var id;
-var tests = [
+var webaudio = [
   /**
    * WEB AUDIO
    */
@@ -226,13 +226,10 @@ var tests = [
     sound3.once('faded', function() {
       fn();
     });
-  },
+  }
+];
 
-
-  /**
-   * HTML5 AUDIO
-   */
-  
+var html5 = [
    function(fn) {
     id = sound2.play();
 
@@ -416,6 +413,9 @@ var tests = [
     });
   }
 ];
+
+// If Web Audio is available, use both tets; otherwise, just hTML5.
+var tests = Howler.usingWebAudio ? webaudio.concat(html5) : html5;
 
 // Create a method that will call the next in the series.
 var chain = function(i) {
