@@ -270,6 +270,7 @@
       self._sprite     = o.sprite || {};
       self._src        = (typeof o.src !== 'string') ? o.src : [o.src];
       self._buffersize = o.buffersize
+      self._bufferfile = o.bufferfile
       self._volume     = o.volume !== undefined ? o.volume : 1;
 
       // Setup all other default properties.
@@ -426,7 +427,7 @@
       // Determine how long to play for and where to start playing.
       var nominal_seek = sound._seek > 0 ? sound._seek : self._sprite[sprite][0] / 1000;
       if (self._is_preload_buffer) self._preload_buffer_id = sound._id
-      if ((typeof self._buffersize == "undefined") || self._is_preload_buffer) {
+      if ((typeof self.use_preload_buffer == "undefined") || self._is_preload_buffer) {
        var seek = nominal_seek
       } else {
        var seek = self.seek ()
@@ -510,7 +511,7 @@
           }
           
           // Don't emit "play" if the sound just finished running a preload buffer.
-          if ((typeof self._buffersize == "undefined") || self._is_preload_buffer) {
+          if ((typeof self.use_preload_buffer == "undefined") || self._is_preload_buffer) {
            setTimeout (function() {self._emit('play', sound._id)}, 0);
           }
         };
@@ -520,7 +521,7 @@
         } else {
           // Wait for the audio to load and then begin playback.
           // Don't emit "load" if we just finished running a preload buffer.
-          if ((typeof self.buffersize == "undefined") || self._is_preload_buffer) {
+          if ((typeof self.use_preload_buffer == "undefined") || self._is_preload_buffer) {
            self.once('load', playWebAudio);
           }
           
@@ -1444,11 +1445,15 @@
         }
         decodeAudioData(dataView.buffer, self);
       } else {
-        if (typeof self._buffersize != "undefined") {
+        if (typeof self._buffersize != "undefined" || typeof self._bufferfile != "undefined") {
+         self.use_preload_buffer = true
          // Load the buffer from the URL.
-         var shortxhr = new XMLHttpRequest()
-         shortxhr.open ('GET', url, true)
-         shortxhr.setRequestHeader ('Range', 'bytes=0-' + (self._buffersize - 1))
+         var shortxhr = new XMLHttpRequest ()
+         shortxhr.open ('GET', (typeof self._bufferfile != "undefined") ? self._bufferfile : url, true)
+         if (typeof self._buffersize != "undefined") {
+          shortxhr.setRequestHeader ('Range', 'bytes=0-' + (self._buffersize - 1))
+          shortxhr.setRequestHeader ('Content-Length', self._buffersize)
+         }
          shortxhr.responseType = 'arraybuffer'
          shortxhr.onload = function() {decodeAudioData(shortxhr.response, self, true)}
          shortxhr.onerror = function() {}
@@ -1523,7 +1528,6 @@
       }
 
       self._is_preload_buffer = is_preload_buffer
-      if (is_preload_buffer) self._preload_buffer_duration = buffer.duration
       
       // Fire the loaded event.
       if (!self._loaded) {
