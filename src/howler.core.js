@@ -426,7 +426,7 @@
        // Unload the preload sound and make sure not to unload the current sound by setting its _ended to false.
        var preload_sound = self._soundById(self._preload_buffer_id)
        sound._ended = false
-       self.stop (self._preload_buffer_id)
+       self.stop (self._preload_buffer_id, true)
        preload_sound._ended = true
        clearTimeout (self._endTimers[self._preload_buffer_id])
        self._drain ({force_drain: true})
@@ -465,9 +465,7 @@
         }
 
         // When using a sprite, end the track.
-        if (!self._webAudio && !loop) {
-          self.stop(sound._id);
-        }
+        if (!self._webAudio && !loop) self.stop(sound._id)
       };
       self._endTimers[sound._id] = setTimeout(ended, (duration * 1000) / Math.abs(self._rate));
 
@@ -610,11 +608,12 @@
      * @param  {Number} id The sound ID (empty to stop all in group).
      * @return {Howl}
      */
-    stop: function(id) {
+    stop: function (id, force) {
       var self = this;
 
       // Wait for the sound to begin playing before stopping it.
-      if (!self._loaded) {
+      // Wait for the sound (and make sure it isn't a preload buffer) to begin playing before muting it.
+      if (!force && (self._is_preload_buffer || !self._loaded)) {
         self.once('play', function() {self.stop(id)});
         return self;
       }
