@@ -410,8 +410,7 @@
         return null;
       }
 
-      // If we have no sprite and the sound hasn't loaded, we must wait
-      // for the sound to load to get our audio's duration.
+      // If we have no sprite and the sound hasn't loaded, we must wait for the sound to load to get our audio's duration.
       if (!self._loaded && !self._sprite[sprite]) {
         self.once('load', function() {
           self.play(sound._id);
@@ -573,8 +572,8 @@
     pause: function(id) {
       var self = this;
 
-      // Wait for the sound to begin playing before pausing it.
-      if (!self._loaded) {
+      // Wait for the sound (and make sure it isn't a preload buffer) to begin playing before pausing it.
+      if (self._is_preload_buffer || !self._loaded) {
         self.once('play', function() {self.pause(id)});
         return self;
       }
@@ -627,8 +626,8 @@
     stop: function(id) {
       var self = this;
 
-      // Wait for the sound to begin playing before stopping it.
-      if (!self._loaded) {
+      // Wait for the sound (and make sure it isn't a preload buffer) to begin playing before stopping it.
+      if (self._is_preload_buffer || !self._loaded) {
         self.once('play', function() {self.stop(id)});
         return self;
       }
@@ -682,8 +681,8 @@
     mute: function(muted, id) {
       var self = this;
 
-      // Wait for the sound to begin playing before muting it.
-      if (!self._loaded) {
+      // Wait for the sound (and make sure it isn't a preload buffer) to begin playing before muting it.
+      if (self._is_preload_buffer || !self._loaded) {
         self.once('play', function() {self.mute(muted, id)});
         return self;
       }
@@ -1515,9 +1514,7 @@
      */
     var loadSound = function(self, buffer, is_preload_buffer) {
       // Set the duration.
-      if (buffer) {
-        self._duration = buffer.duration;
-      }
+      if (buffer) self._duration = buffer.duration;
       self._loop = false
       
       var preload_buffer_was_loaded = (!!self._is_preload_buffer && !is_preload_buffer)
@@ -1536,11 +1533,8 @@
       }
 
       // Begin playback if specified.
-      if (self._autoplay) {
-        self.play();
-      }
+      if (self._autoplay) self.play ();
     };
-
   }
 
   /**
