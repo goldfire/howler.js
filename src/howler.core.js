@@ -358,10 +358,8 @@
       new Sound(self);
 
       // Load and decode the audio data for playback.
-      if (self._webAudio) {
-        loadBuffer(self);
-      }
-
+      if (self._webAudio) loadBuffer(self)
+      
       return self;
     },
 
@@ -370,7 +368,7 @@
      * @param  {String/Number} sprite Sprite name for sprite playback or sound id to continue previous.
      * @return {Number}        Sound ID.
      */
-    play: function(sprite) {
+    play: function (sprite) {
       var self = this;
       var id = null;
 
@@ -401,40 +399,39 @@
 
       // Get the selected node, or get one from the pool.
       var sound = id ? self._soundById(id) : self._inactiveSound();
-      if (id && !sprite) {
-        sprite = sound._sprite || '__default';
-      }
-
+      if (id && !sprite) sprite = sound._sprite || '__default'
+      
       // If the sound doesn't exist, do nothing.
-      if (!sound) {
-        return null;
-      }
-
+      if (!sound) return null
+      
       // If we have no sprite and the sound hasn't loaded, we must wait for the sound to load to get our audio's duration.
       if (!self._loaded && !self._sprite[sprite]) {
-        self.once('load', function() {
-          self.play(sound._id);
-        });
-        return sound._id;
+       self.once('load', function() {self.play(sound._id)})
+       return sound._id;
       }
 
       // Don't play the sound if an id was passed and it is already playing.
-      if (id && !sound._paused) {
-        return sound._id;
-      }
+      if (id && !sound._paused) return sound._id
 
       // Determine how long to play for and where to start playing.
       var nominal_seek = sound._seek > 0 ? sound._seek : self._sprite[sprite][0] / 1000;
       if (self._is_preload_buffer) self._preload_buffer_id = sound._id
-      if ((typeof self.use_preload_buffer == "undefined") || self._is_preload_buffer) {
+      self._last_sound_was_preload_buffer = !!(self._preload_buffer_id && (typeof self.use_preload_buffer != "undefined") && !self._is_preload_buffer)
+      
+      if (!self._last_sound_was_preload_buffer) {
        var seek = nominal_seek
       } else {
-       var seek = self.seek ()
+       var seek = self.seek (undefined, self._preload_buffer_id)
+       
+       // Unload the preload sound and make sure not to unload the current sound by setting its _ended to false.
+       var preload_sound = self._soundById(self._preload_buffer_id)
+       sound._ended = false
        self.stop (self._preload_buffer_id)
+       preload_sound._ended = true
        clearTimeout (self._endTimers[self._preload_buffer_id])
+       self._drain ({force_drain: true})
        delete (self._preload_buffer_id)
       }
-      
       var duration = ((self._sprite[sprite][0] + self._sprite[sprite][1]) / 1000) - nominal_seek;
       
       // Should this sound loop?
@@ -446,10 +443,8 @@
         self._emit('end', sound._id);
 
         // Restart the playback for HTML5 Audio loop.
-        if (!self._webAudio && loop) {
-          self.stop(sound._id).play(sound._id);
-        }
-
+        if (!self._webAudio && loop) self.stop(sound._id).play(sound._id)
+        
         // Restart this timer if on a Web Audio loop.
         if (self._webAudio && loop) {
           self._emit('play', sound._id);
@@ -510,9 +505,7 @@
           }
           
           // Don't emit "play" if the sound just finished running a preload buffer.
-          if ((typeof self.use_preload_buffer == "undefined") || self._is_preload_buffer) {
-           setTimeout (function() {self._emit('play', sound._id)}, 0);
-          }
+          if (!self._last_sound_was_preload_buffer) setTimeout (function() {self._emit('play', sound._id)}, 0);
         };
 
         if (self._loaded) {
@@ -520,9 +513,7 @@
         } else {
           // Wait for the audio to load and then begin playback.
           // Don't emit "load" if we just finished running a preload buffer.
-          if ((typeof self.use_preload_buffer == "undefined") || self._is_preload_buffer) {
-           self.once('load', playWebAudio);
-          }
+          if (!self._last_sound_was_preload_buffer) self.once('load', playWebAudio);
           
           // Cancel the end timer.
           self._clearTimer(sound._id);
@@ -571,10 +562,9 @@
      */
     pause: function(id) {
       var self = this;
-
       // Wait for the sound (and make sure it isn't a preload buffer) to begin playing before pausing it.
       if (self._is_preload_buffer || !self._loaded) {
-        self.once('play', function() {self.pause(id)});
+        self.once('play', function() {self.pause(id)})
         return self;
       }
 
@@ -894,7 +884,7 @@
         id = parseInt(args[1], 10);
       }
 
-      // If no id is passed, get all ID's to be looped.
+      // If no id is passed, get all IDs to be looped.
       var ids = self._getSoundIds(id);
       for (var i=0; i<ids.length; i++) {
         sound = self._soundById(ids[i]);
@@ -913,17 +903,17 @@
      *   seek(undefined, id) -> Gets the seek position of the passed sound id.
      *   seek(seek) -> Sets the seek position of the first sound node.
      *   seek(seek, id) -> Sets the seek position of passed sound id.
-     * @return {Howl/Number} Returns self or the current seek position.
+     * @return {Howl/Number} If no parameters are given, returns the seek position (or 0 if not loaded). Otherwise, returns the seek object.
      */
     seek: function (seek, id) {
       var self = this
       
-      // Wait for the sound to load before seeking it.
-      if (!self._loaded) {self.once ('load', function() {self.seek.apply (self, seek, id)}); return self}
-      
       // If no seek value is given, return the current time.
       if (typeof seek == "undefined") {
-       var sound = self._soundById ((typeof id != "undefined") ? id : self._sounds[0]._id)
+       // Wait for the sound to load before seeking it.
+       if (!self._loaded) {self.once ('load', function() {self.seek.apply (self, seek, id)}); return 0}
+       var id = (typeof id != "undefined") ? id : self._sounds[0]._id
+       var sound = self._soundById (id)
        return (self._webAudio) ? sound._seek + (ctx.currentTime - sound._playStart) : sound._node.currentTime
       }
       
@@ -943,6 +933,10 @@
       
       // Move the position of the track and cancel any timers.
       sound._seek = seek
+      
+      // Sprite stuff...
+      var sprite = sound._sprite || '__default'
+      self._sprite[sprite][0] = seek
       self._clearTimer (id)
       
       // Restart the playback if the sound was playing.
@@ -1172,40 +1166,31 @@
     /**
      * Drain excess inactive sounds from the pool.
      */
-    _drain: function() {
-      var self = this;
-      var limit = self._pool;
-      var cnt = 0;
-      var i = 0;
+    _drain: function(init) {
+      var init = init || {}
+      var self = this
+      var limit = self._pool
+      var count = 0
 
-      // If there are less sounds than the max pool size, we are done.
-      if (self._sounds.length < limit) {
-        return;
-      }
-
+      // If force_drain is false and there are less sounds than the max pool size, we are done.
+      if (!init.force_drain && (self._sounds.length < limit)) return
+      
       // Count the number of inactive sounds.
-      for (i=0; i<self._sounds.length; i++) {
-        if (self._sounds[i]._ended) {
-          cnt++;
-        }
+      for (var i = 0; i < self._sounds.length; i++) {
+       if (self._sounds[i]._ended) count++
       }
 
       // Remove excess inactive sounds, going in reverse order.
-      for (i=self._sounds.length - 1; i>=0; i--) {
-        if (cnt <= limit) {
-          return;
-        }
-
-        if (self._sounds[i]._ended) {
-          // Disconnect the audio source when using Web Audio.
-          if (self._webAudio && self._sounds[i]._node) {
-            self._sounds[i]._node.disconnect(0);
-          }
-
-          // Remove sounds until we have the pool size.
-          self._sounds.splice(i, 1);
-          cnt--;
-        }
+      for (var i = self._sounds.length - 1; i >= 0; i--) {
+       if (!init.force_drain && (count <= limit)) return
+       if (!self._sounds[i]._ended) continue
+       
+       // Disconnect the audio source when using Web Audio.
+       if (self._webAudio && self._sounds[i]._node) self._sounds[i]._node.disconnect(0)
+       
+       // Remove sounds until we have the pool size.
+       self._sounds.splice (i, 1)
+       count--
       }
     },
 
@@ -1461,9 +1446,7 @@
         var xhr = new XMLHttpRequest();
         xhr.open('GET', url, true);
         xhr.responseType = 'arraybuffer';
-        xhr.onload = function() {
-          decodeAudioData(xhr.response, self);
-        };
+        xhr.onload = function() {decodeAudioData(xhr.response, self)};
         xhr.onerror = function() {
           // If there is an error, switch to HTML5 Audio.
           if (self._webAudio) {
