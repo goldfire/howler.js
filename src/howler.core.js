@@ -560,18 +560,17 @@
      * @param  {Number} id The sound ID (empty to pause all in group).
      * @return {Howl}
      */
-    pause: function(id) {
+    pause: function (id) {
       var self = this;
-      // Wait for the sound (and make sure it isn't a preload buffer) to begin playing before pausing it.
-      if (self._is_preload_buffer || !self._loaded) {
+      // Wait for the sound to begin playing before pausing it.
+      if (!self._loaded) {
         self.once('play', function() {self.pause(id)})
         return self;
       }
 
       // If no id is passed, get all IDs to be paused.
       var ids = self._getSoundIds(id);
-
-      for (var i=0; i<ids.length; i++) {
+      for (var i = 0; i < ids.length; i++) {
         // Clear the end timer.
         self._clearTimer(ids[i]);
 
@@ -582,12 +581,10 @@
           // Reset the seek position.
           sound._seek = self.seek (undefined, ids[i]);
           sound._paused = true;
-
+          
           if (self._webAudio) {
             // make sure the sound has been created
-            if (!sound._node.bufferSource) {
-              return self;
-            }
+            if (!sound._node.bufferSource) return self;
 
             if (typeof sound._node.bufferSource.stop === 'undefined') {
               sound._node.bufferSource.noteOff(0);
@@ -616,8 +613,8 @@
     stop: function(id) {
       var self = this;
 
-      // Wait for the sound (and make sure it isn't a preload buffer) to begin playing before stopping it.
-      if (self._is_preload_buffer || !self._loaded) {
+      // Wait for the sound to begin playing before stopping it.
+      if (!self._loaded) {
         self.once('play', function() {self.stop(id)});
         return self;
       }
@@ -671,8 +668,8 @@
     mute: function(muted, id) {
       var self = this;
 
-      // Wait for the sound (and make sure it isn't a preload buffer) to begin playing before muting it.
-      if (self._is_preload_buffer || !self._loaded) {
+      // Wait for the sound to begin playing before muting it.
+      if (!self._loaded) {
         self.once('play', function() {self.mute(muted, id)});
         return self;
       }
