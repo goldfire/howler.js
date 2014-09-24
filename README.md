@@ -1,7 +1,7 @@
 ![howler.js](http://goldfirestudios.com/proj/howlerjs/howlerjs_logo.png "howler.js")
 
 ## Description
-[**howler.js**](http://howlerjs.com) is an audio library for the modern web. It defaults to [Web Audio API](https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/specification.html) and falls back to [HTML5 Audio](http://www.whatwg.org/specs/web-apps/current-work/#the-audio-element).
+[**howler.js**](http://howlerjs.com) is an audio library for the modern web. It defaults to [Web Audio API](http://webaudio.github.io/web-audio-api/) and falls back to [HTML5 Audio](http://www.whatwg.org/specs/web-apps/current-work/#the-audio-element).
 
 More documentation, examples and demos can be found at **[howlerjs.com](http://howlerjs.com)**.
 
@@ -36,7 +36,7 @@ Tested in the following browsers/versions:
 ##### Most basic, play an MP3:
 ```javascript
 var sound = new Howl({
-  src: ['sound.ogg']
+  src: ['sound.mp3']
 });
 
 sound.play();
