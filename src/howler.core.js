@@ -1405,7 +1405,7 @@
       }
 
       // Fire an error event and pass back the code.
-      parent._emit('loaderror', self._id, self._node.error ? self._node.error.code : 0);
+      self._parent._emit('loaderror', self._id, self._node.error ? self._node.error.code : 0);
       
       // Clear the event listener.
       self._node.removeEventListener('error', self._errorListener, false);
