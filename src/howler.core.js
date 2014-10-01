@@ -706,7 +706,7 @@
           if (self._webAudio) {
             sound._node.gain.setValueAtTime(muted ? 0 : sound._volume * Howler.volume(), ctx.currentTime);
           } else {
-            sound._node.muted = muted;
+            sound._node.muted = Howler._muted ? true : muted;
           }
         }
       }
