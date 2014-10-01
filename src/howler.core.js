@@ -134,7 +134,7 @@
             var sound = self._howls[i]._soundById(ids[j]);
 
             if (sound) {
-              sound._node.muted = muted;
+              sound._node.muted = (muted) ? true : sound._muted;
             }
           }
         }
