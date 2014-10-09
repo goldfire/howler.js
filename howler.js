@@ -202,10 +202,12 @@
   // check for browser codec support
   var audioTest = null;
   var codecs = {};
+  var mpeg = !!audioTest.canPlayType('audio/mpeg;').replace(/^no$/, '');
   if (!noAudio) {
     audioTest = new Audio();
     codecs = {
-      mp3: !!audioTest.canPlayType('audio/mpeg;').replace(/^no$/, ''),
+      mp3: mpeg,
+      mpeg: mpeg,
       opus: !!audioTest.canPlayType('audio/ogg; codecs="opus"').replace(/^no$/, ''),
       ogg: !!audioTest.canPlayType('audio/ogg; codecs="vorbis"').replace(/^no$/, ''),
       wav: !!audioTest.canPlayType('audio/wav; codecs="1"').replace(/^no$/, ''),
