@@ -202,9 +202,9 @@
   // check for browser codec support
   var audioTest = null;
   var codecs = {};
-  var mpeg = !!audioTest.canPlayType('audio/mpeg;').replace(/^no$/, '');
   if (!noAudio) {
     audioTest = new Audio();
+    var mpeg = !!audioTest.canPlayType('audio/mpeg;').replace(/^no$/, '');
     codecs = {
       mp3: mpeg,
       mpeg: mpeg,
@@ -1335,11 +1335,7 @@
       if (/^data:[^;]+;base64,/.test(url)) {
         // Decode base64 data-URIs because some browsers cannot load data-URIs with XMLHttpRequest.
         var data = arrayFromBase64(url.split(',')[1]);
-        var dataView = new Uint8Array(data.length);
-        for (var i=0; i<data.length; ++i) {
-          dataView[i] = data.charCodeAt(i);
-        }
-        
+        var dataView = new Uint8Array(data);
         decodeAudioData(dataView.buffer, obj, url);
       } else {
         // load the buffer from the URL
