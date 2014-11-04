@@ -139,7 +139,7 @@
 
     /**
      * Check for codec support.
-     * @param  {String} ext Audio file extention.
+     * @param  {String} ext Audio file extension.
      * @return {Boolean}
      */
     codecs: function(ext) {
@@ -284,7 +284,7 @@
 
       // if no audio is available, quit immediately
       if (noAudio) {
-        self.on('loaderror');
+        self.on('loaderror', new Error('neither HTML5 Audio nor Web Audio API seem to be available'));
         return;
       }
 
@@ -306,7 +306,7 @@
           if (ext) {
             ext = ext[1].toLowerCase();
           } else {
-            self.on('loaderror');
+            self.on('loaderror', new Error('could not extract format from urls, please add format parameter'));
             return;
           }
         }
@@ -318,7 +318,7 @@
       }
 
       if (!url) {
-        self.on('loaderror');
+        self.on('loaderror', new Error('no url found (checks urls parameter and add format parameter if filetype is not derivable from file extension or data URI)'));
         return;
       }
 
@@ -1269,7 +1269,7 @@
           }
         },
         function(err) {
-          obj.on('loaderror');
+          obj.on('loaderror', err);
         }
       );
     };
