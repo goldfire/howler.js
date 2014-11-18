@@ -618,13 +618,14 @@
       var self = this;
 
       // Wait for the sound to begin playing before stopping it.
-      if (!self._loaded) {
-        self.once('play', function() {
-          self.stop(id);
-        });
 
-        return self;
-      }
+      //if (!self._loaded) {
+      //  self.once('play', function() {
+      //    self.stop(id);
+      //  });
+      //
+      //  return self;
+      //}
 
       // If no id is passed, get all ID's to be stopped.
       var ids = self._getSoundIds(id);
