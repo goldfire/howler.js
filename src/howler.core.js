@@ -96,7 +96,7 @@
             for (var j=0; j<ids.length; j++) {
               var sound = self._howls[i]._soundById(ids[j]);
 
-              if (sound) {
+              if (sound && sound._node) {
                 sound._node.volume = sound._volume * vol;
               }
             }
@@ -133,7 +133,7 @@
           for (var j=0; j<ids.length; j++) {
             var sound = self._howls[i]._soundById(ids[j]);
 
-            if (sound) {
+            if (sound && sound._node) {
               sound._node.muted = (muted) ? true : sound._muted;
             }
           }
@@ -704,9 +704,9 @@
         if (sound) {
           sound._muted = muted;
 
-          if (self._webAudio) {
+          if (self._webAudio && sound._node) {
             sound._node.gain.setValueAtTime(muted ? 0 : sound._volume * Howler.volume(), ctx.currentTime);
-          } else {
+          } else if (sound._node) {
             sound._node.muted = Howler._muted ? true : muted;
           }
         }
@@ -772,9 +772,9 @@
           if (sound) {
             sound._volume = vol;
 
-            if (self._webAudio) {
+            if (self._webAudio && sound._node) {
               sound._node.gain.setValueAtTime(vol * Howler.volume(), ctx.currentTime);
-            } else {
+            } else if (sound._node) {
               sound._node.volume = vol * Howler.volume();
             }
           }
