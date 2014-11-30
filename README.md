@@ -1,3 +1,5 @@
+**NOTE:** Work is currently ongoing in the 2.0 branch. No ETA for release as of yet, but the core is fairly stable and is already under heavy production use. [Click here to view the 2.0 beta branch](https://github.com/goldfire/howler.js/tree/2.0).
+
 ![howler.js](http://goldfirestudios.com/proj/howlerjs/howlerjs_logo.png "howler.js")
 
 ## Description
