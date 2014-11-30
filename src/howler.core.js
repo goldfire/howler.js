@@ -624,9 +624,11 @@
 
       // Wait for the sound to begin playing before stopping it.
       if (!self._loaded) {
-        self.once('play', function() {
-          self.stop(id);
-        });
+        if (typeof self._sounds[0]._sprite !== 'undefined') {
+          self.once('play', function() {
+            self.stop(id);
+          });
+        }
 
         return self;
       }
