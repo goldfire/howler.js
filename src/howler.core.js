@@ -887,6 +887,7 @@
       } else if (args.length === 1) {
         if (typeof args[0] === 'boolean') {
           loop = args[0];
+          self._loop = loop;
         } else {
           // Return this sound's loop value.
           sound = self._soundById(parseInt(args[0], 10));
