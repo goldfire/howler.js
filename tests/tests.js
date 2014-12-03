@@ -39,10 +39,6 @@ var sound4 = new Howl({
 // Define the tests to run.
 var id;
 var webaudio = [
-  /**
-   * WEB AUDIO
-   */
-  
   function(fn) {
     sound1.once('play', function() {
       label.innerHTML = 'PLAYING';
@@ -86,7 +82,7 @@ var webaudio = [
     label.innerHTML = 'FADE OUT';
     sound1.once('faded', function() {
       fn();
-    });
+    }, id);
   },
 
   function(fn) {
@@ -95,7 +91,7 @@ var webaudio = [
     label.innerHTML = 'FADE IN';
     sound1.once('faded', function() {
       fn();
-    });
+    }, id);
   },
 
   function(fn) {
@@ -166,7 +162,9 @@ var webaudio = [
 
     label.innerHTML = 'FADE OUT GROUP';
     sound1.once('faded', function() {
-      fn();
+      if (sound1._onfaded.length === 0) {
+        fn();
+      }
     });
   },
 
@@ -175,7 +173,9 @@ var webaudio = [
 
     label.innerHTML = 'FADE IN GROUP';
     sound1.once('faded', function() {
-      fn();
+      if (sound1._onfaded.length === 0) {
+        fn();
+      }
     });
   },
 
@@ -217,6 +217,17 @@ var webaudio = [
 
     label.innerHTML = 'MULTIPLE SPRITES';
     setTimeout(fn, 3000);
+  },
+
+  function(fn) {
+    var sprite = sound3.play('one');
+    sound3.loop(true, sprite);
+
+    label.innerHTML = 'LOOP SPRITE';
+    setTimeout(function() {
+      sound3.loop(false, sprite);
+      fn();
+    }, 3000);
   },
 
   function(fn) {
@@ -351,7 +362,9 @@ var html5 = [
 
     label.innerHTML = 'FADE OUT GROUP (HTML5)';
     sound2.once('faded', function() {
-      fn();
+      if (sound2._onfaded.length === 0) {
+        fn();
+      }
     });
   },
 
@@ -360,7 +373,9 @@ var html5 = [
 
     label.innerHTML = 'FADE IN GROUP (HTML5)';
     sound2.once('faded', function() {
-      fn();
+      if (sound2._onfaded.length === 0) {
+        fn();
+      }
     });
   },
 
