@@ -93,7 +93,7 @@
     }
 
     // Set the defaults for optional 'y' & 'z'.
-    var or = self._orientation;
+    var or = self._orientation || [0,0,0,0,-1,0];
     y = (typeof y !== 'number') ? or[1] : y;
     z = (typeof z !== 'number') ? or[2] : z;
     xUp = (typeof xUp !== 'number') ? or[3] : xUp;
@@ -102,7 +102,7 @@
 
     if (typeof x === 'number') {
       self._orientation = [x, y, z, xUp, yUp, zUp];
-      self.ctx.listener.setOrientation(or[0], or[1], or[2], or[3], or[4], or[5]);
+      self.ctx.listener.setOrientation(x, y, z, xUp, yUp, Zup);
     } else {
       return or;
     }
