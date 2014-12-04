@@ -93,7 +93,7 @@
     }
 
     // Set the defaults for optional 'y' & 'z'.
-    var or = self._orientation || [0,0,0,0,-1,0];
+    var or = self._orientation || [0,0,-1,0,-1,0];
     y = (typeof y !== 'number') ? or[1] : y;
     z = (typeof z !== 'number') ? or[2] : z;
     xUp = (typeof xUp !== 'number') ? or[3] : xUp;
