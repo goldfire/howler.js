@@ -159,9 +159,11 @@
     _setupCodecs: function() {
       var self = this || Howler;
       var audioTest = new Audio();
-
+      var mpegTest = audioTest.canPlayType('audio/mpeg;').replace(/^no$/, '');
+      
       self._codecs = {
-        mp3: !!audioTest.canPlayType('audio/mpeg;').replace(/^no$/, ''),
+        mp3: !!(mpegTest || audioTest.canPlayType('audio/mp3;').replace(/^no$/, '')),
+        mpeg: !!mpegTest,
         opus: !!audioTest.canPlayType('audio/ogg; codecs="opus"').replace(/^no$/, ''),
         ogg: !!audioTest.canPlayType('audio/ogg; codecs="vorbis"').replace(/^no$/, ''),
         wav: !!audioTest.canPlayType('audio/wav; codecs="1"').replace(/^no$/, ''),
