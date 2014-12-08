@@ -34,6 +34,7 @@ Howler.js now also has the concept of plugins. The core represents 100% compatib
 - `UPDATED`: The global, group and single sound `mute` and `unmute` methods have been combined into a single `mute` method.
 - `UPDATED`: The AMD definition is now namespaced to `howler`.
 - `UPDATED`: The deprecated `fadeIn` and `fadeOut` methods have been removed in favor of the single `fade` method.
+- `UPDATED`: Improved the `ext` property and made it especially usefully for playing streams (for example, SoundCloud).
 - `UPDATED`: The `fade` method now only uses timeouts as a fallback with HTML5 Audio.
 - `UPDATED`: Moved any needed try/catch statements into own methods to prevent de-optimization in V8 and others.
 - `UPDATED`: Updated and improved overall documentation.
