@@ -1475,6 +1475,22 @@
       }
 
       if (/^data:[^;]+;base64,/.test(url)) {
+        // Setup polyfill for window.atob to support IE9.
+        // Modified from: https://github.com/davidchambers/Base64.js
+        window.atob = window.atob || function(input) {
+          var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+          var str = String(input).replace(/=+$/, '');
+          for (
+            var bc = 0, bs, buffer, idx = 0, output = '';
+            buffer = str.charAt(idx++);
+            ~buffer && (bs = bc % 4 ? bs * 64 + buffer : buffer, bc++ % 4) ? output += String.fromCharCode(255 & bs >> (-2 * bc & 6)) : 0
+          ) {
+            buffer = chars.indexOf(buffer);
+          }
+
+          return output;
+        };
+
         // Decode the base64 data URI without XHR, since some browsers don't support it.
         var data = atob(url.split(',')[1]);
         var dataView = new Uint8Array(data.length);
