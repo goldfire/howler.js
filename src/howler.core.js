@@ -433,11 +433,11 @@
       var seek = sound._seek > 0 ? sound._seek : self._sprite[sprite][0] / 1000;
       var duration = ((self._sprite[sprite][0] + self._sprite[sprite][1]) / 1000) - seek;
 
-      // Should this sound loop?
-      var loop = !!(sound._loop || self._sprite[sprite][2]);
-
       // Create a timer to fire at the end of playback or the start of a new loop.
       var ended = function() {
+        // Should this sound loop?
+        var loop = !!(sound._loop || self._sprite[sprite][2]);
+
         // Fire the ended event.
         self._emit('end', sound._id);
 
@@ -479,7 +479,7 @@
       sound._seek = seek;
       sound._start = self._sprite[sprite][0] / 1000;
       sound._stop = (self._sprite[sprite][0] + self._sprite[sprite][1]) / 1000;
-      sound._loop = loop;
+      sound._loop = !!(sound._loop || self._sprite[sprite][2]);
 
       // Begin the actual playback.
       var node = sound._node;
@@ -914,6 +914,9 @@
 
         if (sound) {
           sound._loop = loop;
+          if (self._webAudio && sound._node) {
+            sound._node.bufferSource.loop = loop;
+          }
         }
       }
 
