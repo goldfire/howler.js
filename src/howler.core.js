@@ -651,7 +651,7 @@
           sound._paused = true;
           sound._ended = true;
 
-          if (self._webAudio) {
+          if (self._webAudio && sound._node) {
             // make sure the sound has been created
             if (!sound._node.bufferSource) {
               return self;
@@ -665,7 +665,7 @@
 
             // Clean up the buffer source.
             sound._node.bufferSource = null;
-          } else if (!isNaN(sound._node.duration)) {
+          } else if (sound._node && !isNaN(sound._node.duration)) {
             sound._node.pause();
             sound._node.currentTime = sound._start || 0;
           }
