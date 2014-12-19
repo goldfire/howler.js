@@ -406,13 +406,15 @@
 
       // Get the selected node, or get one from the pool.
       var sound = id ? self._soundById(id) : self._inactiveSound();
-      if (id && !sprite) {
-        sprite = sound._sprite || '__default';
-      }
 
       // If the sound doesn't exist, do nothing.
       if (!sound) {
         return null;
+      }
+
+      // Select the sprite definition.
+      if (id && !sprite) {
+        sprite = sound._sprite || '__default';
       }
 
       // If we have no sprite and the sound hasn't loaded, we must wait
