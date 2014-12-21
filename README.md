@@ -119,11 +119,11 @@ Begins playback of a sound. Returns the sound id to be used with other methods. 
 * **sprite/id**: `String/Number` `optional` Takes one parameter that can either be a sprite or sound ID. If a sprite is passed, a new sound will play based on the sprite's definition. If a sound ID is passed, the previously played sound will be played (for example, after puasing it). However, if an ID of a sound that has been drained from the pool is passed, nothing will play.
 
 #### pause([id])
-Pauses playback of sound or group, saving the `pos` of playback.
+Pauses playback of sound or group, saving the `seek` of playback.
 * **id**: `Number` `optional` The sound ID. If none is passed, all sounds in group are puased.
 
 #### stop([id])
-Stops playback of sound, resetting `pos` to `0`.
+Stops playback of sound, resetting `seek` to `0`.
 * **id**: `Number` `optional` The sound ID. If none is passed, all sounds in group are stopped.
 
 #### mute([muted], [id])
