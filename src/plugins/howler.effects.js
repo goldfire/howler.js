@@ -62,7 +62,7 @@
 
     if (typeof x === 'number') {
       self._pos = [x, y, z];
-      self.ctx.listener.setPosition(self._pos[0], self._pos[1], self._Pos[2]);
+      self.ctx.listener.setPosition(self._pos[0], self._pos[1], self._pos[2]);
     } else {
       return self._pos;
     }
