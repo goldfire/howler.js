@@ -217,7 +217,7 @@
   }
 
   // allow access to the global audio controls
-  var Howler = new HowlerGlobal(codecs);
+  var _Howler = new HowlerGlobal(codecs);
 
   // setup the audio object
   var Howl = function(o) {
@@ -261,12 +261,12 @@
     }
 
     // automatically try to enable audio on iOS
-    if (typeof ctx !== 'undefined' && ctx && Howler.iOSAutoEnable) {
-      Howler._enableiOSAudio();
+    if (typeof ctx !== 'undefined' && ctx && _Howler.iOSAutoEnable) {
+      _Howler._enableiOSAudio();
     }
 
     // add this to an array of Howl's to allow global control
-    Howler._howls.push(self);
+    _Howler._howls.push(self);
 
     // load the track
     self.load();
@@ -344,7 +344,7 @@
         newNode.src = url;
         newNode._pos = 0;
         newNode.preload = 'auto';
-        newNode.volume = (Howler._muted) ? 0 : self._volume * Howler.volume();
+        newNode.volume = (_Howler._muted) ? 0 : self._volume * _Howler.volume();
 
         // setup the event listener to start playing the sound
         // as soon as it has buffered enough
@@ -510,8 +510,8 @@
             node.readyState = 4;
             node.id = soundId;
             node.currentTime = pos;
-            node.muted = Howler._muted || node.muted;
-            node.volume = self._volume * Howler.volume();
+            node.muted = _Howler._muted || node.muted;
+            node.volume = self._volume * _Howler.volume();
             setTimeout(function() { node.play(); }, 0);
           } else {
             self._clearEndTimer(soundId);
@@ -723,7 +723,7 @@
           if (self._webAudio) {
             activeNode.gain.value = vol;
           } else {
-            activeNode.volume = vol * Howler.volume();
+            activeNode.volume = vol * _Howler.volume();
           }
         }
 
@@ -1184,10 +1184,10 @@
         clearTimeout(self._onendTimer[i].timer);
       }
 
-      // remove the reference in the global Howler object
-      var index = Howler._howls.indexOf(self);
+      // remove the reference in the global _Howler object
+      var index = _Howler._howls.indexOf(self);
       if (index !== null && index >= 0) {
-        Howler._howls.splice(index, 1);
+        _Howler._howls.splice(index, 1);
       }
 
       // delete this sound from the cache
@@ -1329,7 +1329,7 @@
   if (typeof define === 'function' && define.amd) {
     define(function() {
       return {
-        Howler: Howler,
+        Howler: _Howler,
         Howl: Howl
       };
     });
@@ -1339,14 +1339,14 @@
    * Add support for CommonJS libraries such as browserify.
    */
   if (typeof exports !== 'undefined') {
-    exports.Howler = Howler;
+    exports.Howler = _Howler;
     exports.Howl = Howl;
   }
 
   // define globally in case AMD is not available or available but not used
 
   if (typeof window !== 'undefined') {
-    window.Howler = Howler;
+    window.Howler = _Howler;
     window.Howl = Howl;
   }
 
