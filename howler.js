@@ -376,6 +376,7 @@
           newNode.removeEventListener('canplaythrough', listener, false);
         };
         newNode.addEventListener('canplaythrough', listener, false);
+		newNode.addEventListener('ended', function () { self.on('end')})
         newNode.load();
       }
 
