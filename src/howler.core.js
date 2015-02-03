@@ -2,7 +2,7 @@
  *  howler.js v2.0.0-beta
  *  howlerjs.com
  *
- *  (c) 2013-2014, James Simpson of GoldFire Studios
+ *  (c) 2013-2015, James Simpson of GoldFire Studios
  *  goldfirestudios.com
  *
  *  MIT License
@@ -377,6 +377,7 @@
      */
     play: function(sprite) {
       var self = this;
+      var args = arguments;
       var id = null;
 
       // Determine if a sprite, sound id or nothing was passed
@@ -507,9 +508,11 @@
             self._endTimers[sound._id] = setTimeout(ended, (duration * 1000) / Math.abs(self._rate));
           }
 
-          setTimeout(function() {
-            self._emit('play', sound._id);
-          }, 0);
+          if (!args[1]) {
+            setTimeout(function() {
+              self._emit('play', sound._id);
+            }, 0);
+          }
         };
 
         if (self._loaded) {
@@ -530,7 +533,9 @@
           node.playbackRate = self._rate;
           setTimeout(function() {
             node.play();
-            self._emit('play', sound._id);
+            if (!args[1]) {
+              self._emit('play', sound._id);
+            }
           }, 0);
         };
 
@@ -988,7 +993,7 @@
 
           // Restart the playback if the sound was playing.
           if (playing) {
-            self.play(id);
+            self.play(id, true);
           }
         } else {
           return (self._webAudio) ? sound._seek + (ctx.currentTime - sound._playStart) : sound._node.currentTime;

@@ -4,7 +4,7 @@
  *  howler.js v2.0.0-beta
  *  howlerjs.com
  *
- *  (c) 2013-2014, James Simpson of GoldFire Studios
+ *  (c) 2013-2015, James Simpson of GoldFire Studios
  *  goldfirestudios.com
  *
  *  MIT License
