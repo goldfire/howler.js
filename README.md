@@ -161,7 +161,7 @@ Check if a sound is currently playing or not, returns a `Boolean`.
 Get the duration of the audio source. Will return 0 until after the `load` event fires.
 
 #### on(event, function, [id])
-Listen for events. Multiple events can be added by calling this multiple times.
+Listen for events. Multiple events can be added by calling this multiple times. the event name should appear without the 'on' prefix(e.g 'start','load'). 
 * **event**: `String` Name of event to fire/set.
 * **function**: `Function` Define function to fire on event.
 * **id**: `Number` `optional` Only listen to events for this sound id.
