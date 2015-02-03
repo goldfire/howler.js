@@ -243,7 +243,7 @@
   var Howl = function(o) {
     var self = this;
 
-    // Throw an error if no source is provided
+    // Throw an error if no source is provided.
     if (!o.src || o.src.length === 0) {
       console.error('An array of source files must be passed with any new Howl.');
       return;
@@ -996,7 +996,11 @@
             self.play(id, true);
           }
         } else {
-          return (self._webAudio) ? sound._seek + (ctx.currentTime - sound._playStart) : sound._node.currentTime;
+          if (self._webAudio) {
+            return (sound._seek + self.playing(id) ? ctx.currentTime - sound._playStart : 0)
+          } else {
+            return sound._node.currentTime;
+          }
         }
       }
 
