@@ -997,7 +997,7 @@
           }
         } else {
           if (self._webAudio) {
-            return (sound._seek + self.playing(id) ? ctx.currentTime - sound._playStart : 0)
+            return (sound._seek + self.playing(id) ? ctx.currentTime - sound._playStart : 0);
           } else {
             return sound._node.currentTime;
           }
