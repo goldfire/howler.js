@@ -633,6 +633,8 @@
         }
       }
 
+      self.on('end');
+
       return self;
     },
 
