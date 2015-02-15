@@ -1460,7 +1460,7 @@
       }
 
       // Clear the event listener.
-      self._node.removeEventListener('canplaythrough', self._loadListener, false);
+      self._node.removeEventListener('canplaythrough', self._loadFn, false);
     }
   };
 
