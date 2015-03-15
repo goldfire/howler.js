@@ -19,8 +19,8 @@ More documentation, examples and demos can be found at **[howlerjs.com](http://h
 * Fade in/out sounds
 * Supports Web Audio 3D sound positioning
 * Methods can be chained
-* Uses no outside libraries, just pure Javascript
-* Lightweight, 9kb filesize (3kb gzipped)
+* Uses no outside libraries, just pure JavaScript
+* Lightweight; 12kb minified filesize (4kb gzipped)
 
 ### Browser Compatibility
 Tested in the following browsers/versions:
