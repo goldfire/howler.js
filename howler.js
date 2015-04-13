@@ -292,9 +292,9 @@
       for (var i=0; i<self._urls.length; i++) {
         var ext, urlItem;
 
-        if (self._format) {
+        if (self._format[i]) {
           // use specified audio format if available
-          ext = self._format;
+          ext = self._format[i];
         } else {
           // figure out the filetype (whether an extension or base64 data)
           urlItem = self._urls[i];
