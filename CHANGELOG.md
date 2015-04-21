@@ -1,3 +1,6 @@
+## 1.1.26 (April 21, 2015)
+- `FIXED`: Fixed looping in Chrome due to a change in the Web Audio spec implemented in Chrome 42.
+
 ## 1.1.25 (July 29, 2014)
 - `ADDED`: The `AudioContext` is now available on the global `Howler` object (thanks Matt DesLauriers).
 - `FIXED`: When falling back to HTML5 Audio due to XHR error, delete cache for source file to prevent multi-playback issues.
