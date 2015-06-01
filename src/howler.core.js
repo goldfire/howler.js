@@ -997,10 +997,17 @@
           }
         } else {
           if (self._webAudio) {
-            return (sound._seek + self.playing(id) ? ctx.currentTime - sound._playStart : 0);
+            if (self.playing(id)) {
+              seek = sound._seek + (ctx.currentTime - sound._playStart);
+            } else if (sound._paused) {
+              seek = sound._seek;
+            } else { // Sound is stopped
+              seek = 0;
+            }
           } else {
-            return sound._node.currentTime;
+            seek = sound._node.currentTime;
           }
+          return seek;
         }
       }
 
