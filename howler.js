@@ -941,7 +941,7 @@
      */
     _nodeById: function(id) {
       var self = this,
-        node = self._audioNode[0];
+        node;
 
       // find the node with this ID
       for (var i=0; i<self._audioNode.length; i++) {
@@ -1060,7 +1060,7 @@
      */
     _clearEndTimer: function(soundId) {
       var self = this,
-        index = 0;
+        index;
 
       // loop through the timers to find the one associated with this sound
       for (var i=0; i<self._onendTimer.length; i++) {
