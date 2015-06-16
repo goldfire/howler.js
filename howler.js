@@ -732,6 +732,45 @@
         return self._volume;
       }
     },
+    
+    /**
+     * Get/set rate of this sound.
+     * @param  {Float}  rate Rate from -10.0 to 10.0.
+     * @param  {String} id  (optional) The play instance ID.
+     * @return {Howl/Float}     Returns self or current rate.
+     */
+    rate: function(rate, id) {
+      var self = this;
+
+      // make sure rate is a number
+      rate = parseFloat(rate);
+
+      if (rate >= -10 && rate <= 10) {
+        self._rate = rate;
+
+        // if the sound hasn't been loaded, add it to the event queue
+        if (!self._loaded) {
+          self.on('play', function() {
+            self.rate(rate, id);
+          });
+
+          return self;
+        }
+
+        var activeNode = (id) ? self._nodeById(id) : self._activeNode();
+        if (activeNode) {
+          if (self._webAudio) {
+            activeNode.bufferSource.playbackRate.value = rate;
+          } else {
+            // unsupported
+          }
+        }
+
+        return self;
+      } else {
+        return self._rate;
+      }
+    },
 
     /**
      * Get/set whether to loop the sound.
