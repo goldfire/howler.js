@@ -1155,6 +1155,23 @@
     },
 
     /**
+     * Fire event once then remove this handler.
+     * @param  {String}   event Event type.
+     * @param  {Function} fn    Listener to add then remove.
+     * @return {Howl}
+     */
+    one: function (event, fn) {
+      var self = this;
+
+      var wrapperfn = function () {
+        fn.apply(self, arguments);
+        self.off(event, fn);
+      };
+
+      return self.on(event, wrapperfn);
+    },
+
+    /**
      * Unload and destroy the current Howl object.
      * This will immediately stop all play instances attached to this sound.
      */
