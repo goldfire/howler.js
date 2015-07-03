@@ -218,13 +218,13 @@
             self.iOSAutoEnable = false;
 
             // Remove the touch start listener.
-            window.removeEventListener('touchstart', unlock, false);
+            document.removeEventListener('touchstart', unlock, false);
           }
         }, 0);
       };
 
       // Setup a touch start listener to attempt an unlock in.
-      window.addEventListener('touchstart', unlock, false);
+      document.addEventListener('touchstart', unlock, false);
 
       return self;
     }
