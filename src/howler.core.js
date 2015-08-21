@@ -160,7 +160,7 @@
       var self = this || Howler;
       var audioTest = new Audio();
       var mpegTest = audioTest.canPlayType('audio/mpeg;').replace(/^no$/, '');
-      
+
       self._codecs = {
         mp3: !!(mpegTest || audioTest.canPlayType('audio/mp3;').replace(/^no$/, '')),
         mpeg: !!mpegTest,
@@ -286,6 +286,7 @@
       self._onloaderror = o.onloaderror ? [{fn: o.onloaderror}] : [];
       self._onpause = o.onpause ? [{fn: o.onpause}] : [];
       self._onplay = o.onplay ? [{fn: o.onplay}] : [];
+      self._ontimeupdate = o.ontimeupdate ? [{fn: o.ontimeupdate}] : [];
 
       // Web Audio or HTML5 Audio?
       self._webAudio = usingWebAudio && !self._html5;
@@ -852,7 +853,7 @@
             var dir = from > to ? 'out' : 'in';
             var steps = diff / 0.01;
             var stepLen = len / steps;
-            
+
             (function() {
               var vol = from;
               var interval = setInterval(function(id) {
@@ -1157,7 +1158,7 @@
     _emit: function(event, id, msg) {
       var self = this;
       var events = self['_on' + event];
-      
+
       // Loop through event store and fire all functions.
       for (var i=0; i<events.length; i++) {
         if (!events[i].id || events[i].id === id) {
@@ -1382,6 +1383,10 @@
         self._loadFn = self._loadListener.bind(self);
         self._node.addEventListener('canplaythrough', self._loadFn, false);
 
+        // Listen for 'timeupdate' event to let us know each time the sound has progressed
+        self._updateFn = self._timeUpdateListener.bind(self);
+        self._node.addEventListener('timeupdate', self._updateFn, false);
+
         // Setup the new audio node.
         self._node.src = parent._src;
         self._node.preload = 'auto';
@@ -1419,6 +1424,14 @@
     },
 
     /**
+     * HTML5 Time update listener callback
+     */
+    _timeUpdateListener: function() {
+        var self = this;
+        self._parent._emit('timeupdate', self._id);
+    },
+
+    /**
      * HTML5 Audio error listener callback.
      */
     _errorListener: function() {
@@ -1430,7 +1443,7 @@
 
       // Fire an error event and pass back the code.
       self._parent._emit('loaderror', self._id, self._node.error ? self._node.error.code : 0);
-      
+
       // Clear the event listener.
       self._node.removeEventListener('error', self._errorListener, false);
     },
@@ -1513,7 +1526,7 @@
         for (var i=0; i<data.length; ++i) {
           dataView[i] = data.charCodeAt(i);
         }
-        
+
         decodeAudioData(dataView.buffer, self);
       } else {
         // Load the buffer from the URL.
