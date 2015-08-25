@@ -1136,13 +1136,12 @@
      */
     off: function(event, fn) {
       var self = this,
-        events = self['_on' + event],
-        fnString = fn ? fn.toString() : null;
+        events = self['_on' + event];
 
-      if (fnString) {
+      if (fn) {
         // loop through functions in the event for comparison
         for (var i=0; i<events.length; i++) {
-          if (fnString === events[i].toString()) {
+          if (fn === events[i]) {
             events.splice(i, 1);
             break;
           }
