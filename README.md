@@ -141,7 +141,12 @@ Fade a currently playing sound between two volumes. Fires the `faded` event when
 * **from**: `Number` Volume to fade from (`0.0` to `1.0`).
 * **to**: `Number` Volume to fade to (`0.0` to `1.0`).
 * **duration**: `Number` Time in milliseconds to fade.
-* **id**: `Number` `optional` The sound ID. If none is passed, all sounds ing roup will fade.
+* **id**: `Number` `optional` The sound ID. If none is passed, all sounds in group will fade.
+
+#### rate([rate], [id])
+Get/set the rate of playback for a sound. This method optionally takes 0, 1 or 2 arguments.
+* **rate**: `Number` `optional` The rate of playback. 0.5 to 4.0, with 1.0 being normal speed.
+* **id**: `Number` `optional` The sound ID. If none is passed, playback rate of all sounds in group will change.
 
 #### seek([seek], [id])
 Get/set the position of playback for a sound. This method optionally takes 0, 1 or 2 arguments.

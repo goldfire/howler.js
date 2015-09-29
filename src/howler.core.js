@@ -437,43 +437,8 @@
       var duration = ((self._sprite[sprite][0] + self._sprite[sprite][1]) / 1000) - seek;
 
       // Create a timer to fire at the end of playback or the start of a new loop.
-      var ended = function() {
-        // Should this sound loop?
-        var loop = !!(sound._loop || self._sprite[sprite][2]);
-
-        // Fire the ended event.
-        self._emit('end', sound._id);
-
-        // Restart the playback for HTML5 Audio loop.
-        if (!self._webAudio && loop) {
-          self.stop(sound._id).play(sound._id);
-        }
-
-        // Restart this timer if on a Web Audio loop.
-        if (self._webAudio && loop) {
-          self._emit('play', sound._id);
-          sound._seek = sound._start || 0;
-          sound._playStart = ctx.currentTime;
-          self._endTimers[sound._id] = setTimeout(ended, ((sound._stop - sound._start) * 1000) / Math.abs(self._rate));
-        }
-
-        // Mark the node as paused.
-        if (self._webAudio && !loop) {
-          sound._paused = true;
-          sound._ended = true;
-          sound._seek = sound._start || 0;
-          self._clearTimer(sound._id);
-
-          // Clean up the buffer source.
-          sound._node.bufferSource = null;
-        }
-
-        // When using a sprite, end the track.
-        if (!self._webAudio && !loop) {
-          self.stop(sound._id);
-        }
-      };
-      self._endTimers[sound._id] = setTimeout(ended, (duration * 1000) / Math.abs(self._rate));
+      var timeout = (duration * 1000) / Math.abs(sound._rate);
+      self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
 
       // Update the parameters of the sound
       sound._paused = false;
@@ -505,7 +470,7 @@
 
           // Start a new timer if none is present.
           if (!self._endTimers[sound._id]) {
-            self._endTimers[sound._id] = setTimeout(ended, (duration * 1000) / Math.abs(self._rate));
+            self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
           }
 
           if (!args[1]) {
@@ -530,7 +495,7 @@
           node.currentTime = seek;
           node.muted = sound._muted || self._muted || Howler._muted || node.muted;
           node.volume = sound._volume * Howler.volume();
-          node.playbackRate = self._rate;
+          node.playbackRate = sound._rate;
           setTimeout(function() {
             node.play();
             if (!args[1]) {
@@ -545,7 +510,7 @@
         } else {
           var listener = function() {
             // Setup the new end timer.
-            self._endTimers[sound._id] = setTimeout(ended, (duration * 1000) / Math.abs(self._rate));
+            self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
 
             // Begin playback.
             playHtml5();
@@ -931,6 +896,87 @@
     },
 
     /**
+     * Get/set the playback rate of a sound. This method can optionally take 0, 1 or 2 arguments.
+     *   rate() -> Returns the first sound node's current playback rate.
+     *   rate(id) -> Returns the sound id's current playback rate.
+     *   rate(rate) -> Sets the playback rate of all sounds in this Howl group.
+     *   rate(rate, id) -> Sets the playback rate of passed sound id.
+     * @return {Howl/Number} Returns self or the current playback rate.
+     */
+    rate: function() {
+      var self = this;
+      var args = arguments;
+      var rate, id;
+
+      // Determine the values based on arguments.
+      if (args.length === 0) {
+        // We will simply return the current rate of the first node.
+        id = self._sounds[0]._id;
+      } else if (args.length === 1) {
+        // First check if this is an ID, and if not, assume it is a new rate value.
+        var ids = self._getSoundIds();
+        var index = ids.indexOf(args[0]);
+        if (index >= 0) {
+          id = parseInt(args[0], 10);
+        } else {
+          rate = parseFloat(args[0]);
+        }
+      } else if (args.length === 2) {
+        rate = parseFloat(args[0]);
+        id = parseInt(args[1], 10);
+      }
+
+      // Update the playback rate or return the current value.
+      var sound;
+      if (typeof rate === 'number') {
+        // Wait for the sound to load before changing the playback rate.
+        if (!self._loaded) {
+          self.once('load', function() {
+            self.rate.apply(self, args);
+          });
+
+          return self;
+        }
+
+        // Set the group rate.
+        if (typeof id === 'undefined') {
+          self._rate = rate;
+        }
+
+        // Update one or all volumes.
+        id = self._getSoundIds(id);
+        for (var i=0; i<id.length; i++) {
+          // Get the sound.
+          sound = self._soundById(id[i]);
+
+          if (sound) {
+            sound._rate = rate;
+
+            // Change the playback rate.
+            if (self._webAudio && sound._node && sound._node.bufferSource) {
+              sound._node.bufferSource.playbackRate.value = rate;
+            } else if (sound._node) {
+              sound._node.playbackRate = rate;
+            }
+
+            // Reset the timers.
+            var seek = self.seek(id[i]);
+            var duration = ((self._sprite[sound._sprite][0] + self._sprite[sound._sprite][1]) / 1000) - seek;
+            var timeout = (duration * 1000) / Math.abs(sound._rate);
+
+            self._clearTimer(id[i]);
+            self._endTimers[id[i]] = setTimeout(self._ended.bind(self, sound), timeout);
+          }
+        }
+      } else {
+        sound = self._soundById(id);
+        return sound ? sound._rate : self._rate;
+      }
+
+      return self;
+    },
+
+    /**
      * Get/set the seek position of a sound. This method can optionally take 0, 1 or 2 arguments.
      *   seek() -> Returns the first sound node's current seek position.
      *   seek(id) -> Returns the sound id's current seek position.
@@ -1171,6 +1217,55 @@
     },
 
     /**
+     * Fired when playback ends at the end of the duration.
+     * @param  {Sound} sound The sound object to work with.
+     * @return {Howl}
+     */
+    _ended: function(sound) {
+      var self = this;
+      var sprite = sound._sprite;
+
+      // Should this sound loop?
+      var loop = !!(sound._loop || self._sprite[sprite][2]);
+
+      // Fire the ended event.
+      self._emit('end', sound._id);
+
+      // Restart the playback for HTML5 Audio loop.
+      if (!self._webAudio && loop) {
+        self.stop(sound._id).play(sound._id);
+      }
+
+      // Restart this timer if on a Web Audio loop.
+      if (self._webAudio && loop) {
+        self._emit('play', sound._id);
+        sound._seek = sound._start || 0;
+        sound._playStart = ctx.currentTime;
+
+        var timeout = ((sound._stop - sound._start) * 1000) / Math.abs(sound._rate);
+        self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
+      }
+
+      // Mark the node as paused.
+      if (self._webAudio && !loop) {
+        sound._paused = true;
+        sound._ended = true;
+        sound._seek = sound._start || 0;
+        self._clearTimer(sound._id);
+
+        // Clean up the buffer source.
+        sound._node.bufferSource = null;
+      }
+
+      // When using a sprite, end the track.
+      if (!self._webAudio && !loop) {
+        self.stop(sound._id);
+      }
+
+      return self;
+    },
+
+    /**
      * Clear the end timer for a sound playback.
      * @param  {Number} id The sound ID.
      * @return {Howl}
@@ -1340,6 +1435,7 @@
       self._loop = parent._loop;
       self._volume = parent._volume;
       self._muted = parent._muted;
+      self._rate = parent._rate;
       self._seek = 0;
       self._paused = true;
       self._ended = true;
@@ -1407,6 +1503,7 @@
       self._loop = parent._loop;
       self._volume = parent._volume;
       self._muted = parent._muted;
+      self._rate = parent._rate;
       self._seek = 0;
       self._paused = true;
       self._ended = true;
