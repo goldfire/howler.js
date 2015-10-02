@@ -1131,14 +1131,15 @@
      * @param  {String}   event Event name.
      * @param  {Function} fn    Listener to call.
      * @param  {Number}   id    (optional) Only listen to events for this sound.
+     * @param  {Number}   once  (INTERNAL) Marks event to fire only once.
      * @return {Howl}
      */
-    on: function(event, fn, id) {
+    on: function(event, fn, id, once) {
       var self = this;
       var events = self['_on' + event];
 
       if (typeof fn === 'function') {
-        events.push({id: id, fn: fn});
+        events.push(once ? {id: id, fn: fn, once: once} : {id: id, fn: fn});
       }
 
       return self;
@@ -1181,17 +1182,8 @@
     once: function(event, fn, id) {
       var self = this;
 
-      // Create the listener method.
-      var listener = function() {
-        // Call the passed function.
-        fn.apply(self, arguments);
-
-        // Clear the listener.
-        self.off(event, listener, id);
-      };
-
       // Setup the event listener.
-      self.on(event, listener, id);
+      self.on(event, fn, id, 1);
 
       return self;
     },
@@ -1213,6 +1205,11 @@
           setTimeout(function(fn) {
             fn.call(this, id, msg);
           }.bind(self, events[i].fn), 0);
+
+          // If this event was setup with `once`, remove it.
+          if (events[i].once) {
+            self.off(event, events[i].fn, id);
+          }
         }
       }
 
