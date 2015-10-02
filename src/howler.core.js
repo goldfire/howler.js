@@ -755,9 +755,9 @@
           if (sound) {
             sound._volume = vol;
 
-            if (self._webAudio && sound._node) {
+            if (self._webAudio && sound._node && !sound._muted) {
               sound._node.gain.setValueAtTime(vol * Howler.volume(), ctx.currentTime);
-            } else if (sound._node) {
+            } else if (sound._node && !sound._muted) {
               sound._node.volume = vol * Howler.volume();
             }
           }
@@ -801,7 +801,7 @@
 
         // Create a linear fade or fall back to timeouts with HTML5 Audio.
         if (sound) {
-          if (self._webAudio) {
+          if (self._webAudio && !sound._muted) {
             var currentTime = ctx.currentTime;
             var end = currentTime + (len / 1000);
             sound._volume = from;
