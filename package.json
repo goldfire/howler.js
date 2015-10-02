@@ -15,7 +15,7 @@
     "type": "git",
     "url": "git://github.com/goldfire/howler.js.git#2.0"
   },
-  "main": "howler.js",
+  "main": "howler.min.js",
   "version": "2.0.0-beta",
   "license": {
     "type": "MIT",
