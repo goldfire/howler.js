@@ -1162,7 +1162,7 @@
         }
       } else {
         // Clear out all events of this type.
-        events = [];
+        self['on' + event] = [];
       }
 
       return self;
