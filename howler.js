@@ -1,5 +1,5 @@
 /*!
- *  howler.js v1.1.26
+ *  howler.js v1.1.27
  *  howlerjs.com
  *
  *  (c) 2013-2015, James Simpson of GoldFire Studios
@@ -187,13 +187,13 @@
             self.iOSAutoEnable = false;
 
             // remove the touch start listener
-            window.removeEventListener('touchstart', unlock, false);
+            window.removeEventListener('touchend', unlock, false);
           }
         }, 0);
       };
 
       // setup a touch start listener to attempt an unlock in
-      window.addEventListener('touchstart', unlock, false);
+      window.addEventListener('touchend', unlock, false);
 
       return self;
     }

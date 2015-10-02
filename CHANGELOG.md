@@ -1,3 +1,6 @@
+## 1.1.27 (October 2, 2015)
+- `FIXED`: Fixed automatic audio unlocking on iOS 9 by switching to `touchend` from `touchstart`.
+
 ## 1.1.26 (April 21, 2015)
 - `FIXED`: Fixed looping in Chrome due to a change in the Web Audio spec implemented in Chrome 42.
 
