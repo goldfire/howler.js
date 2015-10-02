@@ -15,15 +15,14 @@
     "type": "git",
     "url": "git://github.com/goldfire/howler.js.git#2.0"
   },
-  "main": "howler.js",
+  "main": "src/howler.core.js",
   "version": "2.0.0-beta",
   "license": {
     "type": "MIT",
     "url": "https://raw.githubusercontent.com/goldfire/howler.js/master/LICENSE.md"
   },
   "files": [
-    "howler.js",
-    "howler.min.js",
+    "src",
     "LICENSE.md"
   ]
 }
