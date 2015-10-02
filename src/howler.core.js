@@ -286,6 +286,7 @@
       self._onloaderror = o.onloaderror ? [{fn: o.onloaderror}] : [];
       self._onpause = o.onpause ? [{fn: o.onpause}] : [];
       self._onplay = o.onplay ? [{fn: o.onplay}] : [];
+      self._onstop = o.onstop ? [{fn: o.onstop}] : [];
 
       // Web Audio or HTML5 Audio?
       self._webAudio = usingWebAudio && !self._html5;
@@ -641,6 +642,8 @@
             sound._node.pause();
             sound._node.currentTime = sound._start || 0;
           }
+
+          self._emit('stop', sound._id);
         }
       }
 
@@ -886,7 +889,7 @@
 
         if (sound) {
           sound._loop = loop;
-          if (self._webAudio && sound._node) {
+          if (self._webAudio && sound._node && sound._node.bufferSource) {
             sound._node.bufferSource.loop = loop;
           }
         }

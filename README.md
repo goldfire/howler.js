@@ -109,6 +109,8 @@ Fires when the sound begins playing. The first parameter is the ID of the sound.
 Fires when the sound finishes playing (if it is looping, it'll fire at the end of each loop). The first parameter is the ID of the sound.
 #### onpause `Function`
 Fires when the sound has been paused. The first parameter is the ID of the sound.
+#### onstop `Function`
+Fires when the sound has been stopped. The first parameter is the ID of the sound.
 #### onfaded `Function`
 Fires when the current sound finishes fading in/out. The first parameter is the ID of the sound.
 
@@ -167,19 +169,19 @@ Get the duration of the audio source. Will return 0 until after the `load` event
 
 #### on(event, function, [id])
 Listen for events. Multiple events can be added by calling this multiple times.
-* **event**: `String` Name of event to fire/set (`load`, `loaderror`, `play`, `end`, `pause`, `faded`).
+* **event**: `String` Name of event to fire/set (`load`, `loaderror`, `play`, `end`, `pause`, `stop`, `faded`).
 * **function**: `Function` Define function to fire on event.
 * **id**: `Number` `optional` Only listen to events for this sound id.
 
 #### once(event, function, [id])
 Same as `on`, but it removes itself after the callback is fired.
-* **event**: `String` Name of event to fire/set (`load`, `loaderror`, `play`, `end`, `pause`, `faded`).
+* **event**: `String` Name of event to fire/set (`load`, `loaderror`, `play`, `end`, `pause`, `stop`, `faded`).
 * **function**: `Function` Define function to fire on event.
 * **id**: `Number` `optional` Only listen to events for this sound id.
 
 #### off(event, [function], [id])
 Remove event listener that you've set.
-* **event**: `String` Name of event (`load`, `loaderror`, `play`, `end`, `pause`, `faded`).
+* **event**: `String` Name of event (`load`, `loaderror`, `play`, `end`, `pause`, `stop`, `faded`).
 * **function**: `Function` `optional` The listener to remove. Omit this to remove all events of type.
 * **id**: `Number` `optional` Only remove events for this sound id.
 
