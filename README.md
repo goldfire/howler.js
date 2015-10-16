@@ -206,7 +206,7 @@ Check supported audio codecs. Returns `true` if the codec is supported in the cu
 * **ext**: `String` File extension. One of: "mp3", "opus", "ogg", "wav", "aac", "m4a", "mp4", "weba".
 
 #### unload()
-Unload and destroy all currently loaded Howl objects.
+Unload and destroy all currently loaded Howl objects. This will immediately stop all sounds and remove them from cache.
 
 
 ### Global Core Properties
