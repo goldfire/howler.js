@@ -40,6 +40,7 @@ Howler.js now also has the concept of plugins. The core represents 100% compatib
 - `UPDATED`: The `fade` method now only uses timeouts as a fallback with HTML5 Audio.
 - `UPDATED`: Moved any needed try/catch statements into own methods to prevent de-optimization in V8 and others.
 - `UPDATED`: Updated and improved overall documentation.
+- `UPDATED`: Fades are now automatically stopped when a new one is started, volume is changed or the sound is paused/stopped.
 - `FIXED`: The event system has been overhauled to be more reliable.
 - `FIXED`: Methods called before a sound has loaded no longer cause events to stick in the queue.
 - `FIXED`: The `end` event correctly fires at the end of each loop when using Web Audio.
