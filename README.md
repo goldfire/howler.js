@@ -87,7 +87,7 @@ Set to `true` to automatically start playback when sound is loaded.
 #### mute `Boolean` `false`
 Set to `true` to load the audio muted.
 #### sprite `Object` `{}`
-Define a sound sprite for the sound. The offset and duration are defined in milliseconds. A third (optional) parameter is available to set a sprite as looping.
+Define a sound sprite for the sound. The offset and duration are defined in milliseconds. A third (optional) parameter is available to set a sprite as looping. An easy way to generate compatible sound sprites is with [audiosprite](https://github.com/tonistiigi/audiosprite).
 ```javascript
 {
   key: [offset, duration, (loop)]
