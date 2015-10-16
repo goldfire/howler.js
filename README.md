@@ -187,6 +187,7 @@ Remove event listener that you've set.
 
 #### load()
 This is called by default, but if you set `preload` to false, you must call `load` before you can play any sounds.
+
 #### unload()
 Unload and destroy a Howl object. This will immediately stop all sounds attached to this sound and remove it from the cache.
 
@@ -203,6 +204,9 @@ Get/set the global volume for all sounds, relative to their own volume.
 #### codecs(ext)
 Check supported audio codecs. Returns `true` if the codec is supported in the current browser.
 * **ext**: `String` File extension. One of: "mp3", "opus", "ogg", "wav", "aac", "m4a", "mp4", "weba".
+
+#### unload()
+Unload and destroy all currently loaded Howl objects.
 
 
 ### Global Core Properties

@@ -144,6 +144,20 @@
     },
 
     /**
+     * Unload and destroy all currently loaded Howl objects.
+     * @return {Howler}
+     */
+    unload: function() {
+      var self = this || Howler;
+
+      for (var i=self._howls.length-1; i>=0; i--) {
+        self._howls[i].unload();
+      }
+
+      return self;
+    },
+
+    /**
      * Check for codec support of specific extension.
      * @param  {String} ext Audio file extention.
      * @return {Boolean}
