@@ -1,5 +1,5 @@
 /*!
- *  howler.js v2.0.0-beta2
+ *  howler.js v2.0.0-beta3
  *  howlerjs.com
  *
  *  (c) 2013-2015, James Simpson of GoldFire Studios
@@ -1260,7 +1260,7 @@
 
           // If this event was setup with `once`, remove it.
           if (events[i].once) {
-            self.off(event, events[i].fn, id);
+            self.off(event, events[i].fn, events[i].id);
           }
         }
       }
