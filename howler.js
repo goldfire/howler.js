@@ -1226,12 +1226,18 @@
         
         decodeAudioData(dataView.buffer, obj, url);
       } else {
+        // add link tag into the DOM to allow browser cache
+        var link = document.createElement('link');
+        link.href = url;
+        document.head.appendChild(link);
+
         // load the buffer from the URL
         var xhr = new XMLHttpRequest();
         xhr.open('GET', url, true);
         xhr.responseType = 'arraybuffer';
         xhr.onload = function() {
           decodeAudioData(xhr.response, obj, url);
+          document.head.removeChild(link);
         };
         xhr.onerror = function() {
           // if there is an error, switch the sound to HTML Audio
@@ -1243,6 +1249,7 @@
             delete cache[url];
             obj.load();
           }
+          document.head.removeChild(link);
         };
         try {
           xhr.send();
