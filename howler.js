@@ -236,6 +236,7 @@
     self._volume = o.volume !== undefined ? o.volume : 1;
     self._urls = o.urls || [];
     self._rate = o.rate || 1;
+    self._autoLoad = o.hasOwnProperty('autoLoad') ? o.autoLoad : true;
 
     // allow forcing of a specific panningModel ('equalpower' or 'HRTF'),
     // if none is specified, defaults to 'equalpower' and switches to 'HRTF'
@@ -269,7 +270,7 @@
     Howler._howls.push(self);
 
     // load the track
-    self.load();
+    if(self._autoLoad) self.load();
   };
 
   // setup all of the methods
