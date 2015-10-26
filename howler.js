@@ -244,7 +244,7 @@
     self.title = o.title || "";
 
     // custom modification, note: does support sound sprites
-    self._evttimer = {}; // used for setting time events for e.g. the sonic shuffle
+    self._evttimer = {}; // used for setting time events 
 
     // allow forcing of a specific panningModel ('equalpower' or 'HRTF'),
     // if none is specified, defaults to 'equalpower' and switches to 'HRTF'
