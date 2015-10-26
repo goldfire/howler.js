@@ -1654,4 +1654,4 @@
     // performance.now is also guaranteed to be monotonic which is crucial for our effects.
     window.performance.now = window.performance.now  || Date.now; 
   }
-})(Zepto);
+})(jQuery || Zepto);
