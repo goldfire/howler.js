@@ -1,3 +1,24 @@
+## 1.1.28 CUSTOM (October 23, 2015)
+- `ADDED` dependency on jQuery style deferred objects (included Zepto.js implementation)
+- `ADDED` Gulpfile for help compiling howler.min.js with new dependency
+- `ADDED` title attribute to howler instances
+- `ADDED` state attribute (the instance knows if it's stopped, paused, or playing)
+- `ADDED` clone method to replicate howler instances
+- `ADDED` timer event that will fire a named event at specific track times
+- `ADDED` remaining method that returns the real time in milliseconds remaining on the track (i.e. compensating for playback rate)
+- `ADDED` duration method, returning the length of the track in milliseconds
+- `ADDED` stop event to complement the play and pause events
+- `FIXED` Volume flicker when the volume is fading in but the track hasn't loaded yet
+- `ADDED` Fading supports easing curves
+- `ADDED` Simplified fading to use setInterval instead of multiple setTimeouts to provide interrupt capability
+- `ADDED` Fading now supports priority interrupt, higher priorities can cancel a prior fade
+- `ADDED` Fading accepts a normalization parameter to allow for fading within a composite object that is fading without making the volume jump violently and create static
+- `ADDED` cancelFade method
+- `ADDED` isFading method
+- `ADDED` Expanded on and off methods to accept multiple triggers at once like jQuery on e.g. obj.on('pause stop')
+- `ADDED` ion method, "idempotent on", which calls off then on
+- `ADDED` one method, which ensures that a given callback fires a single time and is then removed without affecting other attached callbacks
+
 ## 1.1.28 (October 22, 2015)
 - `FIXED`: Fixed typo with iOS enabler that was preventing it from working.
 
