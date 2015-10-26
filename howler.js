@@ -1012,41 +1012,60 @@
       return self;
     },
 
-    /* fade
-     *
-     * Smoothly interpolate the volume of the piece from one position
-     * to the other.
-     *
-     * There are some tricky situations. See comment on Music.SonicShuffle.fade
-     * as this was copied over from it with some slight modifications to make it
-     * fit with howler.
-     *
-     * Required:
-     *   to: >= 0.0 (typically 0.0 to 1.0): Final volume state
-     *   msec: Duration of the fade in msec.
-     *
-     * Optional:
-     *   from: >= 0.0 (typically 0.0 to 1.0), initial volume level (default: current)
-     *   id: ID of a howler object 
-     *   priority: Number, acquires mutex on volume control against lower priority levels
-     *   easing: fn(t), t in 0..1, ret 0..1, map of % animation complete to volume level
-     *   normalizer: If the shuffle is a sub-object of something else that can fade,
-     *        you can provide a value to normalize the output by.
-     *
-     *        e.g. Your sound system as a whole is fading out you want to fade
-     *          from 50% to 100% of your shuffle's volume relative to the master volume.
-     *      You'll possibly need to exclude this piece from the other fading mechanism
-     *      using the .isFading method.
-     *        
-     *      music.fade({
-     *        from: 0.5,
-     *        to: 1.0,
-     *        msec: 2500,
-     *        normalizer: function () { return SFX.volume() }, // shuffle.vol = shuffle.vol * SFX.vol
-     *      })
-     *
-     * Return: jQuery deferred object, resolve on complete, reject if aborted
-     */
+  /* fade
+   *
+   * Smoothly interpolate the volume of the piece from one position
+   * to the other.
+   *
+   * There are some tricky situations that pop up since various UI 
+   * events of differing importance will compete for volume control. 
+   *
+   * Additionally, if your howl is a composite sound within a larger sound, the
+   * subsections may be cross fading independently at the same time that
+   * the piece as a whole is attempting to fade. This competition can result
+   * in static as gain values ping pong between the two masters 
+   * if not carefully managed.
+   *
+   * Towards these ends, this fading feature attempts to balance several concerns.
+   * 
+   * By default, the if you call a fade while another is in progress, it will cancel
+   * and initiate a fade in the new direction. However, the return type is a jQuery
+   * deferred so you can use .fail or .always to ensure your post-fade callback is 
+   * executed (though you might only want it to execute on success, this is your choice).
+   *
+   * To handle competing priorities, a higher priority fade (priority argument) essentially 
+   * acquires a lock on the volume control. Only an equal or higher priorty fade can override it.
+   * This is important for, e.g. the mute button.
+   *
+   * While I think the provided easing function is awesome (cosine decay), you might want to 
+   * provide your own (e.g. sinusoidal, exponential, etc). The easing function makes this 
+   * possible. 
+   *
+   * Required:
+   *   to: >= 0.0 (typically 0.0 to 1.0): Final volume state
+   *   msec: Duration of the fade in msec.
+   *
+   * Optional:
+   *   from: >= 0.0 (typically 0.0 to 1.0), initial volume level (default: current)
+   *   priority: Number, acquires mutex on volume control against lower priority levels
+   *   easing: fn(t), t in 0..1, ret 0..1, map of % animation complete to volume level
+   *   normalizer: If the shuffle is a sub-object of something else that can fade,
+   *        you can provide a value to normalize the output by.
+   *
+   *        e.g. Your sound system as a whole is fading out you want to fade
+   *          from 50% to 100% of your shuffle's volume relative to the master volume.
+   *      You'll possibly need to exclude this piece from the other fading mechanism
+   *      using the .isFading method.
+   *        
+   *      music.fade({
+   *        from: 0.5,
+   *        to: 1.0,
+   *        msec: 2500,
+   *        normalizer: function () { return SFX.volume() }, // shuffle.vol = shuffle.vol * SFX.vol
+   *      })
+   *
+   * Return: jQuery deferred object, resolve on complete, reject if aborted
+   */
     fade: function (args) {
       args = args || {};
 
