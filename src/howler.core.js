@@ -1774,10 +1774,12 @@
     }
 
     // Test to make sure audio isn't disabled in Internet Explorer
-    var test = new Audio();
-    if (test.muted) {
-      noAudio = true;
-    }
+    try {
+      var test = new Audio();
+      if (test.muted) {
+        noAudio = true;
+      }
+    } catch (e) {}
   }
 
   // Add support for AMD (Asynchronous Module Definition) libraries such as require.js.
