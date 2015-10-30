@@ -332,7 +332,7 @@
 
       // If no audio is available, quit immediately.
       if (noAudio) {
-        self._emit('loaderror');
+        self._emit('loaderror', null, 'No audio support.');
         return;
       }
 
@@ -369,7 +369,7 @@
       }
 
       if (!url) {
-        self._emit('loaderror');
+        self._emit('loaderror', null, 'No codec support for selected audio sources.');
         return;
       }
 
@@ -1711,7 +1711,7 @@
           loadSound(self, buffer);
         }
       }, function() {
-        self._emit('loaderror');
+        self._emit('loaderror', null, 'Decoding audio data failed.');
       });
     };
 

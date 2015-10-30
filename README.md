@@ -102,7 +102,7 @@ howler.js automatically detects your file format from the extension, but you may
 #### onload `Function`
 Fires when the sound is loaded.
 #### onloaderror `Function`
-Fires when the sound is unable to load.
+Fires when the sound is unable to load. The first parameter is the ID of the sound (if it exists) and the second is the error message/code.
 #### onplay `Function`
 Fires when the sound begins playing. The first parameter is the ID of the sound.
 #### onend `Function`
