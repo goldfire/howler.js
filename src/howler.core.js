@@ -50,7 +50,7 @@
       self._volume = 1;
 
       // Set to false to disable the auto iOS enabler.
-      self.iOSAutoEnable = true;
+      self.mobileAutoEnable = true;
 
       // No audio is available on this system if this is set to true.
       self.noAudio = noAudio;
@@ -193,24 +193,26 @@
     },
 
     /**
-     * iOS will only allow audio to be played after a user interaction.
+     * Mobile browsers will only allow audio to be played after a user interaction.
      * Attempt to automatically unlock audio on the first user interaction.
      * Concept from: http://paulbakaus.com/tutorials/html5/web-audio-on-ios/
      * @return {Howler}
      */
-    _enableiOSAudio: function() {
+    _enableMobileAudio: function() {
       var self = this || Howler;
 
       // Only run this on iOS if audio isn't already eanbled.
-      if (ctx && (self._iOSEnabled || !/iPhone|iPad|iPod/i.test(navigator.userAgent))) {
+      var isMobile = /iPhone|iPad|iPod|Android|BlackBerry|BB10|Silk/i.test(navigator.userAgent);
+      var isTouch = !!(('ontouchend' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0));
+      if (ctx && (self._mobileEnabled || !isMobile || !isTouch)) {
         return;
       }
 
-      self._iOSEnabled = false;
+      self._mobileEnabled = false;
 
       // Call this method on touch start to create and play a buffer,
       // then check if the audio actually played to determine if
-      // audio has now been unlocked on iOS.
+      // audio has now been unlocked on iOS, Android, etc.
       var unlock = function() {
         // Create an empty buffer.
         var buffer = ctx.createBuffer(1, 1, 22050);
@@ -226,16 +228,14 @@
         }
 
         // Setup a timeout to check that we are unlocked on the next event loop.
-        setTimeout(function() {
-          if ((source.playbackState === source.PLAYING_STATE || source.playbackState === source.FINISHED_STATE)) {
-            // Update the unlocked state and prevent this check from happening again.
-            self._iOSEnabled = true;
-            self.iOSAutoEnable = false;
+        source.onended = function() {
+          // Update the unlocked state and prevent this check from happening again.
+          self._mobileEnabled = true;
+          self.mobileAutoEnable = false;
 
-            // Remove the touch start listener.
-            document.removeEventListener('touchend', unlock, false);
-          }
-        }, 0);
+          // Remove the touch start listener.
+          document.removeEventListener('touchend', unlock, false);
+        };
       };
 
       // Setup a touch start listener to attempt an unlock in.
@@ -307,8 +307,8 @@
       self._webAudio = usingWebAudio && !self._html5;
 
       // Automatically try to enable audio on iOS.
-      if (typeof ctx !== 'undefined' && ctx && Howler.iOSAutoEnable) {
-        Howler._enableiOSAudio();
+      if (typeof ctx !== 'undefined' && ctx && Howler.mobileAutoEnable) {
+        Howler._enableMobileAudio();
       }
 
       // Keep track of this Howl group in the global controller.

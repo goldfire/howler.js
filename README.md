@@ -214,8 +214,8 @@ Unload and destroy all currently loaded Howl objects. This will immediately stop
 `true` if the Web Audio API is available.
 #### noAudio `Boolean`
 `true` if any audio is available.
-#### iOSAutoEnable `Boolean` `true`
-Automatically attempts to enable audio on iOS devices.
+#### mobileAutoEnable `Boolean` `true`
+Automatically attempts to enable audio on mobile (iOS, Android, etc) devices.
 #### ctx `Boolean` *`Web Audio Only`*
 Exposes the `AudioContext` with Web Audio API.
 
@@ -296,11 +296,11 @@ Get/set the audio listener attributes.
   * **speedOfSound** `343.3` Speed of sound used to calculate doppler shift.
 
 
-### iOS Playback
-By default, audio on iOS is locked until a sound is played within a user interaction, and then it plays normally the rest of the page session ([Apple documentation](https://developer.apple.com/library/safari/documentation/audiovideo/conceptual/using_html5_audio_video/PlayingandSynthesizingSounds/PlayingandSynthesizingSounds.html)). The default behavior of howler.js is to attempt to silently unlock audio playback by playing an empty buffer on the first `touchstart` event. This behavior can be disabled by calling:
+### Mobile Playback
+By default, audio on iOS, Android, etc is locked until a sound is played within a user interaction, and then it plays normally the rest of the page session ([Apple documentation](https://developer.apple.com/library/safari/documentation/audiovideo/conceptual/using_html5_audio_video/PlayingandSynthesizingSounds/PlayingandSynthesizingSounds.html)). The default behavior of howler.js is to attempt to silently unlock audio playback by playing an empty buffer on the first `touchend` event. This behavior can be disabled by calling:
 
 ```javascript
-Howler.iOSAutoEnable = false;
+Howler.mobileAutoEnable = false;
 ```
 
 ### Format Recommendations
@@ -310,6 +310,6 @@ It is important to remember that howler.js selects the first compatible sound fr
 
 ### License
 
-Copyright (c) 2013-2014 James Simpson and GoldFire Studios, Inc.
+Copyright (c) 2013-2015 James Simpson and GoldFire Studios, Inc.
 
 Released under the MIT License.

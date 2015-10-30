@@ -55,6 +55,7 @@ Howler.js now also has the concept of plugins. The core represents 100% compatib
 - `FIXED`: Muting a sound while it is fading now works.
 - `FIXED`: Playback of base64 encoded sounds in Internet Explorer 9.
 - `FIXED`: MIME check for some base64 encoded MP3's.
+- `FIXED`: Now tries to automatically unlock audio on mobile browsers besides Mobile Safari.
 
 ## 1.1.25 (July 29, 2014)
 - `ADDED`: The `AudioContext` is now available on the global `Howler` object (thanks Matt DesLauriers).
