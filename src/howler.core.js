@@ -375,6 +375,13 @@
 
       self._src = url;
 
+      // If the hosting page is HTTPS and the source isn't,
+      // drop down to HTML5 Audio to avoid Mixed Content errors.
+      if (window.location.protocol === 'https:' && url.slice(0, 5) === 'http:') {
+        self._html5 = true;
+        self._webAudio = false;
+      }
+
       // Create a new sound object and add it to the pool.
       new Sound(self);
 
