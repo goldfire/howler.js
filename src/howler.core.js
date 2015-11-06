@@ -1181,6 +1181,7 @@
       }
 
       // Clear out `self`.
+      self._sounds = [];
       self = null;
 
       return null;
@@ -1714,7 +1715,7 @@
     var decodeAudioData = function(arraybuffer, self) {
       // Decode the buffer into an audio source.
       ctx.decodeAudioData(arraybuffer, function(buffer) {
-        if (buffer) {
+        if (buffer && self._sounds.length > 0) {
           cache[self._src] = buffer;
           loadSound(self, buffer);
         }
