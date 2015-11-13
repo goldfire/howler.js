@@ -462,7 +462,9 @@
 
       // Create a timer to fire at the end of playback or the start of a new loop.
       var timeout = (duration * 1000) / Math.abs(sound._rate);
-      self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
+      if (timeout !== Infinity) {
+        self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
+      }
 
       // Update the parameters of the sound
       sound._paused = false;
@@ -493,7 +495,7 @@
           }
 
           // Start a new timer if none is present.
-          if (!self._endTimers[sound._id]) {
+          if (!self._endTimers[sound._id] && timeout !== Infinity) {
             self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
           }
 
@@ -534,7 +536,9 @@
         } else {
           var listener = function() {
             // Setup the new end timer.
-            self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
+            if (timeout !== Infinity) {
+              self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
+            }
 
             // Begin playback.
             playHtml5();
@@ -587,22 +591,24 @@
           // Stop currently running fades.
           self._stopFade(ids[i]);
 
-          if (self._webAudio) {
-            // make sure the sound has been created
-            if (!sound._node.bufferSource) {
-              return self;
-            }
+          if (sound._node) {
+            if (self._webAudio) {
+              // make sure the sound has been created
+              if (!sound._node.bufferSource) {
+                return self;
+              }
 
-            if (typeof sound._node.bufferSource.stop === 'undefined') {
-              sound._node.bufferSource.noteOff(0);
-            } else {
-              sound._node.bufferSource.stop(0);
-            }
+              if (typeof sound._node.bufferSource.stop === 'undefined') {
+                sound._node.bufferSource.noteOff(0);
+              } else {
+                sound._node.bufferSource.stop(0);
+              }
 
-            // Clean up the buffer source.
-            sound._node.bufferSource = null;
-          } else if (!isNaN(sound._node.duration)) {
-            sound._node.pause();
+              // Clean up the buffer source.
+              sound._node.bufferSource = null;
+            } else if (!isNaN(sound._node.duration) || sound._node.duration === Infinity) {
+              sound._node.pause();
+            }
           }
 
           // Fire the pause event, unless `true` is passed as the 2nd argument.
@@ -653,23 +659,25 @@
           // Stop currently running fades.
           self._stopFade(ids[i]);
 
-          if (self._webAudio && sound._node) {
-            // make sure the sound has been created
-            if (!sound._node.bufferSource) {
-              return self;
-            }
+          if (sound._node) {
+            if (self._webAudio) {
+              // make sure the sound has been created
+              if (!sound._node.bufferSource) {
+                return self;
+              }
 
-            if (typeof sound._node.bufferSource.stop === 'undefined') {
-              sound._node.bufferSource.noteOff(0);
-            } else {
-              sound._node.bufferSource.stop(0);
-            }
+              if (typeof sound._node.bufferSource.stop === 'undefined') {
+                sound._node.bufferSource.noteOff(0);
+              } else {
+                sound._node.bufferSource.stop(0);
+              }
 
-            // Clean up the buffer source.
-            sound._node.bufferSource = null;
-          } else if (sound._node && !isNaN(sound._node.duration)) {
-            sound._node.pause();
-            sound._node.currentTime = sound._start || 0;
+              // Clean up the buffer source.
+              sound._node.bufferSource = null;
+            } else if (!isNaN(sound._node.duration) || sound._node.duration === Infinity) {
+              sound._node.pause();
+              sound._node.currentTime = sound._start || 0;
+            }
           }
 
           self._emit('stop', sound._id);
