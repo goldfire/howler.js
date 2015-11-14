@@ -1508,6 +1508,7 @@
       self._seek = 0;
       self._paused = true;
       self._ended = true;
+      self._sprite = '__default';
 
       // Generate a unique ID for this sound.
       self._id = Math.round(Date.now() * Math.random());
@@ -1576,7 +1577,7 @@
       self._seek = 0;
       self._paused = true;
       self._ended = true;
-      self._sprite = null;
+      self._sprite = '__default';
 
       // Generate a new ID so that it isn't confused with the previous sound.
       self._id = Math.round(Date.now() * Math.random());
