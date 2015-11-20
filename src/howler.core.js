@@ -16,15 +16,9 @@
   var ctx = null;
   var usingWebAudio = true;
   var noAudio = false;
+  var masterGain = null;
   var canPlayEvent = 'canplaythrough';
   setupAudioContext();
-
-  // Create a master gain node.
-  if (usingWebAudio) {
-    var masterGain = (typeof ctx.createGain === 'undefined') ? ctx.createGainNode() : ctx.createGain();
-    masterGain.gain.value = 1;
-    masterGain.connect(ctx.destination);
-  }
 
   /** Global Methods **/
   /***************************************************************************/
@@ -155,6 +149,14 @@
         self._howls[i].unload();
       }
 
+      // Create a new AudioContext to make sure it is fully reset.
+      if (self.usingWebAudio && typeof ctx.close !== 'undefined') {
+        self.ctx = null;
+        ctx.close();
+        setupAudioContext();
+        self.ctx = ctx;
+      }
+
       return self;
     },
 
@@ -230,6 +232,8 @@
 
         // Setup a timeout to check that we are unlocked on the next event loop.
         source.onended = function() {
+          source.disconnect(0);
+
           // Update the unlocked state and prevent this check from happening again.
           self._mobileEnabled = true;
           self.mobileAutoEnable = false;
@@ -1803,6 +1807,13 @@
         noAudio = true;
       }
     } catch (e) {}
+
+    // Create a master gain node.
+    if (usingWebAudio) {
+      masterGain = (typeof ctx.createGain === 'undefined') ? ctx.createGainNode() : ctx.createGain();
+      masterGain.gain.value = 1;
+      masterGain.connect(ctx.destination);
+    }
   }
 
   // Add support for AMD (Asynchronous Module Definition) libraries such as require.js.
