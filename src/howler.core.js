@@ -1237,9 +1237,18 @@
             break;
           }
         }
-      } else {
+      } else if (event) {
         // Clear out all events of this type.
-        self['on' + event] = [];
+        self['_on' + event] = [];
+      } else {
+        // Clear out all events of every type.
+        var keys = Object.keys(self);
+        for (var i=0; i<keys.length; i++) {
+          var key = keys[i];
+          if ((key.indexOf('_on') === 0) && Array.isArray(self[key])) {
+            self[key] = [];
+          }
+        }
       }
 
       return self;
