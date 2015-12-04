@@ -1219,7 +1219,7 @@
     },
 
     /**
-     * Remove a custom event.
+     * Remove a custom event. Call without parameters to remove all events.
      * @param  {String}   event Event name.
      * @param  {Function} fn    Listener to remove. Leave empty to remove all.
      * @param  {Number}   id    (optional) Only remove events for this sound.
@@ -1244,9 +1244,8 @@
         // Clear out all events of every type.
         var keys = Object.keys(self);
         for (var i=0; i<keys.length; i++) {
-          var key = keys[i];
-          if ((key.indexOf('_on') === 0) && Array.isArray(self[key])) {
-            self[key] = [];
+          if ((keys[i].indexOf('_on') === 0) && Array.isArray(self[keys[i]])) {
+            self[keys[i]] = [];
           }
         }
       }

@@ -180,7 +180,7 @@ Same as `on`, but it removes itself after the callback is fired.
 * **id**: `Number` `optional` Only listen to events for this sound id.
 
 #### off(event, [function], [id])
-Remove event listener that you've set.
+Remove event listener that you've set. Call without parameters to remove all events.
 * **event**: `String` Name of event (`load`, `loaderror`, `play`, `end`, `pause`, `stop`, `faded`).
 * **function**: `Function` `optional` The listener to remove. Omit this to remove all events of type.
 * **id**: `Number` `optional` Only remove events for this sound id.

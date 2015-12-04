@@ -25,7 +25,7 @@ Howler.js now also has the concept of plugins. The core represents 100% compatib
 - `ADDED`: The following methods now alter all sounds within a `Howl` group when no `id` is passed: `pause`, `stop`, `volume`, `fade`, `mute`, `loop`.
 - `ADDED`: The `rate` property now changes the playback rate on both Web Audio and HTML5 Audio.
 - `ADDED`: New `rate` method that allows changing playback rate at runtime.
-- `ADDED`: New global `unload` method.
+- `ADDED`: New global `unload` method that unloads all active Howls and resets the `AudioContext` to clear memory.
 - `ADDED`: Support for .webm extension in addition to .weba.
 - `ADDED`: New codec recommendations and notes have been added to the documentation.
 - `ADDED`: (Effects) New `Howler` listener methods `pos`, `orientation`, `velocity` and `listenerAttr`.
