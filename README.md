@@ -216,6 +216,8 @@ Unload and destroy all currently loaded Howl objects. This will immediately stop
 `true` if any audio is available.
 #### mobileAutoEnable `Boolean` `true`
 Automatically attempts to enable audio on mobile (iOS, Android, etc) devices.
+#### autoSuspend `Boolean` `true`
+Automatically suspends the Web Audio AudioContext after 30 seconds of inactivity to decrease processing and energy usage. Automatically resumes upon new playback. Set this property to `false` to disable this behavior.
 #### ctx `Boolean` *`Web Audio Only`*
 Exposes the `AudioContext` with Web Audio API.
 

@@ -44,6 +44,13 @@
       self._muted = false;
       self._volume = 1;
 
+      // Keeps track of the suspend/resume state of the AudioContext.
+      self.state = 'running';
+      self.autoSuspend = true;
+
+      // Automatically begin the 30-second suspend process
+      self._autoSuspend();
+
       // Set to false to disable the auto iOS enabler.
       self.mobileAutoEnable = true;
 
@@ -245,6 +252,76 @@
 
       // Setup a touch start listener to attempt an unlock in.
       document.addEventListener('touchend', unlock, true);
+
+      return self;
+    },
+
+    /**
+     * Automatically suspend the Web Audio AudioContext after no sound has played for 30 seconds.
+     * This saves processing/energy and fixes various browser-specific bugs with audio getting stuck.
+     * @return {Howler}
+     */
+    _autoSuspend: function() {
+      var self = this;
+
+      if (!self.autoSuspend || !ctx || typeof ctx.suspend === 'undefined' || !usingWebAudio) {
+        return;
+      }
+
+      // Check if any sounds are playing.
+      for (var i=0; i<self._howls.length; i++) {
+        if (self._howls[i]._webAudio) {
+          for (var j=0; j<self._howls[i]._sounds.length; j++) {
+            if (!self._howls[i]._sounds[j]._paused) {
+              return self;
+            }
+          }
+        }
+      }
+
+      // If no sound has played after 30 seconds, suspend the context.
+      self._suspendTimer = setTimeout(function() {
+        if (!self.autoSuspend) {
+          return;
+        }
+
+        self._suspendTimer = null;
+        self.state = 'suspending';
+        ctx.suspend().then(function() {
+          self.state = 'suspended';
+
+          if (self._resumeAfterSuspend) {
+            delete self._resumeAfterSuspend;
+            self._autoResume();
+          }
+        });
+      }, 30000);
+
+      return self;
+    },
+
+    /**
+     * Automatically resume the Web Audio AudioContext when a new sound is played.
+     * @return {Howler}
+     */
+    _autoResume: function() {
+      var self = this;
+
+      if (!ctx || typeof ctx.resume === 'undefined' || !usingWebAudio) {
+        return;
+      }
+
+      if (self.state === 'running' && self._suspendTimer) {
+        clearTimeout(self._suspendTimer);
+        self._suspendTimer = null;
+      } else if (self.state === 'suspended') {
+        self.state = 'resuming';
+        ctx.resume().then(function() {
+          self.state = 'running';
+        });
+      } else if (self.state === 'suspending') {
+        self._resumeAfterSuspend = true;
+      }
 
       return self;
     }
@@ -458,6 +535,11 @@
       // Don't play the sound if an id was passed and it is already playing.
       if (id && !sound._paused) {
         return sound._id;
+      }
+
+      // Make sure the AudioContext isn't suspended, and resume it if it is.
+      if (self._webAudio) {
+        Howler._autoResume();
       }
 
       // Determine how long to play for and where to start playing.
@@ -1336,6 +1418,9 @@
 
         // Clean up the buffer source.
         sound._node.bufferSource = null;
+
+        // Attempt to auto-suspend AudioContext if no sounds are still playing.
+        Howler._autoSuspend();
       }
 
       // When using a sprite, end the track.

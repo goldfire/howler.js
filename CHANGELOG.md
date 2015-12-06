@@ -28,6 +28,7 @@ Howler.js now also has the concept of plugins. The core represents 100% compatib
 - `ADDED`: New global `unload` method that unloads all active Howls and resets the `AudioContext` to clear memory.
 - `ADDED`: Support for .webm extension in addition to .weba.
 - `ADDED`: New codec recommendations and notes have been added to the documentation.
+- `ADDED`: Web Audio AudioContext now automatically suspends and resumes to lower processing and power usage.
 - `ADDED`: (Effects) New `Howler` listener methods `pos`, `orientation`, `velocity` and `listenerAttr`.
 - `ADDED`: (Effects) New `Howl` methods `pos`, `orientation`, `velocity` and `pannerAttr` to control spatial audio of single sounds or groups of sounds.
 - `ADDED`: (Effects) `pannerAttr` allows for control of `coneInnerAngle`, `coneOUterAngle`, `coneOuterGain`, `distanceModel`, `maxDistance`, `panningModel`, `refDistance` and `rolloffFactor`.
@@ -58,6 +59,7 @@ Howler.js now also has the concept of plugins. The core represents 100% compatib
 - `FIXED`: Now tries to automatically unlock audio on mobile browsers besides Mobile Safari.
 - `FIXED`: Falls back to HTML5 Audio when loading an HTTP file on an HTTPS page (avoids Mixed Content errors).
 - `FIXED`: Stopping a stream is now possible, along with various other fixes.
+- `FIXED`: Audio on Chrome for Android no longer gets stuck after a period of inactivity.
 
 ## 1.1.25 (July 29, 2014)
 - `ADDED`: The `AudioContext` is now available on the global `Howler` object (thanks Matt DesLauriers).
