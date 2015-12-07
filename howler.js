@@ -1177,6 +1177,8 @@
         } else {
           // disconnect the output from the master gain
           nodes[i].disconnect(0);
+          try { nodes[i].bufferSource.buffer = scratchBuffer; } catch(e) {}
+          nodes[i] = null;
         }
       }
 
