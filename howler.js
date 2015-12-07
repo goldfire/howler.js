@@ -70,6 +70,7 @@
             this._howls = [];
             this.iOSAutoEnable = true;
             this.initialized = true;
+            this._masterGain = masterGain;
 
             return this;
         },
