@@ -14,6 +14,7 @@
 
     // setup the audio context
     var ctx = null,
+        scratchBuffer = null,
         usingWebAudio = true,
         noAudio = false,
         masterGain;
@@ -57,6 +58,7 @@
 
             // create a master gain node
             if (usingWebAudio) {
+                scratchBuffer = ctx.createBuffer(1, 1, 22050);
                 masterGain = (typeof ctx.createGain === 'undefined') ? ctx.createGainNode() : ctx.createGain();
                 masterGain.gain.value = 1;
                 masterGain.connect(ctx.destination);
