@@ -974,6 +974,7 @@
 
             // find the node with this ID
             for (var i = 0; i < self._audioNode.length; i++) {
+                if (self._audioNode[i] === null) { console.warn('Howler has a null audioNode'); continue; }
                 if (self._audioNode[i].id === id) {
                     node = self._audioNode[i];
                     break;
