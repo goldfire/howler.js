@@ -359,7 +359,7 @@
 
       // Setup user-defined default properties.
       self._autoplay = o.autoplay || false;
-      self._ext = o.ext || null;
+      self._format = o.format || null;
       self._html5 = o.html5 || false;
       self._muted = o.mute || false;
       self._loop = o.loop || false;
@@ -427,9 +427,9 @@
       for (var i=0; i<self._src.length; i++) {
         var ext, str;
 
-        if (self._ext && self._ext[i]) {
+        if (self._format && self._format[i]) {
           // If an extension was specified, use that instead.
-          ext = self._ext[i];
+          ext = self._format[i];
         } else {
           // Extract the file extension from the URL or base64 data URI.
           str = self._src[i];

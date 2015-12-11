@@ -97,7 +97,7 @@ Define a sound sprite for the sound. The offset and duration are defined in mill
 The rate of playback. 0.5 to 4.0, with 1.0 being normal speed.
 #### pool `Number` `5`
 The size of the inactive sounds pool. Once sounds are stopped or finish playing, they are marked as ended and ready for cleanup. We keep a pool of these to recycle for improved performance. Generally this doesn't need to be changed. It is important to keep in mind that when a sound is paused, it won't be removed from the pool and will still be considered active so that it can be resumed later.
-#### ext `Array` `[]`
+#### format `Array` `[]`
 howler.js automatically detects your file format from the extension, but you may also specify a format in situations where extraction won't work (such as with a SoundCloud stream).
 #### onload `Function`
 Fires when the sound is loaded.
