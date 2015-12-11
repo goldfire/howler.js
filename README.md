@@ -305,6 +305,16 @@ By default, audio on iOS, Android, etc is locked until a sound is played within 
 Howler.mobileAutoEnable = false;
 ```
 
+### Dolby Audio Playback
+Full support for playback of the Dolby Audio format (currently support in Edge and Safari) is included. However, you must specify that the file you are loading is `dolby` since it is in a `mp4` container.
+
+```javascript
+var dolbySound = new Howl({
+  src: ['sound.mp4', 'sound.ogg', 'sound.mp3'],
+  format: ['dolby', 'ogg', 'mp3']
+});
+```
+
 ### Format Recommendations
 Howler.js supports a wide array of audio codecs that have varying browser support ("mp3", "opus", "ogg", "wav", "aac", "m4a", "mp4", "weba", ...), but if you want full browser coverage you still need to use at least two of them. If your goal is to have the best balance of small filesize and high quality, based on extensive production testing, your best bet is to default to `ogg/webm` and fallback to `mp3`. Both `ogg` and `webm` have nearly full browser coverage with a great combination of compression and quality. You'll need the `mp3` fallback for Internet Explorer.
 

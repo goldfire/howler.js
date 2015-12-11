@@ -26,6 +26,7 @@ Howler.js now also has the concept of plugins. The core represents 100% compatib
 - `ADDED`: The `rate` property now changes the playback rate on both Web Audio and HTML5 Audio.
 - `ADDED`: New `rate` method that allows changing playback rate at runtime.
 - `ADDED`: New global `unload` method that unloads all active Howls and resets the `AudioContext` to clear memory.
+- `ADDED`: Support for playback of Dolby Audio files.
 - `ADDED`: Support for .webm extension in addition to .weba.
 - `ADDED`: New codec recommendations and notes have been added to the documentation.
 - `ADDED`: Web Audio AudioContext now automatically suspends and resumes to lower processing and power usage.
