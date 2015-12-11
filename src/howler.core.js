@@ -1172,7 +1172,7 @@
 
       // Wait for the sound to load before seeking it.
       if (!self._loaded) {
-        self.once('load', function() {
+        self.once('play', function() {
           self.seek.apply(self, args);
         });
 
