@@ -45,7 +45,7 @@
       self._volume = 1;
 
       // Keeps track of the suspend/resume state of the AudioContext.
-      self.state = 'running';
+      self.state = ctx ? ctx.state || 'running' : 'running';
       self.autoSuspend = true;
 
       // Automatically begin the 30-second suspend process
