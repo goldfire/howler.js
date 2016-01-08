@@ -603,7 +603,7 @@
           playWebAudio();
         } else {
           // Wait for the audio to load and then begin playback.
-          self.once('load', playWebAudio);
+          self.once('load', playWebAudio, sound._id);
 
           // Cancel the end timer.
           self._clearTimer(sound._id);
@@ -1370,8 +1370,8 @@
       var events = self['_on' + event];
       
       // Loop through event store and fire all functions.
-      for (var i=0; i<events.length; i++) {
-        if (!events[i].id || events[i].id === id) {
+      for (var i=events.length-1; i>=0; i--) {
+        if (!events[i].id || events[i].id === id || event === 'load') {
           setTimeout(function(fn) {
             fn.call(this, id, msg);
           }.bind(self, events[i].fn), 0);
