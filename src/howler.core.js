@@ -320,6 +320,11 @@
         ctx.resume().then(function() {
           self.state = 'running';
         });
+
+        if (self._suspendTimer) {
+          clearTimeout(self._suspendTimer);
+          self._suspendTimer = null;
+        }
       } else if (self.state === 'suspending') {
         self._resumeAfterSuspend = true;
       }
