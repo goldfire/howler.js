@@ -45,7 +45,7 @@ sound.play();
 ##### More playback options:
 ```javascript
 var sound = new Howl({
-  src: ['sound.ogg', 'sound.mp3', 'sound.wav'],
+  src: ['sound.webm', 'sound.mp3', 'sound.wav'],
   autoplay: true,
   loop: true,
   volume: 0.5,
@@ -58,7 +58,7 @@ var sound = new Howl({
 ##### Define and play a sound sprite:
 ```javascript
 var sound = new Howl({
-  src: ['sounds.ogg', 'sounds.mp3'],
+  src: ['sounds.webm', 'sounds.mp3'],
   sprite: {
     blast: [0, 1000],
     laser: [2000, 3000],
@@ -203,7 +203,7 @@ Get/set the global volume for all sounds, relative to their own volume.
 
 #### codecs(ext)
 Check supported audio codecs. Returns `true` if the codec is supported in the current browser.
-* **ext**: `String` File extension. One of: "mp3", "opus", "ogg", "wav", "aac", "m4a", "mp4", "weba".
+* **ext**: `String` File extension. One of: "mp3", "mpeg", opus", "ogg", "oga", "wav", "aac", "m4a", "mp4", "weba", "webm", "dolby".
 
 #### unload()
 Unload and destroy all currently loaded Howl objects. This will immediately stop all sounds and remove them from cache.
@@ -310,18 +310,18 @@ Full support for playback of the Dolby Audio format (currently support in Edge a
 
 ```javascript
 var dolbySound = new Howl({
-  src: ['sound.mp4', 'sound.ogg', 'sound.mp3'],
-  format: ['dolby', 'ogg', 'mp3']
+  src: ['sound.mp4', 'sound.webm', 'sound.mp3'],
+  format: ['dolby', 'webm', 'mp3']
 });
 ```
 
 ### Format Recommendations
-Howler.js supports a wide array of audio codecs that have varying browser support ("mp3", "opus", "ogg", "wav", "aac", "m4a", "mp4", "weba", ...), but if you want full browser coverage you still need to use at least two of them. If your goal is to have the best balance of small filesize and high quality, based on extensive production testing, your best bet is to default to `ogg/webm` and fallback to `mp3`. Both `ogg` and `webm` have nearly full browser coverage with a great combination of compression and quality. You'll need the `mp3` fallback for Internet Explorer.
+Howler.js supports a wide array of audio codecs that have varying browser support ("mp3", "opus", "ogg", "wav", "aac", "m4a", "mp4", "webm", ...), but if you want full browser coverage you still need to use at least two of them. If your goal is to have the best balance of small filesize and high quality, based on extensive production testing, your best bet is to default to `webm` and fallback to `mp3`. `webm` has nearly full browser coverage with a great combination of compression and quality. You'll need the `mp3` fallback for Internet Explorer.
 
-It is important to remember that howler.js selects the first compatible sound from your array of sources. So if you want `ogg` or `webm` to be used before `mp3`, you need to put the sources in that order.
+It is important to remember that howler.js selects the first compatible sound from your array of sources. So if you want `webm` to be used before `mp3`, you need to put the sources in that order.
 
 ### License
 
-Copyright (c) 2013-2015 James Simpson and GoldFire Studios, Inc.
+Copyright (c) 2013-2016 James Simpson and GoldFire Studios, Inc.
 
 Released under the MIT License.
