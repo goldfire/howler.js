@@ -1,6 +1,6 @@
 {
   "name": "howler.js",
-  "version": "2.0.0-beta5",
+  "version": "2.0.0-beta6",
   "description": "Javascript audio library for the modern web.",
   "main": "howler.min.js"
 }
