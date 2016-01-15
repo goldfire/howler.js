@@ -366,7 +366,7 @@
 
       // Setup user-defined default properties.
       self._autoplay = o.autoplay || false;
-      self._format = o.format || null;
+      self._format = (typeof o.format !== 'string') ? o.format : [o.format];
       self._html5 = o.html5 || false;
       self._muted = o.mute || false;
       self._loop = o.loop || false;
