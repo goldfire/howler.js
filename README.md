@@ -111,6 +111,14 @@ Fires when the sound finishes playing (if it is looping, it'll fire at the end o
 Fires when the sound has been paused. The first parameter is the ID of the sound.
 #### onstop `Function`
 Fires when the sound has been stopped. The first parameter is the ID of the sound.
+#### onmute `Function`
+Fires when the sound has been muted/unmuted. The first parameter is the ID of the sound.
+#### onvolume `Function`
+Fires when the sound's volume has changed. The first parameter is the ID of the sound.
+#### onrate `Function`
+Fires when the sound's playback rate has changed. The first parameter is the ID of the sound.
+#### onseek `Function`
+Fires when the sound has been seeked. The first parameter is the ID of the sound.
 #### onfaded `Function`
 Fires when the current sound finishes fading in/out. The first parameter is the ID of the sound.
 

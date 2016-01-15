@@ -20,6 +20,10 @@ Howler.js now also has the concept of plugins. The core represents 100% compatib
 - `ADDED`: New `preload` property to allow disabling the auto-preload functionality.
 - `ADDED`: New `faded` event that fires at the completion of a fade-in or fade-out.
 - `ADDED`: New `stop` event that fires when `stop` is called, but not when the sound ends (`end` event already exists for that).
+- `ADDED`: New `mute` event that fires when a sound is muted/unmuted.
+- `ADDED`: New `volume` event that fires when volume is changed.
+- `ADDED`: New `rate` event that fires when rate is changed.
+- `ADDED`: New `seek` event that fires when a sound is seeked.
 - `ADDED`: New `pool` property to allow setting the inactive sound pool size (for advanced use, still defaults to 5).
 - `ADDED`: Third parameter to `on`, `once` and `off` to allow listening or removing events for only a specific sound id.
 - `ADDED`: The following methods now alter all sounds within a `Howl` group when no `id` is passed: `pause`, `stop`, `volume`, `fade`, `mute`, `loop`.
@@ -45,6 +49,7 @@ Howler.js now also has the concept of plugins. The core represents 100% compatib
 - `UPDATED`: Updated and improved overall documentation.
 - `UPDATED`: Fades are now automatically stopped when a new one is started, volume is changed or the sound is paused/stopped.
 - `UPDATED`: Automatically checks for disabled audio in Internet Explorer.
+- `UPDATED`: An internal event queue is now used to fix issues caused by multiple actions pre-load.
 - `FIXED`: The event system has been overhauled to be more reliable.
 - `FIXED`: Methods called before a sound has loaded no longer cause events to stick in the queue.
 - `FIXED`: The `end` event correctly fires at the end of each loop when using Web Audio.
