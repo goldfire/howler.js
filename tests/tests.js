@@ -80,7 +80,7 @@ var webaudio = [
     sound1.fade(1, 0, 2000, id);
 
     label.innerHTML = 'FADE OUT';
-    sound1.once('faded', function() {
+    sound1.once('fade', function() {
       fn();
     }, id);
   },
@@ -89,7 +89,7 @@ var webaudio = [
     sound1.fade(0, 1, 2000, id);
 
     label.innerHTML = 'FADE IN';
-    sound1.once('faded', function() {
+    sound1.once('fade', function() {
       fn();
     }, id);
   },
@@ -161,8 +161,8 @@ var webaudio = [
     sound1.fade(0.5, 0, 2000);
 
     label.innerHTML = 'FADE OUT GROUP';
-    sound1.once('faded', function() {
-      if (sound1._onfaded.length === 0) {
+    sound1.once('fade', function() {
+      if (sound1._onfade.length === 0) {
         fn();
       }
     });
@@ -172,8 +172,8 @@ var webaudio = [
     sound1.fade(0, 1, 2000);
 
     label.innerHTML = 'FADE IN GROUP';
-    sound1.once('faded', function() {
-      if (sound1._onfaded.length === 0) {
+    sound1.once('fade', function() {
+      if (sound1._onfade.length === 0) {
         fn();
       }
     });
@@ -234,7 +234,7 @@ var webaudio = [
     sound3.fade(1, 0, 2000, id);
 
     label.innerHTML = 'FADE OUT SPRITE';
-    sound3.once('faded', function() {
+    sound3.once('fade', function() {
       fn();
     });
   }
@@ -280,7 +280,7 @@ var html5 = [
     sound2.fade(1, 0, 2000, id);
 
     label.innerHTML = 'FADE OUT (HTML5)';
-    sound2.once('faded', function() {
+    sound2.once('fade', function() {
       fn();
     });
   },
@@ -289,7 +289,7 @@ var html5 = [
     sound2.fade(0, 1, 2000, id);
 
     label.innerHTML = 'FADE IN (HTML5)';
-    sound2.once('faded', function() {
+    sound2.once('fade', function() {
       fn();
     });
   },
@@ -361,8 +361,8 @@ var html5 = [
     sound2.fade(0.5, 0, 2000);
 
     label.innerHTML = 'FADE OUT GROUP (HTML5)';
-    sound2.once('faded', function() {
-      if (sound2._onfaded.length === 0) {
+    sound2.once('fade', function() {
+      if (sound2._onfade.length === 0) {
         fn();
       }
     });
@@ -372,8 +372,8 @@ var html5 = [
     sound2.fade(0, 1, 2000);
 
     label.innerHTML = 'FADE IN GROUP (HTML5)';
-    sound2.once('faded', function() {
-      if (sound2._onfaded.length === 0) {
+    sound2.once('fade', function() {
+      if (sound2._onfade.length === 0) {
         fn();
       }
     });
@@ -423,7 +423,7 @@ var html5 = [
     sound4.fade(1, 0, 2000, id);
 
     label.innerHTML = 'FADE OUT SPRITE (HTML5)';
-    sound4.once('faded', function() {
+    sound4.once('fade', function() {
       fn();
     });
   }

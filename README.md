@@ -119,7 +119,7 @@ Fires when the sound's volume has changed. The first parameter is the ID of the 
 Fires when the sound's playback rate has changed. The first parameter is the ID of the sound.
 #### onseek `Function`
 Fires when the sound has been seeked. The first parameter is the ID of the sound.
-#### onfaded `Function`
+#### onfade `Function`
 Fires when the current sound finishes fading in/out. The first parameter is the ID of the sound.
 
 
@@ -147,7 +147,7 @@ Get/set volume of this sound or the group. This method optionally takes 0, 1 or 
 * **id**: `Number` `optional` The sound ID. If none is passed, all sounds in group have volume altered relative to their own volume.
 
 #### fade(from, to, duration, [id])
-Fade a currently playing sound between two volumes. Fires the `faded` event when complete.
+Fade a currently playing sound between two volumes. Fires the `fade` event when complete.
 * **from**: `Number` Volume to fade from (`0.0` to `1.0`).
 * **to**: `Number` Volume to fade to (`0.0` to `1.0`).
 * **duration**: `Number` Time in milliseconds to fade.
@@ -177,19 +177,19 @@ Get the duration of the audio source. Will return 0 until after the `load` event
 
 #### on(event, function, [id])
 Listen for events. Multiple events can be added by calling this multiple times.
-* **event**: `String` Name of event to fire/set (`load`, `loaderror`, `play`, `end`, `pause`, `stop`, `faded`).
+* **event**: `String` Name of event to fire/set (`load`, `loaderror`, `play`, `end`, `pause`, `stop`, `mute`, `volume`, `rate`, `seek`, `fade`).
 * **function**: `Function` Define function to fire on event.
 * **id**: `Number` `optional` Only listen to events for this sound id.
 
 #### once(event, function, [id])
 Same as `on`, but it removes itself after the callback is fired.
-* **event**: `String` Name of event to fire/set (`load`, `loaderror`, `play`, `end`, `pause`, `stop`, `faded`).
+* **event**: `String` Name of event to fire/set (`load`, `loaderror`, `play`, `end`, `pause`, `stop`, `mute`, `volume`, `rate`, `seek`, `fade`).
 * **function**: `Function` Define function to fire on event.
 * **id**: `Number` `optional` Only listen to events for this sound id.
 
 #### off(event, [function], [id])
 Remove event listener that you've set. Call without parameters to remove all events.
-* **event**: `String` Name of event (`load`, `loaderror`, `play`, `end`, `pause`, `stop`, `faded`).
+* **event**: `String` Name of event (`load`, `loaderror`, `play`, `end`, `pause`, `stop`, `mute`, `volume`, `rate`, `seek`, `fade`).
 * **function**: `Function` `optional` The listener to remove. Omit this to remove all events of type.
 * **id**: `Number` `optional` Only remove events for this sound id.
 

@@ -386,7 +386,7 @@
 
       // Setup event listeners.
       self._onend = o.onend ? [{fn: o.onend}] : [];
-      self._onfaded = o.onfaded ? [{fn: o.onfaded}] : [];
+      self._onfade = o.onfade ? [{fn: o.onfade}] : [];
       self._onload = o.onload ? [{fn: o.onload}] : [];
       self._onloaderror = o.onloaderror ? [{fn: o.onloaderror}] : [];
       self._onpause = o.onpause ? [{fn: o.onpause}] : [];
@@ -943,9 +943,8 @@
 
       // If the sound hasn't loaded, add it to the load queue to fade when capable.
       if (!self._loaded) {
-        // TODO: Wouldn't it make more send and be more consistent for this to be 'onfade' instead of 'onfaded'?
         self._queue.push({
-          event: 'fadeed',
+          event: 'fade',
           action: function() {
             self.fade(from, to, len, id);
           }
@@ -977,7 +976,7 @@
               delete sound._timeout;
               setTimeout(function() {
                 sound._volume = to;
-                self._emit('faded', id);
+                self._emit('fade', id);
               }, end - ctx.currentTime > 0 ? Math.ceil((end - ctx.currentTime) * 1000) : 0);
             }.bind(self, ids[i], sound), len);
           } else {
@@ -1006,7 +1005,7 @@
                 if (vol === to) {
                   clearInterval(sound._interval);
                   delete sound._interval;
-                  self._emit('faded', id);
+                  self._emit('fade', id);
                 }
               }.bind(self, ids[i], sound), stepLen);
             })();
@@ -1030,12 +1029,12 @@
       if (sound._interval) {
         clearInterval(sound._interval);
         delete sound._interval;
-        self._emit('faded', id);
+        self._emit('fade', id);
       } else if (sound._timeout) {
         clearTimeout(sound._timeout);
         delete sound._timeout;
         sound._node.gain.cancelScheduledValues(ctx.currentTime);
-        self._emit('faded', id);
+        self._emit('fade', id);
       }
 
       return self;
