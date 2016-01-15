@@ -66,6 +66,7 @@ Howler.js now also has the concept of plugins. The core represents 100% compatib
 - `FIXED`: Falls back to HTML5 Audio when loading an HTTP file on an HTTPS page (avoids Mixed Content errors).
 - `FIXED`: Stopping a stream is now possible, along with various other fixes.
 - `FIXED`: Audio on Chrome for Android no longer gets stuck after a period of inactivity.
+- `FIXED`: Fixed crash in iOS <9 webview.
 
 ## 1.1.25 (July 29, 2014)
 - `ADDED`: The `AudioContext` is now available on the global `Howler` object (thanks Matt DesLauriers).

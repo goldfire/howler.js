@@ -1977,6 +1977,18 @@
       }
     } catch (e) {}
 
+    // Check if a webview is being used on iOS8 or earlier (rather than the browser).
+    // If it is, disable Web Audio as it causes crashing.
+    var iOS = (/iP(hone|od|ad)/.test(navigator.platform));
+    var appVersion = navigator.appVersion.match(/OS (\d+)_(\d+)_?(\d+)?/);
+    var version = appVersion ? parseInt(appVersion[1], 10) : null;
+    if (iOS && version && version < 9) {
+      var safari = /safari/.test(window.navigator.userAgent.toLowerCase());
+      if (window.navigator.standalone && !safari || !window.navigator.standalone && !safari) {
+        usingWebAudio = false;
+      }
+    }
+
     // Create a master gain node.
     if (usingWebAudio) {
       masterGain = (typeof ctx.createGain === 'undefined') ? ctx.createGainNode() : ctx.createGain();
