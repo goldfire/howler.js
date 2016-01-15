@@ -35,10 +35,10 @@ Tested in the following browsers/versions:
 
 Several options to get up and running:
 
-Clone the repo: `git clone https://github.com/goldfire/howler.js.git`
-Install with [Bower](http://bower.io/): `bower install howler`
-Install with [npm](https://www.npmjs.com/package/howler): `npm install howler`
-Hosted CDN: [`cdnjs`](http://bower.io/) [`jsDelivr`](http://bower.io/)
+* Clone the repo: `git clone https://github.com/goldfire/howler.js.git`
+* Install with [Bower](http://bower.io/): `bower install howler`
+* Install with [npm](https://www.npmjs.com/package/howler): `npm install howler`
+* Hosted CDN: [`cdnjs`](http://bower.io/) [`jsDelivr`](http://bower.io/)
 
 ### Examples
 
