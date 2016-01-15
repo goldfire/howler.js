@@ -14,31 +14,17 @@
 
   'use strict';
 
+  // Setup default effects properties.
+  HowlerGlobal.prototype._pos = [0, 0, 0];
+  HowlerGlobal.prototype._orientation = [0, 0, -1, 0, 1, 0];
+  HowlerGlobal.prototype._velocity = [0, 0, 0];
+  HowlerGlobal.prototype._listenerAttr = {
+    dopplerFactor: 1,
+    speedOfSound: 343.3
+  };
+  
   /** Global Methods **/
   /***************************************************************************/
-
-  /**
-   * Add new properties to the core global init.
-   * @param  {Function} _super Core global init method.
-   * @return {Howl}
-   */
-  HowlerGlobal.prototype.init = (function(_super) {
-    return function() {
-      var self = this;
-
-      // Setup default effects properties.
-      self._pos = [0, 0, 0];
-      self._orientation = [0, 0, -1, 0, 1, 0];
-      self._velocity = [0, 0, 0];
-      self._listenerAttr = {
-        dopplerFactor: 1,
-        speedOfSound: 343.3
-      };
-
-      // Complete initilization with howler.js core's global init function.
-      return _super.call(this, o);
-    };
-  })(HowlerGlobal.prototype.init);
 
   /**
    * Get/set the position of the listener in 3D cartesian space. Sounds using
@@ -102,7 +88,7 @@
 
     if (typeof x === 'number') {
       self._orientation = [x, y, z, xUp, yUp, zUp];
-      self.ctx.listener.setOrientation(or[0], or[1], or[2], or[3], or[4], or[5]);
+      self.ctx.listener.setOrientation(x, y, z, xUp, yUp, zUp);
     } else {
       return or;
     }
@@ -193,7 +179,7 @@
       self._velocity = o.velocity || [0, 0, 0];
       self._pannerAttr = {
         coneInnerAngle: typeof o.coneInnerAngle !== 'undefined' ? o.coneInnerAngle : 360,
-        coneOUterAngle: typeof o.coneOUterAngle !== 'undefined' ? o.coneOUterAngle : 360,
+        coneOuterAngle: typeof o.coneOuterAngle !== 'undefined' ? o.coneOuterAngle : 360,
         coneOuterGain: typeof o.coneOuterGain !== 'undefined' ? o.coneOuterGain : 0,
         distanceModel: typeof o.distanceModel !== 'undefined' ? o.distanceModel : 'inverse',
         maxDistance: typeof o.maxDistance !== 'undefined' ? o.maxDistance : 10000,
@@ -422,7 +408,7 @@
    *
    *   Attributes:
    *     coneInnerAngle - (360 by default) There will be no volume reduction inside this angle.
-   *     coneOUterAngle - (360 by default) The volume will be reduced to a constant value of
+   *     coneOuterAngle - (360 by default) The volume will be reduced to a constant value of
    *                      `coneOuterGain` outside this angle.
    *     coneOuterGain - (0 by default) The amount of volume reduction outside of `coneOuterAngle`.
    *     distanceModel - ('inverse' by default) Determines algorithm to use to reduce volume as audio moves
@@ -458,7 +444,7 @@
         if (typeof id === 'undefined') {
           self._pannerAttr = {
             coneInnerAngle: typeof o.coneInnerAngle !== 'undefined' ? o.coneInnerAngle : self._coneInnerAngle,
-            coneOUterAngle: typeof o.coneOUterAngle !== 'undefined' ? o.coneOUterAngle : self._coneOUterAngle,
+            coneOuterAngle: typeof o.coneOuterAngle !== 'undefined' ? o.coneOuterAngle : self._coneOuterAngle,
             coneOuterGain: typeof o.coneOuterGain !== 'undefined' ? o.coneOuterGain : self._coneOuterGain,
             distanceModel: typeof o.distanceModel !== 'undefined' ? o.distanceModel : self._distanceModel,
             maxDistance: typeof o.maxDistance !== 'undefined' ? o.maxDistance : self._maxDistance,
@@ -487,7 +473,7 @@
         var pa = sound._pannerAttr;
         pa = {
           coneInnerAngle: typeof o.coneInnerAngle !== 'undefined' ? o.coneInnerAngle : pa.coneInnerAngle,
-          coneOUterAngle: typeof o.coneOUterAngle !== 'undefined' ? o.coneOUterAngle : pa.coneOUterAngle,
+          coneOuterAngle: typeof o.coneOuterAngle !== 'undefined' ? o.coneOuterAngle : pa.coneOuterAngle,
           coneOuterGain: typeof o.coneOuterGain !== 'undefined' ? o.coneOuterGain : pa.coneOuterGain,
           distanceModel: typeof o.distanceModel !== 'undefined' ? o.distanceModel : pa.distanceModel,
           maxDistance: typeof o.maxDistance !== 'undefined' ? o.maxDistance : pa.maxDistance,
@@ -500,7 +486,7 @@
         var panner = sound._panner;
         if (panner) {
           panner.coneInnerAngle = pa.coneInnerAngle;
-          panner.coneOUterAngle = pa.coneOUterAngle;
+          panner.coneOuterAngle = pa.coneOuterAngle;
           panner.coneOuterGain = pa.coneOuterGain;
           panner.distanceModel = pa.distanceModel;
           panner.maxDistance = pa.maxDistance;
@@ -582,14 +568,14 @@
   var setupPanner = function(sound) {
     // Create the new panner node.
     sound._panner = Howler.ctx.createPanner();
-    sound._panner.coneInnerAngle = sound._pannerAttr.coneInnerAngle;
-    sound._panner.coneOUterAngle = sound._pannerAttr.coneOUterAngle;
-    sound._panner.coneOuterGain = sound._pannerAttr.coneOuterGain;
-    sound._panner.distanceModel = sound._pannerAttr.distanceModel;
-    sound._panner.maxDistance = sound._pannerAttr.maxDistance;
-    sound._panner.panningModel = sound._pannerAttr.panningModel;
-    sound._panner.refDistance = sound._pannerAttr.refDistance;
-    sound._panner.rolloffFactor = sound._pannerAttr.rolloffFactor;
+    sound._panner.coneInnerAngle = (sound._pannerAttr.coneInnerAngle!==undefined) ? sound._pannerAttr.coneInnerAngle : sound._panner.coneInnerAngle;
+    sound._panner.coneOuterAngle = (sound._pannerAttr.coneOuterAngle!==undefined) ? sound._pannerAttr.coneOuterAngle : sound._panner.coneOuterAngle;
+    sound._panner.coneOuterGain = (sound._pannerAttr.coneOuterGain!==undefined) ? sound._pannerAttr.coneOuterGain : sound._panner.coneOuterGain;
+    sound._panner.distanceModel = (sound._pannerAttr.distanceModel!==undefined) ? sound._pannerAttr.distanceModel : sound._panner.distanceModel;
+    sound._panner.maxDistance = (sound._pannerAttr.maxDistance!==undefined) ? sound._pannerAttr.maxDistance : sound._panner.maxDistance;
+    sound._panner.panningModel = (sound._pannerAttr.panningModel!==undefined) ? sound._pannerAttr.panningModel : sound._panner.panningModel;
+    sound._panner.refDistance = (sound._pannerAttr.refDistance!==undefined) ? sound._pannerAttr.refDistance : sound._panner.refDistance;
+    sound._panner.rolloffFactor = (sound._pannerAttr.rolloffFactor!==undefined) ? sound._pannerAttr.rolloffFactor : sound._panner.rolloffFactor;
     sound._panner.setPosition(sound._pos[0], sound._pos[1], sound._pos[2]);
     sound._panner.setOrientation(sound._orientation[0], sound._orientation[1], sound._orientation[2]);
     sound._panner.setVelocity(sound._velocity[0], sound._velocity[1], sound._velocity[2]);
