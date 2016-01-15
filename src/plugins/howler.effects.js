@@ -291,7 +291,7 @@
 
     // Set the defaults for optional 'y' & 'z'.
     y = (typeof y !== 'number') ? self._orientation[1] : y;
-    z = (typeof z !== 'number') ? self._orientation[1] : z;
+    z = (typeof z !== 'number') ? self._orientation[2] : z;
 
     // Setup the group's spatial orientation if no ID is passed.
     if (typeof id === 'undefined') {
@@ -359,7 +359,7 @@
 
     // Set the defaults for optional 'y' & 'z'.
     y = (typeof y !== 'number') ? self._velocity[1] : y;
-    z = (typeof z !== 'number') ? self._velocity[1] : z;
+    z = (typeof z !== 'number') ? self._velocity[2] : z;
 
     // Setup the group's spatial velocity if no ID is passed.
     if (typeof id === 'undefined') {
@@ -568,14 +568,14 @@
   var setupPanner = function(sound) {
     // Create the new panner node.
     sound._panner = Howler.ctx.createPanner();
-    sound._panner.coneInnerAngle = (sound._pannerAttr.coneInnerAngle!==undefined) ? sound._pannerAttr.coneInnerAngle : sound._panner.coneInnerAngle;
-    sound._panner.coneOuterAngle = (sound._pannerAttr.coneOuterAngle!==undefined) ? sound._pannerAttr.coneOuterAngle : sound._panner.coneOuterAngle;
-    sound._panner.coneOuterGain = (sound._pannerAttr.coneOuterGain!==undefined) ? sound._pannerAttr.coneOuterGain : sound._panner.coneOuterGain;
-    sound._panner.distanceModel = (sound._pannerAttr.distanceModel!==undefined) ? sound._pannerAttr.distanceModel : sound._panner.distanceModel;
-    sound._panner.maxDistance = (sound._pannerAttr.maxDistance!==undefined) ? sound._pannerAttr.maxDistance : sound._panner.maxDistance;
-    sound._panner.panningModel = (sound._pannerAttr.panningModel!==undefined) ? sound._pannerAttr.panningModel : sound._panner.panningModel;
-    sound._panner.refDistance = (sound._pannerAttr.refDistance!==undefined) ? sound._pannerAttr.refDistance : sound._panner.refDistance;
-    sound._panner.rolloffFactor = (sound._pannerAttr.rolloffFactor!==undefined) ? sound._pannerAttr.rolloffFactor : sound._panner.rolloffFactor;
+    sound._panner.coneInnerAngle = sound._pannerAttr.coneInnerAngle;
+    sound._panner.coneOuterAngle = sound._pannerAttr.coneOuterAngle;
+    sound._panner.coneOuterGain = sound._pannerAttr.coneOuterGain;
+    sound._panner.distanceModel = sound._pannerAttr.distanceModel;
+    sound._panner.maxDistance = sound._pannerAttr.maxDistance;
+    sound._panner.panningModel = sound._pannerAttr.panningModel;
+    sound._panner.refDistance = sound._pannerAttr.refDistance;
+    sound._panner.rolloffFactor = sound._pannerAttr.rolloffFactor;
     sound._panner.setPosition(sound._pos[0], sound._pos[1], sound._pos[2]);
     sound._panner.setOrientation(sound._orientation[0], sound._orientation[1], sound._orientation[2]);
     sound._panner.setVelocity(sound._velocity[0], sound._velocity[1], sound._velocity[2]);
