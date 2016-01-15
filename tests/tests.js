@@ -3,16 +3,16 @@ var label = document.getElementById('label');
 
 // Setup the sounds to be used.
 var sound1 = new Howl({
-  src: ['sound1.ogg', 'sound1.mp3']
+  src: ['sound1.webm', 'sound1.mp3']
 });
 
 var sound2 = new Howl({
-  src: ['sound1.ogg', 'sound1.mp3'],
+  src: ['sound1.webm', 'sound1.mp3'],
   html5: true
 });
 
 var sound3 = new Howl({
-  src: ['sound2.ogg', 'sound2.mp3'],
+  src: ['sound2.webm', 'sound2.mp3'],
   sprite: {
     one: [0, 450],
     two: [2000, 250],
@@ -24,7 +24,7 @@ var sound3 = new Howl({
 });
 
 var sound4 = new Howl({
-  src: ['sound2.ogg', 'sound2.mp3'],
+  src: ['sound2.webm', 'sound2.mp3'],
   html5: true,
   sprite: {
     one: [0, 450],
