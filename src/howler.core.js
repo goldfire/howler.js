@@ -438,6 +438,12 @@
       // Loop through the sources and pick the first one that is compatible.
       for (var i=0; i<self._src.length; i++) {
         var ext, str;
+        
+        // Make sure the source is actually a string
+        if (typeof str !== 'string') {
+          self._emit('loaderror', null, 'Non-string found in selected audio sources - ignoring.');
+          continue;
+        }
 
         if (self._format && self._format[i]) {
           // If an extension was specified, use that instead.
