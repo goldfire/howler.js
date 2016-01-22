@@ -63,6 +63,9 @@
       // Expose the AudioContext when using Web Audio.
       self.ctx = ctx;
 
+      // Expose the master GainNode when using Web Audio (useful for plugins or advanced usage).
+      self.masterGain = masterGain;
+
       // Check for supported codecs.
       if (!noAudio) {
         self._setupCodecs();
