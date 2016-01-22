@@ -188,6 +188,11 @@
         rolloffFactor: typeof o.rolloffFactor !== 'undefined' ? o.rolloffFactor : 1
       };
 
+      // Setup event listeners.
+      self._onpos = o.onpos ? [{fn: o.onpos}] : [];
+      self._onorientation = o.onorientation ? [{fn: o.onorientation}] : [];
+      self._onvelocity = o.onvelocity ? [{fn: o.onvelocity}] : [];
+
       // Complete initilization with howler.js core's init function.
       return _super.call(this, o);
     };
@@ -212,10 +217,13 @@
       return self;
     }
 
-    // Wait for the sound to play before changing position.
+    // If the sound hasn't loaded, add it to the load queue to change position when capable.
     if (!self._loaded) {
-      self.once('play', function() {
-        self.pos(x, y, z, id);
+      self._queue.push({
+        event: 'pos',
+        action: function() {
+          self.pos(x, y, z, id);
+        }
       });
 
       return self;
@@ -253,6 +261,8 @@
 
             sound._panner.setPosition(x, y, z);
           }
+
+          self._emit('pos', sound._id);
         } else {
           return sound._pos;
         }
@@ -280,10 +290,13 @@
       return self;
     }
 
-    // Wait for the sound to play before changing orientation.
+    // If the sound hasn't loaded, add it to the load queue to change orientation when capable.
     if (!self._loaded) {
-      self.once('play', function() {
-        self.orientation(x, y, z, id);
+      self._queue.push({
+        event: 'orientation',
+        action: function() {
+          self.orientation(x, y, z, id);
+        }
       });
 
       return self;
@@ -321,6 +334,8 @@
 
             sound._panner.setOrientation(x, y, z);
           }
+
+          self._emit('orientation', sound._id);
         } else {
           return sound._orientation;
         }
@@ -348,10 +363,13 @@
       return self;
     }
 
-    // Wait for the sound to play before changing velocity.
+    // If the sound hasn't loaded, add it to the load queue to change velocity when capable.
     if (!self._loaded) {
-      self.once('play', function() {
-        self.velocity(x, y, z, id);
+      self._queue.push({
+        event: 'velocity',
+        action: function() {
+          self.velocity(x, y, z, id);
+        }
       });
 
       return self;
@@ -389,6 +407,8 @@
 
             sound._panner.setVelocity(x, y, z);
           }
+
+          self._emit('velocity', sound._id);
         } else {
           return sound._velocity;
         }
@@ -583,7 +603,7 @@
 
     // Update the connections.
     if (!sound._paused) {
-      sound._parent.pause(sound._id).play(sound._id);
+      sound._parent.pause(sound._id, true).play(sound._id);
     }
   };
 })();

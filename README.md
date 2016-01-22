@@ -284,6 +284,12 @@ Sets the 3D spatial position of the audio source for this sound or group. The mo
 Sets the velocity vector of the audio source or group. This controls both direction and speed in 3D space and is relative to the listener's velocity. The units are meters/second and are independent of position and orientation.
 #### pannerAttr `Object`
 Sets the panner node's attributes for a sound or group of sounds. See the `pannerAttr` method for all available options.
+#### onpos `Function`
+Fires when the current sound has the listener position changes. The first parameter is the ID of the sound.
+#### onorientation `Function`
+Fires when the current sound has the direction of the listener changes. The first parameter is the ID of the sound.
+#### onvelocity `Function`
+Fires when the current sound has the listener velocity changes. The first parameter is the ID of the sound.
 
 
 ### Plugin: Global Effects Methods
