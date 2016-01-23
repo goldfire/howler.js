@@ -25,5 +25,11 @@
     "howler.js",
     "howler.min.js",
     "LICENSE.md"
-  ]
+  ],
+  "devDependencies": {
+    "del": "^2.0.2",
+    "gulp": "^3.9.0",
+    "gulp-concat": "^2.6.0",
+    "gulp-uglify": "^1.4.2"
+  }
 }

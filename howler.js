@@ -1,4 +1,5 @@
-/*!
+/*  @license
+ *
  *  howler.js v1.1.28
  *  howlerjs.com
  *
@@ -6,9 +7,12 @@
  *  goldfirestudios.com
  *
  *  MIT License
+ *
+ *  ----
+ *  Modifications by William Silversmith, WiredDifferently, Inc, 2015
  */
 
-(function() {
+(function ($) {
   // setup
   var cache = {};
 
@@ -237,6 +241,11 @@
     self._urls = o.urls || [];
     self._rate = o.rate || 1;
 
+    self.title = o.title || "";
+
+    // custom modification, note: does support sound sprites
+    self._evttimer = {}; // used for setting time events 
+
     // allow forcing of a specific panningModel ('equalpower' or 'HRTF'),
     // if none is specified, defaults to 'equalpower' and switches to 'HRTF'
     // if 3d sound is used
@@ -247,7 +256,11 @@
     self._onloaderror = [o.onloaderror || function() {}];
     self._onend = [o.onend || function() {}];
     self._onpause = [o.onpause || function() {}];
+    self._onstop = [o.onstop || function() {}];
     self._onplay = [o.onplay || function() {}];
+
+    self.state = 'stopped';
+    self._fading = {};
 
     self._onendTimer = [];
 
@@ -274,6 +287,138 @@
 
   // setup all of the methods
   Howl.prototype = {
+
+
+    /* clone
+     *
+     * Create a new Howl object based on this one.
+     *
+     * Note: Timers will not be copied and the new object will
+     *  be stopped at the 0 position.
+     *
+     * Required: None
+     *   
+     * Return: Howl obj
+     */
+    clone: function () {
+      var self = this;
+
+      var effect = new Howl({
+        autoplay: self._autoplay,
+        buffer: self._buffer,
+        duration: self._duration,
+        format: self._format,
+        loop: self._loop,
+        sprite: self._sprite,
+        src: self._src,
+        pos3d: self._pos3d,
+        volume: self._volume,
+        urls: self._urls,
+        rate: self._rate,
+        model: self._model,
+      });
+
+      effect._onload = clonefnlist(self._onload);
+      effect._onloaderror = clonefnlist(self._onloaderror);
+      effect._onend = clonefnlist(self._onend);
+      effect._onpause = clonefnlist(self._onpause);
+      effect._onstop = clonefnlist(self._onstop);
+      effect._onplay = clonefnlist(self._onplay);
+
+      return effect;
+    },
+
+    /* timer
+     *
+     * Create a custom event that will fire
+     * when a defined position is reached.
+     *
+     * Required:
+     *   [0] msec: How far into the file should it go?
+     *
+     * Optional:
+     *   [1] event_name: What event type should be triggered? Default: timer
+     *
+     * Return: self
+     */
+    timer: function (msec, event_name, force_start_timer) {
+      var self = this; 
+
+      event_name = event_name || 'timer';
+      force_start_timer = !!force_start_timer;
+
+      if (!self._loaded) {
+        self.on('load', function () {
+          self.timer(msec, event_name, (self.state === 'playing'));
+        });
+
+        return self;
+      }
+
+      var ttlfn = function () {
+        return Math.round((msec - (self.pos() * 1000)) / self._rate);
+      };
+
+      var ttl = ttlfn();
+
+      if (!ttl || ttl < 0 || ttl > self._duration * 1000) {
+        return self;
+      }
+
+      self['_on' + event_name] = self['_on' + event_name] || [];
+
+      var clearfn = function () {
+        if (self._evttimer[event_name]) {
+          clearTimeout(self._evttimer[event_name]);
+        }
+      };
+
+      var playfn = function () {
+        clearfn();
+
+        ttl = ttlfn();
+
+        self._evttimer[event_name] = setTimeout(function () {
+          console.log(event_name + " fired after " + ttl)
+          self.on(event_name);
+        }, ttl);
+      };
+
+      self.on('play', playfn);
+
+      if (force_start_timer) {
+        playfn();
+      }
+
+      self.on('pause', function () {
+        clearfn();
+      });
+
+      self.on('stop', function () {
+        clearfn();
+      });
+
+      return self;
+    },
+
+     /**
+     * Return the remaining length of the piece in real-time msec.
+     * @return {Int}
+     */
+    remaining: function () {
+      var self = this;
+      return Math.round((self.duration() - self.pos() * 1000) / self._rate);
+    },
+
+    /**
+     * Return the length of the piece in msec.
+     * @return {Int}
+     */
+    duration: function () {
+      var self = this; 
+      return self._duration * 1000;
+    },
+
     /**
      * Load an audio file.
      * @return {Howl}
@@ -404,6 +549,8 @@
      */
     play: function(sprite, callback) {
       var self = this;
+
+      self.state = 'playing';
 
       // if no sprite was passed but a callback was, update the variables
       if (typeof sprite === 'function') {
@@ -552,6 +699,8 @@
     pause: function(id) {
       var self = this;
 
+      self.state = 'paused';
+
       // if the sound hasn't been loaded, add it to the event queue
       if (!self._loaded) {
         self.on('play', function() {
@@ -598,6 +747,8 @@
     stop: function(id) {
       var self = this;
 
+      self.state = 'stopped';
+
       // if the sound hasn't been loaded, add it to the event queue
       if (!self._loaded) {
         self.on('play', function() {
@@ -632,6 +783,8 @@
           activeNode.currentTime = 0;
         }
       }
+
+      self.on('stop');
 
       return self;
     },
@@ -711,8 +864,8 @@
 
         // if the sound hasn't been loaded, add it to the event queue
         if (!self._loaded) {
-          self.on('play', function() {
-            self.volume(vol, id);
+          self.one('load', function() {
+            self.volume(self._volume, id);
           });
 
           return self;
@@ -859,80 +1012,171 @@
       return self;
     },
 
-    /**
-     * Fade a currently playing sound between two volumes.
-     * @param  {Number}   from     The volume to fade from (0.0 to 1.0).
-     * @param  {Number}   to       The volume to fade to (0.0 to 1.0).
-     * @param  {Number}   len      Time in milliseconds to fade.
-     * @param  {Function} callback (optional) Fired when the fade is complete.
-     * @param  {String}   id       (optional) The play instance ID.
-     * @return {Howl}
-     */
-    fade: function(from, to, len, callback, id) {
-      var self = this,
-        diff = Math.abs(from - to),
-        dir = from > to ? 'down' : 'up',
-        steps = diff / 0.01,
-        stepTime = len / steps;
+  /* fade
+   *
+   * Smoothly interpolate the volume of the piece from one position
+   * to the other.
+   *
+   * There are some tricky situations that pop up since various UI 
+   * events of differing importance will compete for volume control. 
+   *
+   * Additionally, if your howl is a composite sound within a larger sound, the
+   * subsections may be cross fading independently at the same time that
+   * the piece as a whole is attempting to fade. This competition can result
+   * in static as gain values ping pong between the two masters 
+   * if not carefully managed.
+   *
+   * Towards these ends, this fading feature attempts to balance several concerns.
+   * 
+   * By default, the if you call a fade while another is in progress, it will cancel
+   * and initiate a fade in the new direction. However, the return type is a jQuery
+   * deferred so you can use .fail or .always to ensure your post-fade callback is 
+   * executed (though you might only want it to execute on success, this is your choice).
+   *
+   * To handle competing priorities, a higher priority fade (priority argument) essentially 
+   * acquires a lock on the volume control. Only an equal or higher priorty fade can override it.
+   * This is important for, e.g. the mute button.
+   *
+   * While I think the provided easing function is awesome (cosine decay), you might want to 
+   * provide your own (e.g. sinusoidal, exponential, etc). The easing function makes this 
+   * possible. 
+   *
+   * Required:
+   *   to: >= 0.0 (typically 0.0 to 1.0): Final volume state
+   *   msec: Duration of the fade in msec.
+   *
+   * Optional:
+   *   from: >= 0.0 (typically 0.0 to 1.0), initial volume level (default: current)
+   *   priority: Number, acquires mutex on volume control against lower priority levels
+   *   easing: fn(t), t in 0..1, ret 0..1, map of % animation complete to volume level
+   *   normalizer: If the shuffle is a sub-object of something else that can fade,
+   *        you can provide a value to normalize the output by.
+   *
+   *        e.g. Your sound system as a whole is fading out you want to fade
+   *          from 50% to 100% of your shuffle's volume relative to the master volume.
+   *      You'll possibly need to exclude this piece from the other fading mechanism
+   *      using the .isFading method.
+   *        
+   *      music.fade({
+   *        from: 0.5,
+   *        to: 1.0,
+   *        msec: 2500,
+   *        normalizer: function () { return SFX.volume() }, // shuffle.vol = shuffle.vol * SFX.vol
+   *      })
+   *
+   * Return: jQuery deferred object, resolve on complete, reject if aborted
+   */
+    fade: function (args) {
+      args = args || {};
 
-      // if the sound hasn't been loaded, add it to the event queue
-      if (!self._loaded) {
-        self.on('load', function() {
-          self.fade(from, to, len, callback, id);
-        });
-
-        return self;
-      }
-
-      // set the volume to the start position
-      self.volume(from, id);
-
-      for (var i=1; i<=steps; i++) {
-        (function() {
-          var change = self._volume + (dir === 'up' ? 0.01 : -0.01) * i,
-            vol = Math.round(1000 * change) / 1000,
-            toVol = to;
-
-          setTimeout(function() {
-            self.volume(vol, id);
-
-            if (vol === toVol) {
-              if (callback) callback();
-            }
-          }, stepTime * i);
-        })();
-      }
-    },
-
-    /**
-     * [DEPRECATED] Fade in the current sound.
-     * @param  {Float}    to      Volume to fade to (0.0 to 1.0).
-     * @param  {Number}   len     Time in milliseconds to fade.
-     * @param  {Function} callback
-     * @return {Howl}
-     */
-    fadeIn: function(to, len, callback) {
-      return this.volume(0).play().fade(0, to, len, callback);
-    },
-
-    /**
-     * [DEPRECATED] Fade out the current sound and pause when finished.
-     * @param  {Float}    to       Volume to fade to (0.0 to 1.0).
-     * @param  {Number}   len      Time in milliseconds to fade.
-     * @param  {Function} callback
-     * @param  {String}   id       (optional) The play instance ID.
-     * @return {Howl}
-     */
-    fadeOut: function(to, len, callback, id) {
       var self = this;
 
-      return self.fade(self._volume, to, len, function() {
-        if (callback) callback();
-        self.pause(id);
+      var from = args.from !== undefined 
+          ? Math.max(args.from, 0)
+          : self.volume();
 
-        // fire ended event
-        self.on('end');
-      }, id);
+      var to = Math.max(args.to, 0),
+        msec = assertDefined(args.msec),
+
+        id = args.id,
+        priority = args.priority || 0,
+        normalizer = args.normalizer || function () { return 1 },
+        
+        easing = args.easing || function (t) {
+          var factor = 1 - Math.cos(Math.PI * t / 2); // try graphing this on [0, 1]
+          return clamp(factor, 0, 1);
+        };
+
+      self._fading[id] = self._fading[id] || {};
+
+      if (self._fading[id].promise) {
+        if (priority < self._fading[id].priority) {
+          return $.Deferred().reject();
+        }
+        else {
+          self._fading[id].promise.reject();
+        }
+      }
+
+      self._fading[id].priority = priority;
+
+      self._fading[id].promise = $.Deferred()
+        .always(function () {
+          clearInterval(self._fading[id].stepper);
+          clearTimeout(self._fading[id].terminal);
+
+          self._fading[id] = {};
+        });
+
+       // if the sound hasn't been loaded, add it to the event queue
+      if (!self._loaded) {
+        self.on('load', function() {
+          self.fade(args);
+        });
+
+        return self._fading[id].promise;
+      }
+
+      var mutevol = function (v) {
+        return self._muted ? 0 : v;
+      };
+
+      // NOTE: Useful for efficiency, but maybe not so good
+      // if someone uses a custom easing function for
+      // osscillations.
+      if (Math.abs(to - self.volume()) < 0.00001 || msec === 0) {
+        var vol = mutevol(to * normalizer());
+        self.volume(vol, id);
+        return self._fading[id].promise.resolve();
+      }
+
+      self.volume(mutevol(from * normalizer()), id);
+
+      var start = window.performance.now();
+      var delta = to - from;
+
+      self._fading[id].stepper = setInterval(function () {
+        var now = window.performance.now();
+        var t = (now - start) / msec;
+
+        var vol = from + delta * easing(t);
+        vol *= normalizer();
+
+        self.volume(mutevol(vol), id);
+      }, 15); // max guaranteed resolution
+
+      var term_msec = Math.min(msec, self.remaining()) + 1; // + epsilon
+
+      self._fading[id].terminal = setTimeout(function () {
+        self._fading[id].promise.resolve();
+
+        var vol = mutevol(to * normalizer());
+        self.volume(vol, id);
+      }, term_msec); 
+      
+      return self._fading[id].promise;
+    },
+
+    isFading: function (id) {
+      var self = this;
+      self._fading[id] = self._fading[id] || {};
+      return !!self._fading[id].promise;
+    },
+
+    cancelFade: function (priority, id) {
+      var self = this;
+
+      priority = priority || 0;
+      
+      self._fading[id] = self._fading[id] || {};
+
+      if (self._fading[id].promise
+        && self._fading.priority <= priority) {
+
+        self._fading[id].promise.reject();
+      }
+
+      return self;
     },
 
     /**
@@ -1106,26 +1350,66 @@
     /**
      * Call/set custom events.
      * @param  {String}   event Event type.
-     * @param  {Function} fn    Function to call.
+     * @param  {Function,Int} fn    Function to call or integer to identify the sound object.
      * @return {Howl}
      */
     on: function(event, fn) {
-      var self = this,
-        events = self['_on' + event];
+      var self = this;
+      event.split(' ').forEach(function (evt) {
+        if (fn && evt === 'load' && self._loaded) {
+          fn.call(self);
+        }
 
-      if (typeof fn === 'function') {
-        events.push(fn);
-      } else {
-        for (var i=0; i<events.length; i++) {
-          if (fn) {
-            events[i].call(self, fn);
-          } else {
-            events[i].call(self);
+        var events = self['_on' + evt];
+
+        if (typeof fn === 'function') {
+          events.push(fn);
+        } 
+        else {
+          // need to clone in case the fns remove themselves
+          // from the event register (c.f. one)
+          events = clonefnlist(events);
+
+          for (var i=0; i<events.length; i++) {
+            if (fn) {
+              events[i].call(self, fn);
+            } 
+            else {
+              events[i].call(self);
+            }
           }
         }
-      }
+      });
 
       return self;
+    },
+
+    /**
+     * ion: Idempotent on. 
+     * @param  {String}   event Event type.
+     * @param  {Function} fn    Listener to add.
+     * @return {Howl}
+     */
+    ion: function (event, fn) {
+      var self = this;
+      return self.off(event).on(event, fn);
+    },
+
+    /**
+     * Fire event once then remove this handler.
+     * @param  {String}   event Event type.
+     * @param  {Function} fn    Listener to add then remove.
+     * @return {Howl}
+     */
+    one: function (event, fn) {
+      var self = this;
+
+      function wrapperfn () {
+        fn.apply(self, arguments);
+        self.off(event, wrapperfn);
+      }
+
+      return self.on(event, wrapperfn);
     },
 
     /**
@@ -1135,21 +1419,24 @@
      * @return {Howl}
      */
     off: function(event, fn) {
-      var self = this,
-        events = self['_on' + event],
-        fnString = fn ? fn.toString() : null;
+      var self = this;
 
-      if (fnString) {
-        // loop through functions in the event for comparison
-        for (var i=0; i<events.length; i++) {
-          if (fnString === events[i].toString()) {
-            events.splice(i, 1);
-            break;
+      event.split(' ').forEach(function (evt) {
+        var events = self['_on' + evt];
+        var fnString = fn ? fn.toString() : null;
+
+        if (fnString) {
+          // loop through functions in the event for comparison
+          for (var i=0; i<events.length; i++) {
+            if (fnString === events[i].toString()) {
+              events.splice(i, 1);
+              break;
+            }
           }
+        } else {
+          self['_on' + evt] = [];
         }
-      } else {
-        self['_on' + event] = [];
-      }
+      });
 
       return self;
     },
@@ -1262,7 +1549,7 @@
       // decode the buffer into an audio source
       ctx.decodeAudioData(
         arraybuffer,
-        function(buffer) {
+        function (buffer) {
           if (buffer) {
             cache[url] = buffer;
             loadSound(obj, buffer);
@@ -1323,6 +1610,37 @@
 
   }
 
+  function clonefnlist (fnl) {
+    fnl = fnl || [];
+    
+    return fnl.map(function (fn) {
+      return fn.bind({});
+    });
+  }
+
+  /* clamp
+   *
+   * Bound a value between a minimum and maximum value.
+   *
+   * Required: 
+   *   [0] value: The number to evaluate
+   *   [1] min: The minimum possible value
+   *   [2] max: The maximum possible value
+   * 
+   * Returns: value if value in [min,max], min if less, max if more
+   */
+  function clamp (value, min, max) {
+    return Math.max(Math.min(value, max), min);
+  }
+
+  function assertDefined (x, msg) {
+    if (x === undefined) {
+      throw new Error(msg || "Variable was not defined.");
+    }
+
+    return x;
+  }
+
   /**
    * Add support for AMD (Asynchronous Module Definition) libraries such as require.js.
    */
@@ -1348,6 +1666,11 @@
   if (typeof window !== 'undefined') {
     window.Howler = Howler;
     window.Howl = Howl;
-  }
 
-})();
+    // polyfill for high res time.
+    // note that this cannot be done like x = window.performance.now  || Date.now; 
+    // performance.now is a native function and that will cause an illegal invocation.
+    // performance.now is also guaranteed to be monotonic which is crucial for our effects.
+    window.performance.now = window.performance.now  || Date.now; 
+  }
+})(jQuery || Zepto);
