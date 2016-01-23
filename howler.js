@@ -284,7 +284,7 @@
 
       // if no audio is available, quit immediately
       if (noAudio) {
-        self.on('loaderror', new Error('neither HTML5 Audio nor Web Audio API seem to be available'));
+        self.on('loaderror', new Error('No audio support.'));
         return;
       }
 
@@ -306,7 +306,7 @@
           if (ext) {
             ext = ext[1].toLowerCase();
           } else {
-            self.on('loaderror', new Error('could not extract format from urls, please add format parameter'));
+            self.on('loaderror', new Error('Could not extract format from passed URLs, please add format parameter.'));
             return;
           }
         }
@@ -318,7 +318,7 @@
       }
 
       if (!url) {
-        self.on('loaderror', new Error('no url found (checks urls parameter and add format parameter if filetype is not derivable from file extension or data URI)'));
+        self.on('loaderror', new Error('No codec support for selected audio sources.'));
         return;
       }
 
