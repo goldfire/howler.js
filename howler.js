@@ -1117,6 +1117,8 @@
         events.push(fn);
       } else {
         for (var i=0; i<events.length; i++) {
+          if (typeof events[i] !== 'function') continue;
+
           if (fn) {
             events[i].call(self, fn);
           } else {
@@ -1142,8 +1144,20 @@
       if (fnString) {
         // loop through functions in the event for comparison
         for (var i=0; i<events.length; i++) {
-          if (fnString === events[i].toString()) {
-            events.splice(i, 1);
+          if (fnString === (events[i] ? events[i].toString() : null)) {
+            events.splice(i, 1, null);
+
+            setTimeout(function() {
+              var oldEvents = self['_on' + event];
+              var newEvents = [];
+              for (var i=0; i<oldEvents.length; i++) {
+                if (typeof oldEvents[i] === 'function') {
+                  newEvents.push(oldEvents[i]);
+                }
+              }
+              self['_on' + event] = newEvents;
+            });
+
             break;
           }
         }
@@ -1215,7 +1229,7 @@
         loadSound(obj);
         return;
       }
-      
+
       if (/^data:[^;]+;base64,/.test(url)) {
         // Decode base64 data-URIs because some browsers cannot load data-URIs with XMLHttpRequest.
         var data = atob(url.split(',')[1]);
@@ -1223,7 +1237,7 @@
         for (var i=0; i<data.length; ++i) {
           dataView[i] = data.charCodeAt(i);
         }
-        
+
         decodeAudioData(dataView.buffer, obj, url);
       } else {
         // load the buffer from the URL
