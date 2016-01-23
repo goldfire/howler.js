@@ -328,7 +328,9 @@
         loadBuffer(self, url);
       } else {
         var newNode = new Audio();
-
+		var source = document.createElement('source');
+		newNode.appendChild(source);
+		
         // listen for errors with HTML5 audio (http://dev.w3.org/html5/spec-author-view/spec.html#mediaerror)
         newNode.addEventListener('error', function () {
           if (newNode.error && newNode.error.code === 4) {
@@ -338,10 +340,14 @@
           self.on('loaderror', {type: newNode.error ? newNode.error.code : 0});
         }, false);
 
-        self._audioNode.push(newNode);
+         self._audioNode.push(newNode);
 
-        // setup the new audio node
-        newNode.src = url;
+		// setup the new audio node        
+		source.src = url;
+		if (self._format) {
+			source.type = self.getTypeByCodecs(self._format);
+		}
+        
         newNode._pos = 0;
         newNode.preload = 'auto';
         newNode.volume = (Howler._muted) ? 0 : self._volume * Howler.volume();
@@ -370,6 +376,7 @@
           newNode.removeEventListener('canplaythrough', listener, false);
         };
         newNode.addEventListener('canplaythrough', listener, false);
+		newNode.addEventListener('ended', function () { self.on('end')})
         newNode.load();
       }
 
@@ -1152,7 +1159,24 @@
 
       return self;
     },
-
+	/**
+	* Match format with codec
+	* @return all codecs and it it is supported by browser
+	*/
+	getTypeByCodecs: function (codec) {
+		audioTest = new Audio();
+		codecs = {
+			mp3: 'audio/mpeg;',
+			opus: 'audio/ogg; codecs="opus"',
+			ogg: 'audio/ogg; codecs="vorbis"',
+			wav: 'audio/wav; codecs="1"',
+			aac: 'audio/aac;',
+			m4a: audioTest.canPlayType('audio/x-m4a;') ? 'audio/x-m4a;' : audioTest.canPlayType('audio/m4a;') ? 'audio/m4a;' : audioTest.canPlayType('audio/aac;') ? 'audio/aac;' : '',
+			mp4: audioTest.canPlayType('audio/x-mp4;') ? 'audio/x-mp4;' : audioTest.canPlayType('audio/mp4;') ? 'audio/mp4;' : audioTest.canPlayType('audio/aac;') ? 'audio/aac;' : '',
+			weba: 'audio/webm; codecs="vorbis"'
+		};
+		return codecs[codec];
+	},
     /**
      * Unload and destroy the current Howl object.
      * This will immediately stop all play instances attached to this sound.
@@ -1171,7 +1195,7 @@
 
         if (!self._webAudio) {
           // remove the source if using HTML5 Audio
-          nodes[i].src = '';
+          nodes[i].removeChild(nodes[i].firstChild);
         } else {
           // disconnect the output from the master gain
           nodes[i].disconnect(0);
