@@ -77,6 +77,20 @@ var webaudio = [
   },
 
   function(fn) {
+    sound1.rate(1.5, id);
+
+    label.innerHTML = 'SPEED UP';
+    setTimeout(fn, 2000);
+  },
+
+  function(fn) {
+    sound1.rate(1, id);
+
+    label.innerHTML = 'SLOW DOWN';
+    setTimeout(fn, 2000);
+  },
+
+  function(fn) {
     sound1.fade(1, 0, 2000, id);
 
     label.innerHTML = 'FADE OUT';
@@ -273,6 +287,20 @@ var html5 = [
     sound2.play(id);
 
     label.innerHTML = 'PLAY FROM START (HTML5)';
+    setTimeout(fn, 2000);
+  },
+
+  function(fn) {
+    sound1.rate(1.5, id);
+
+    label.innerHTML = 'SPEED UP (HTML5)';
+    setTimeout(fn, 2000);
+  },
+
+  function(fn) {
+    sound1.rate(1, id);
+
+    label.innerHTML = 'SLOW DOWN (HTML5)';
     setTimeout(fn, 2000);
   },
 
