@@ -52,11 +52,16 @@ body {
   font-size: 7vw;
   color: #e0dad2;
   border-radius: 5px;
-  cursor: pointer;
 }
 
 #start:hover {
   background: #91887b;
+  cursor: pointer;
+}
+
+#start[disabled] {
+  pointer-events: none;
+  opacity: 0.5;
 }
 
 #logo {

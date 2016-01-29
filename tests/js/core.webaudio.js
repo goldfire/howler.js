@@ -1,5 +1,6 @@
 // Cache the label for later use.
 var label = document.getElementById('label');
+var start = document.getElementById('start');
 
 // Setup the sounds to be used.
 var sound1 = new Howl({
@@ -16,6 +17,12 @@ var sound2 = new Howl({
     five: [8000, 340],
     beat: [10000, 11163]
   }
+});
+
+// Enable the start button when the sounds have loaded.
+sound1.once('load', function() {
+  start.removeAttribute('disabled');
+  start.innerHTML = 'BEGIN CORE TESTS';
 });
 
 // Define the tests to run.
@@ -251,7 +258,6 @@ var chain = function(i) {
 // If Web Audio isn't available, send them to hTML5 test.
 if (Howler.usingWebAudio) {
   // Listen to a click on the button to being the tests.
-  var start = document.getElementById('start');
   start.addEventListener('click', function() {
     tests[0](chain(1));
     start.style.display = 'none';
