@@ -439,7 +439,7 @@ var chain = function(i) {
       tests[i](chain(++i));
     } else {
       label.innerHTML = 'COMPLETE!';
-      label.style.color = '#57c263';
+      label.style.color = '#74b074';
     }
   };
 };
