@@ -1,5 +1,6 @@
 // Cache the label for later use.
 var label = document.getElementById('label');
+var logo = document.getElementById('logo');
 
 // Setup the sounds to be used.
 var sound1 = new Howl({
@@ -258,56 +259,57 @@ var html5 = [
    function(fn) {
     id = sound2.play();
 
-    label.innerHTML = 'PLAYING (HTML5)';
+    logo.style.display = 'block';
+    label.innerHTML = 'PLAYING';
     setTimeout(fn, 2000);
   },
 
   function(fn) {
     sound2.pause(id);
 
-    label.innerHTML = 'PAUSED (HTML5)';
+    label.innerHTML = 'PAUSED';
     setTimeout(fn, 1500);
   },
 
   function(fn) {
     sound2.play(id);
 
-    label.innerHTML = 'RESUMING (HTML5)';
+    label.innerHTML = 'RESUMING';
     setTimeout(fn, 2000);
   },
 
   function(fn) {
     sound2.stop(id);
 
-    label.innerHTML = 'STOPPED (HTML5)';
+    label.innerHTML = 'STOPPED';
     setTimeout(fn, 1500);
   },
 
   function(fn) {
     sound2.play(id);
 
-    label.innerHTML = 'PLAY FROM START (HTML5)';
+    label.innerHTML = 'PLAY FROM START';
     setTimeout(fn, 2000);
   },
 
   function(fn) {
-    sound1.rate(1.5, id);
+    sound2.rate(1.5, id);
 
-    label.innerHTML = 'SPEED UP (HTML5)';
+    label.innerHTML = 'SPEED UP';
     setTimeout(fn, 2000);
   },
 
   function(fn) {
-    sound1.rate(1, id);
+    sound2.rate(1, id);
 
-    label.innerHTML = 'SLOW DOWN (HTML5)';
+    label.innerHTML = 'SLOW DOWN';
     setTimeout(fn, 2000);
   },
 
   function(fn) {
     sound2.fade(1, 0, 2000, id);
 
-    label.innerHTML = 'FADE OUT (HTML5)';
+    label.innerHTML = 'FADE OUT';
     sound2.once('fade', function() {
       fn();
     });
@@ -316,7 +318,7 @@ var html5 = [
   function(fn) {
     sound2.fade(0, 1, 2000, id);
 
-    label.innerHTML = 'FADE IN (HTML5)';
+    label.innerHTML = 'FADE IN';
     sound2.once('fade', function() {
       fn();
     });
@@ -325,70 +327,70 @@ var html5 = [
   function(fn) {
     sound2.mute(true, id);
 
-    label.innerHTML = 'MUTE (HTML5)';
+    label.innerHTML = 'MUTE';
     setTimeout(fn, 1500);
   },
 
   function(fn) {
     sound2.mute(false, id);
 
-    label.innerHTML = 'UNMUTE (HTML5)';
+    label.innerHTML = 'UNMUTE';
     setTimeout(fn, 2000);
   },
 
   function(fn) {
     sound2.volume(0.5, id);
 
-    label.innerHTML = 'HALF VOLUME (HTML5)';
+    label.innerHTML = 'HALF VOLUME';
     setTimeout(fn, 2000);
   },
 
   function(fn) {
     sound2.volume(1, id);
 
-    label.innerHTML = 'FULL VOLUME (HTML5)';
+    label.innerHTML = 'FULL VOLUME';
     setTimeout(fn, 2000);
   },
 
   function(fn) {
     sound2.seek(0, id);
 
-    label.innerHTML = 'SEEK TO START (HTML5)';
+    label.innerHTML = 'SEEK TO START';
     setTimeout(fn, 2000);
   },
 
   function(fn) {
     id = sound2.play();
 
-    label.innerHTML = 'PLAY 2ND (HTML5)';
+    label.innerHTML = 'PLAY 2ND';
     setTimeout(fn, 2000);
   },
 
   function(fn) {
     sound2.mute(true);
 
-    label.innerHTML = 'MUTE GROUP (HTML5)';
+    label.innerHTML = 'MUTE GROUP';
     setTimeout(fn, 1500);
   },
 
   function(fn) {
     sound2.mute(false);
 
-    label.innerHTML = 'UNMUTE GROUP (HTML5)';
+    label.innerHTML = 'UNMUTE GROUP';
     setTimeout(fn, 2000);
   },
 
   function(fn) {
     sound2.volume(0.5);
 
-    label.innerHTML = 'HALF VOLUME GROUP (HTML5)';
+    label.innerHTML = 'HALF VOLUME GROUP';
     setTimeout(fn, 2000);
   },
 
   function(fn) {
     sound2.fade(0.5, 0, 2000);
 
-    label.innerHTML = 'FADE OUT GROUP (HTML5)';
+    label.innerHTML = 'FADE OUT GROUP';
     sound2.once('fade', function() {
       if (sound2._onfade.length === 0) {
         fn();
@@ -399,7 +401,7 @@ var html5 = [
   function(fn) {
     sound2.fade(0, 1, 2000);
 
-    label.innerHTML = 'FADE IN GROUP (HTML5)';
+    label.innerHTML = 'FADE IN GROUP';
     sound2.once('fade', function() {
       if (sound2._onfade.length === 0) {
         fn();
@@ -410,28 +412,28 @@ var html5 = [
   function(fn) {
     sound2.stop();
 
-    label.innerHTML = 'STOP GROUP (HTML5)';
+    label.innerHTML = 'STOP GROUP';
     setTimeout(fn, 1500);
   },
 
   function(fn) {
     id = sound4.play('beat');
 
-    label.innerHTML = 'PLAY SPRITE (HTML5)';
+    label.innerHTML = 'PLAY SPRITE';
     setTimeout(fn, 2000);
   },
 
   function(fn) {
     sound4.pause(id);
 
-    label.innerHTML = 'PAUSE SPRITE (HTML5)';
+    label.innerHTML = 'PAUSE SPRITE';
     setTimeout(fn, 1000);
   },
 
   function(fn) {
     sound4.play(id);
 
-    label.innerHTML = 'RESUME SPRITE (HTML5)';
+    label.innerHTML = 'RESUME SPRITE';
     setTimeout(fn, 1500);
   },
 
@@ -443,14 +445,14 @@ var html5 = [
       }.bind(null, i), i * 500);
     }
 
-    label.innerHTML = 'MULTIPLE SPRITES (HTML5)';
+    label.innerHTML = 'MULTIPLE SPRITES';
     setTimeout(fn, 3000);
   },
 
   function(fn) {
     sound4.fade(1, 0, 2000, id);
 
-    label.innerHTML = 'FADE OUT SPRITE (HTML5)';
+    label.innerHTML = 'FADE OUT SPRITE';
     sound4.once('fade', function() {
       fn();
     });
@@ -466,6 +468,7 @@ var chain = function(i) {
     if (tests[i]) {
       tests[i](chain(++i));
     } else {
+      logo.style.display = 'none';
       label.innerHTML = 'COMPLETE!';
       label.style.color = '#74b074';
     }
