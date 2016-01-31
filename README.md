@@ -345,6 +345,12 @@ Howler.js supports a wide array of audio codecs that have varying browser suppor
 
 It is important to remember that howler.js selects the first compatible sound from your array of sources. So if you want `webm` to be used before `mp3`, you need to put the sources in that order.
 
+If you want your `webm` files to be seekable in Firefox, be sure to encode them with the cues element. One way to do this is by using the `dash` flag in [ffmpeg](https://www.ffmpeg.org/):
+
+```
+ffmpeg -i sound1.wav -dash 1 sound1.webm
+```
+
 ### License
 
 Copyright (c) 2013-2016 James Simpson and GoldFire Studios, Inc.
