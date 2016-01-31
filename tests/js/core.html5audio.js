@@ -223,6 +223,17 @@ var tests = [
   },
 
   function(fn) {
+    var sprite = sound2.play('one');
+    sound2.loop(true, sprite);
+
+    label.innerHTML = 'LOOP SPRITE';
+    setTimeout(function() {
+      sound2.loop(false, sprite);
+      fn();
+    }, 3000);
+  },
+
+  function(fn) {
     sound2.fade(1, 0, 2000, id);
 
     label.innerHTML = 'FADE OUT SPRITE';

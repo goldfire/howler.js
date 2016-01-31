@@ -263,5 +263,5 @@ if (Howler.usingWebAudio) {
     start.style.display = 'none';
   }, false);
 } else {
-  window.location = 'core.html5.html';
+  window.location = 'core.html5audio.html';
 }
