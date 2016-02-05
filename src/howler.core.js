@@ -553,8 +553,7 @@
 
       // Don't play the sound if an id was passed and it is already playing.
       if (id && !sound._paused) {
-
-        // Trigger the play event, in order to keep iterating through queue
+        // Trigger the play event, in order to keep iterating through queue.
         if (!args[1]) {
           setTimeout(function() {
             self._emit('play', sound._id);

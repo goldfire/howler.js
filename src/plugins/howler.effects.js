@@ -329,6 +329,11 @@
           if (sound._node) {
             // Check if there is a panner setup and create a new one if not.
             if (!sound._panner) {
+              // Make sure we have a position to setup the node with.
+              if (!sound._pos) {
+                sound._pos = self._pos || [0, 0, -0.5];
+              }
+
               setupPanner(sound);
             }
 
@@ -400,6 +405,11 @@
           sound._velocity = [x, y, z];
 
           if (sound._node) {
+            // Make sure we have a position to setup the node with.
+            if (!sound._pos) {
+              sound._pos = self._pos || [0, 0, -0.5];
+            }
+            
             // Check if there is a panner setup and create a new one if not.
             if (!sound._panner) {
               setupPanner(sound);

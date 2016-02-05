@@ -251,7 +251,7 @@ Get/set the 3D spatial position of the audio source for this sound or group. The
 * **id**: `Number` `optional` The sound ID. If none is passed, all in group will be updated.
 
 #### orientation(x, y, z, [id])
-Get/set the direction the audio source is pointing in the 3D cartesian coordinate space. Depending on how direction the sound is, based on the `cone` attributes, a sound pointing away from the listener can be quiet or silent.
+Get/set the direction the audio source is pointing in the 3D cartesian coordinate space. Depending on the direction of the sound, based on the `cone` attributes, a sound pointing away from the listener can be quiet or silent.
 * **x**: `Number` The x-orientation of the source.
 * **y**: `Number` The y-orientation of the source.
 * **z**: `Number` The z-orientation of the source.
