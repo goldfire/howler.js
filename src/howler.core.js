@@ -1277,10 +1277,14 @@
 
     /**
      * Get the duration of this sound.
+     * @param  {Number} id The sound id to check. If none is passed, first sound is used.
      * @return {Number} Audio duration.
      */
-    duration: function() {
-      return this._duration;
+    duration: function(id) {
+      var self = this;
+      var sound = self._soundById(id) || self._sounds[0];
+
+      return self._duration / sound._rate;
     },
 
     /**
