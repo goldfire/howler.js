@@ -139,7 +139,7 @@ Begins playback of a sound. Returns the sound id to be used with other methods. 
 
 #### pause([id])
 Pauses playback of sound or group, saving the `seek` of playback.
-* **id**: `Number` `optional` The sound ID. If none is passed, all sounds in group are puased.
+* **id**: `Number` `optional` The sound ID. If none is passed, all sounds in group are paused.
 
 #### stop([id])
 Stops playback of sound, resetting `seek` to `0`.
@@ -268,7 +268,7 @@ Get/set the velocity vector of the audio source or group. This controls both dir
 Get/set the panner node's attributes for a sound or group of sounds. This method can optionall take 0, 1 or 2 arguments.
 * **o**: `Object` All values to update.
   * **coneInnerAngle** `360` There will be no volume reduction inside this angle.
-  * **coneOUterAngle** `360` The volume will be reduced to a constant value of `coneOuterGain` outside this angle.
+  * **coneOuterAngle** `360` The volume will be reduced to a constant value of `coneOuterGain` outside this angle.
   * **coneOuterGain** `0` The amount of volume reduction outside of `coneOuterAngle`.
   * **distanceModel** `inverse` Determines algorithm to use to reduce volume as audio moves away from listener. Can be `linear`, `inverse` or `exponential.
   * **maxDistance** `10000` Volume won't reduce between source/listener beyond this distance.
