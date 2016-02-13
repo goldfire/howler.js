@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Howler.js Audio Player</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <!-- Top Info -->
+  <div id="title">
+    <span id="track"></span>
+    <div id="timer">0:00</div>
+    <div id="duration">0:00</div>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls-outer">
+    <div class="controls-inner">
+      <div class="btn" id="play-btn"></div>
+      <div class="btn" id="pause-btn"></div>
+      <div class="btn" id="prev-btn"></div>
+      <div class="btn" id="next-btn"></div>
+    </div>
+    <div class="btn" id="playlist-btn"></div>
+    <div class="btn" id="volume-btn"></div>
+  </div>
+
+  <!-- Progress -->
+  <div id="wave"></div>
+  <div id="bar"></div>
+  <div id="progress"></div>
+
+  <!-- Scripts -->
+  <script src="../../src/howler.core.js"></script>
+  <script src="./siriwave.js"></script>
+  <script src="./player.js"></script>
+</body>
+</html>
