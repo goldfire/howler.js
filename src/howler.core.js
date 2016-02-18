@@ -402,6 +402,12 @@
 
       // Web Audio or HTML5 Audio?
       self._webAudio = usingWebAudio && !self._html5;
+      
+      if (self._webAudio) {
+        // scratch buffer for enabling iOS to dispose of web audio buffers correctly
+        // http://stackoverflow.com/questions/24119684/web-audio-api-memory-leaks-on-mobile-platforms/32568948#32568948
+        self._scratchBuffer = ctx.createBuffer(1, 1, 22050);
+      }
 
       // Automatically try to enable audio on iOS.
       if (typeof ctx !== 'undefined' && ctx && Howler.mobileAutoEnable) {
@@ -720,6 +726,13 @@
               }
 
               // Clean up the buffer source.
+              sound._node.bufferSource.onended = null;
+              sound._node.bufferSource.disconnect(0);
+              try {
+                sound._node.bufferSource.buffer = self._scratchBuffer;
+              } 
+              catch(e) {
+              }
               sound._node.bufferSource = null;
             } else if (!isNaN(sound._node.duration) || sound._node.duration === Infinity) {
               sound._node.pause();
@@ -791,6 +804,13 @@
               }
 
               // Clean up the buffer source.
+              sound._node.bufferSource.onended = null;
+              sound._node.bufferSource.disconnect(0);
+              try {
+                sound._node.bufferSource.buffer = self._scratchBuffer;
+              } 
+              catch(e) {
+              }
               sound._node.bufferSource = null;
             } else if (!isNaN(sound._node.duration) || sound._node.duration === Infinity) {
               sound._node.pause();
