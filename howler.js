@@ -436,7 +436,7 @@
         node._sprite = sprite;
 
         // determine where to start playing from
-        var pos = (node._pos > 0) ? node._pos : self._sprite[sprite][0] / 1000;
+        var pos = (node._pos > 0) ? node._pos % (self._sprite[sprite][1] / 1000) : self._sprite[sprite][0] / 1000;
 
         // determine how long to play for
         var duration = 0;
@@ -497,7 +497,7 @@
           node.id = soundId;
           node.paused = false;
           refreshBuffer(self, [loop, loopStart, loopEnd], soundId);
-          self._playStart = ctx.currentTime;
+          node._playStart = ctx.currentTime;
           node.gain.value = self._volume;
 
           if (typeof node.bufferSource.start === 'undefined') {
@@ -800,7 +800,7 @@
 
           return self;
         } else {
-          return self._webAudio ? activeNode._pos + (ctx.currentTime - self._playStart) : activeNode.currentTime;
+          return self._webAudio ? activeNode._pos + (ctx.currentTime - activeNode._playStart) : activeNode.currentTime;
         }
       } else if (pos >= 0) {
         return self;
