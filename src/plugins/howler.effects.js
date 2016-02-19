@@ -218,7 +218,7 @@
     }
 
     // If the sound hasn't loaded, add it to the load queue to change position when capable.
-    if (!self._loaded) {
+    if (self._state !== 'loaded') {
       self._queue.push({
         event: 'pos',
         action: function() {
@@ -291,7 +291,7 @@
     }
 
     // If the sound hasn't loaded, add it to the load queue to change orientation when capable.
-    if (!self._loaded) {
+    if (self._state !== 'loaded') {
       self._queue.push({
         event: 'orientation',
         action: function() {
@@ -369,7 +369,7 @@
     }
 
     // If the sound hasn't loaded, add it to the load queue to change velocity when capable.
-    if (!self._loaded) {
+    if (self._state !== 'loaded') {
       self._queue.push({
         event: 'velocity',
         action: function() {

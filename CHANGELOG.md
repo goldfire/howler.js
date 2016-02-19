@@ -17,6 +17,7 @@ Howler.js now also has the concept of plugins. The core represents 100% compatib
 - `ADDED`: New `once` method to setup event listeners that will automatically remove themselves once fired.
 - `ADDED`: New `playing` method that will return `true` if the specified sound is currently playing.
 - `ADDED`: New `duration` method that will return the duration of the audio source.
+- `ADDED`: New `state` method that will return the loaded state of the Howl.
 - `ADDED`: New `preload` property to allow disabling the auto-preload functionality.
 - `ADDED`: New `fade` event that fires at the completion of a fade-in or fade-out.
 - `ADDED`: New `stop` event that fires when `stop` is called, but not when the sound ends (`end` event already exists for that).

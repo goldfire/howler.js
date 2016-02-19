@@ -382,7 +382,7 @@
 
       // Setup all other default properties.
       self._duration = 0;
-      self._loaded = false;
+      self._state = 'unloaded';
       self._sounds = [];
       self._endTimers = {};
       self._queue = [];
@@ -471,6 +471,7 @@
       }
 
       self._src = url;
+      self._state = 'loading';
 
       // If the hosting page is HTTPS and the source isn't,
       // drop down to HTML5 Audio to avoid Mixed Content errors.
@@ -540,7 +541,7 @@
 
       // If we have no sprite and the sound hasn't loaded, we must wait
       // for the sound to load to get our audio's duration.
-      if (!self._loaded && !self._sprite[sprite]) {
+      if (self._state !== 'loaded' && !self._sprite[sprite]) {
         self._queue.push({
           event: 'play',
           action: function() {
@@ -618,7 +619,7 @@
           }
         };
 
-        if (self._loaded) {
+        if (self._state === 'loaded') {
           playWebAudio();
         } else {
           // Wait for the audio to load and then begin playback.
@@ -677,7 +678,7 @@
       var self = this;
 
       // If the sound hasn't loaded, add it to the load queue to pause when capable.
-      if (!self._loaded) {
+      if (self._state !== 'loaded') {
         self._queue.push({
           event: 'pause',
           action: function() {
@@ -745,7 +746,7 @@
       var self = this;
 
       // If the sound hasn't loaded, add it to the load queue to stop when capable.
-      if (!self._loaded) {
+      if (self._state !== 'loaded') {
         if (typeof self._sounds[0]._sprite !== 'undefined') {
           self._queue.push({
             event: 'stop',
@@ -815,7 +816,7 @@
       var self = this;
 
       // If the sound hasn't loaded, add it to the load queue to mute when capable.
-      if (!self._loaded) {
+      if (self._state !== 'loaded') {
         self._queue.push({
           event: 'mute',
           action: function() {
@@ -893,7 +894,7 @@
       var sound;
       if (typeof vol !== 'undefined' && vol >= 0 && vol <= 1) {
         // If the sound hasn't loaded, add it to the load queue to change volume when capable.
-        if (!self._loaded) {
+        if (self._state !== 'loaded') {
           self._queue.push({
             event: 'volume',
             action: function() {
@@ -952,7 +953,7 @@
       var self = this;
 
       // If the sound hasn't loaded, add it to the load queue to fade when capable.
-      if (!self._loaded) {
+      if (self._state !== 'loaded') {
         self._queue.push({
           event: 'fade',
           action: function() {
@@ -1137,7 +1138,7 @@
       var sound;
       if (typeof rate === 'number') {
         // If the sound hasn't loaded, add it to the load queue to change playback rate when capable.
-        if (!self._loaded) {
+        if (self._state !== 'loaded') {
           self._queue.push({
             event: 'rate',
             action: function() {
@@ -1226,7 +1227,7 @@
       }
 
       // If the sound hasn't loaded, add it to the load queue to seek when capable.
-      if (!self._loaded) {
+      if (self._state !== 'loaded') {
         self._queue.push({
           event: 'seek',
           action: function() {
@@ -1295,6 +1296,14 @@
     },
 
     /**
+     * Returns the current loaded state of this Howl.
+     * @return {String} 'unloaded', 'loading', 'loaded'
+     */
+    state: function() {
+      return this._state;
+    },
+
+    /**
      * Unload and destroy the current Howl object.
      * This will immediately stop all sound instances attached to this group.
      */
@@ -1339,6 +1348,7 @@
       }
 
       // Clear out `self`.
+      self._state = 'unloaded';
       self._sounds = [];
       self = null;
 
@@ -1802,8 +1812,8 @@
         parent._sprite = {__default: [0, parent._duration * 1000]};
       }
 
-      if (!parent._loaded) {
-        parent._loaded = true;
+      if (parent._state !== 'loaded') {
+        parent._state = 'loaded';
         parent._emit('load');
         parent._loadQueue();
       }
@@ -1936,8 +1946,8 @@
       }
 
       // Fire the loaded event.
-      if (!self._loaded) {
-        self._loaded = true;
+      if (self._state !== 'loaded') {
+        self._state = 'loaded';
         self._emit('load');
         self._loadQueue();
       }

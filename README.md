@@ -177,6 +177,9 @@ Get/set whether to loop the sound or group. This method can optionally take 0, 1
 * **loop**: `Boolean` `optional` To loop or not to loop, that is the question.
 * **id**: `Number` `optional` The sound ID. If none is passed, all sounds in group will have their `loop` property updated.
 
+#### state()
+Check the load status of the `Howl`, returns a `unloaded`, `loading` or `loaded`.
+
 #### playing(id)
 Check if a sound is currently playing or not, returns a `Boolean`.
 * **id**: `Number` The sound ID to check.
