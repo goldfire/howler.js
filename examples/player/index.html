@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="user-scalable=no">
   <title>Howler.js Audio Player</title>
   <link rel="stylesheet" href="./styles.css">
 </head>
@@ -14,26 +15,33 @@
   </div>
 
   <!-- Controls -->
-  <div class="controls-outer">
-    <div class="controls-inner">
+  <div class="controlsOuter">
+    <div class="controlsInner">
       <div id="loading"></div>
-      <div class="btn" id="play-btn"></div>
-      <div class="btn" id="pause-btn"></div>
-      <div class="btn" id="prev-btn"></div>
-      <div class="btn" id="next-btn"></div>
+      <div class="btn" id="playBtn"></div>
+      <div class="btn" id="pauseBtn"></div>
+      <div class="btn" id="prevBtn"></div>
+      <div class="btn" id="nextBtn"></div>
     </div>
-    <div class="btn" id="playlist-btn"></div>
-    <div class="btn" id="volume-btn"></div>
+    <div class="btn" id="playlistBtn"></div>
+    <div class="btn" id="volumeBtn"></div>
   </div>
 
   <!-- Progress -->
-  <div id="wave"></div>
+  <div id="waveform"></div>
   <div id="bar"></div>
   <div id="progress"></div>
 
   <!-- Playlist -->
   <div id="playlist">
     <div id="list"></div>
+  </div>
+
+  <!-- Volume -->
+  <div id="volume" class="fadeout">
+    <div id="barFull" class="bar"></div>
+    <div id="barEmpty" class="bar"></div>
+    <div id="sliderBtn"></div>
   </div>
 
   <!-- Scripts -->

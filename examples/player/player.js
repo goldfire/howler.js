@@ -9,21 +9,10 @@
  */
 
 // Cache references to DOM elements.
-var track = document.getElementById('track');
-var timer = document.getElementById('timer');
-var duration = document.getElementById('duration');
-var playBtn = document.getElementById('play-btn');
-var pauseBtn = document.getElementById('pause-btn');
-var prevBtn = document.getElementById('prev-btn');
-var nextBtn = document.getElementById('next-btn');
-var playlistBtn = document.getElementById('playlist-btn');
-var volumeBtn = document.getElementById('volume-btn');
-var progress = document.getElementById('progress');
-var bar = document.getElementById('bar');
-var waveform = document.getElementById('wave');
-var loading = document.getElementById('loading');
-var playlist = document.getElementById('playlist');
-var list = document.getElementById('list');
+var elms = ['track', 'timer', 'duration', 'playBtn', 'pauseBtn', 'prevBtn', 'nextBtn', 'playlistBtn', 'volumeBtn', 'progress', 'bar', 'wave', 'loading', 'playlist', 'list', 'volume', 'barEmpty', 'barFull', 'sliderBtn'];
+elms.forEach(function(elm) {
+  window[elm] = document.getElementById(elm);
+});
 
 /**
  * Player class containing the state of our playlist and where we are in it.
@@ -186,8 +175,19 @@ Player.prototype = {
   },
 
 
-  volume: function() {
+  volume: function(val) {
+    var self = this;
 
+    // Get the Howl we want to manipulate.
+    var sound = self.playlist[self.index].howl;
+
+    // Update the volume to the new value.
+    sound.volume(val);
+
+    // Update the display on the slider.
+    var barWidth = (val * 90) / 100;
+    barFull.style.width = (barWidth * 100) + '%';
+    sliderBtn.style.left = (window.innerWidth * barWidth + window.innerWidth * 0.05 - 25) + 'px';
   },
 
   /**
@@ -231,8 +231,25 @@ Player.prototype = {
    */
   togglePlaylist: function() {
     var self = this;
+    var display = (playlist.style.display === 'block') ? 'none' : 'block';
 
-    playlist.style.display = (playlist.style.display === 'block') ? 'none' : 'block';
+    setTimeout(function() {
+      playlist.style.display = display;
+    }, (display === 'block') ? 0 : 500);
+    playlist.className = (display === 'block') ? 'fadein' : 'fadeout';
+  },
+
+  /**
+   * Toggle the volume display on/off.
+   */
+  toggleVolume: function() {
+    var self = this;
+    var display = (volume.style.display === 'block') ? 'none' : 'block';
+
+    setTimeout(function() {
+      volume.style.display = display;
+    }, (display === 'block') ? 0 : 500);
+    volume.className = (display === 'block') ? 'fadein' : 'fadeout';
   },
 
   /**
@@ -289,6 +306,43 @@ playlistBtn.addEventListener('click', function() {
 playlist.addEventListener('click', function() {
   player.togglePlaylist();
 });
+volumeBtn.addEventListener('click', function() {
+  player.toggleVolume();
+});
+volume.addEventListener('click', function() {
+  player.toggleVolume();
+});
+
+// Setup the event listeners to enable dragging of volume slider.
+barEmpty.addEventListener('click', function(event) {
+  var per = event.layerX / parseFloat(barEmpty.scrollWidth);
+  player.volume(per);
+});
+sliderBtn.addEventListener('mousedown', function() {
+  window.sliderDown = true;
+});
+sliderBtn.addEventListener('touchstart', function() {
+  window.sliderDown = true;
+});
+volume.addEventListener('mouseup', function() {
+  window.sliderDown = false;
+});
+volume.addEventListener('touchend', function() {
+  window.sliderDown = false;
+});
+
+var move = function(event) {
+  if (window.sliderDown) {
+    var x = event.x || event.touches[0].clientX;
+    var startX = window.innerWidth * 0.05;
+    var layerX = x - startX;
+    var per = Math.min(1, Math.max(0, layerX / parseFloat(barEmpty.scrollWidth)));
+    player.volume(per);
+  }
+};
+
+volume.addEventListener('mousemove', move);
+volume.addEventListener('touchmove', move);
 
 // Setup the "waveform" animation.
 var wave = new SiriWave({
@@ -316,6 +370,14 @@ var resize = function() {
   wave.canvas.height = height;
   wave.canvas.width = width;
   wave.container.style.margin = -(height / 2) + 'px auto';
+
+  // Update the position of the slider.
+  var sound = player.playlist[player.index].howl;
+  if (sound) {
+    var vol = sound.volume();
+    var barWidth = (vol * 0.9);
+    sliderBtn.style.left = (window.innerWidth * barWidth + window.innerWidth * 0.05 - 25) + 'px';
+  }
 };
 window.addEventListener('resize', resize);
 resize();
