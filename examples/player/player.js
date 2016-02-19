@@ -19,6 +19,7 @@ var nextBtn = document.getElementById('next-btn');
 var progress = document.getElementById('progress');
 var bar = document.getElementById('bar');
 var waveform = document.getElementById('wave');
+var loading = document.getElementById('loading');
 
 /**
  * Player class containing the state of our playlist and where we are in it.
@@ -59,16 +60,30 @@ Player.prototype = {
           // Start upating the progress of the track.
           requestAnimationFrame(self.step.bind(self));
 
+          // Start the wave animation if we have already loaded
+          wave.container.style.display = 'block';
+          bar.style.display = 'none';
+          pauseBtn.style.display = 'block';
+        },
+        onload: function() {
           // Start the wave animation.
           wave.container.style.display = 'block';
           bar.style.display = 'none';
+          loading.style.display = 'none';
         },
         onend: function() {
+          // Stop the wave animation.
           wave.container.style.display = 'none';
           bar.style.display = 'block';
           self.skip('right');
         },
         onpause: function() {
+          // Stop the wave animation.
+          wave.container.style.display = 'none';
+          bar.style.display = 'block';
+        },
+        onstop: function() {
+          // Stop the wave animation.
           wave.container.style.display = 'none';
           bar.style.display = 'block';
         }
@@ -82,8 +97,14 @@ Player.prototype = {
     track.innerHTML = (index + 1) + '. ' + data.title;
 
     // Show the pause button.
-    playBtn.style.display = 'none';
-    pauseBtn.style.display = 'block';
+    if (sound.state() === 'loaded') {
+      playBtn.style.display = 'none';
+      pauseBtn.style.display = 'block';
+    } else {
+      loading.style.display = 'block';
+      playBtn.style.display = 'none';
+      pauseBtn.style.display = 'none';
+    }
 
     // Keep track of the index we are currently playing.
     self.index = index;
@@ -132,6 +153,9 @@ Player.prototype = {
       self.playlist[self.index].howl.stop();
     }
 
+    // Reset progress.
+    progress.style.width = '0%';
+
     // Play the new track.
     self.play(index);
   },
@@ -169,7 +193,7 @@ Player.prototype = {
     // Determine our current seek position.
     var seek = sound.seek();
     timer.innerHTML = self.formatTime(Math.round(seek));
-    progress.style.width = ((seek / sound.duration()) * 100) + '%';
+    progress.style.width = (((seek / sound.duration()) * 100) || 0) + '%';
 
     // If the sound is still playing, continue stepping.
     if (sound.playing()) {
@@ -255,3 +279,6 @@ var resize = function() {
 };
 window.addEventListener('resize', resize);
 resize();
+
+// Auto-play the first song.
+player.play();
