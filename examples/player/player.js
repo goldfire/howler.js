@@ -174,7 +174,10 @@ Player.prototype = {
     self.play(index);
   },
 
-
+  /**
+   * Set the volume and update the volume slider display.
+   * @param  {Number} val Volume between 0 and 1.
+   */
   volume: function(val) {
     var self = this;
 
@@ -216,7 +219,7 @@ Player.prototype = {
     var sound = self.playlist[self.index].howl;
 
     // Determine our current seek position.
-    var seek = sound.seek();
+    var seek = sound.seek() || 0;
     timer.innerHTML = self.formatTime(Math.round(seek));
     progress.style.width = (((seek / sound.duration()) * 100) || 0) + '%';
 
@@ -258,8 +261,8 @@ Player.prototype = {
    * @return {String}      Formatted time.
    */
   formatTime: function(secs) {
-    var minutes = Math.floor(secs / 60);
-    var seconds = secs - minutes * 60;
+    var minutes = Math.floor(secs / 60) || 0;
+    var seconds = (secs - minutes * 60) || 0;
 
     return minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
   }
@@ -298,7 +301,7 @@ nextBtn.addEventListener('click', function() {
   player.skip('next');
 });
 waveform.addEventListener('click', function(event) {
-  player.seek(event.x / window.innerWidth);
+  player.seek(event.clientX / window.innerWidth);
 });
 playlistBtn.addEventListener('click', function() {
   player.togglePlaylist();
@@ -333,7 +336,7 @@ volume.addEventListener('touchend', function() {
 
 var move = function(event) {
   if (window.sliderDown) {
-    var x = event.x || event.touches[0].clientX;
+    var x = event.clientX || event.touches[0].clientX;
     var startX = window.innerWidth * 0.05;
     var layerX = x - startX;
     var per = Math.min(1, Math.max(0, layerX / parseFloat(barEmpty.scrollWidth)));
@@ -381,6 +384,3 @@ var resize = function() {
 };
 window.addEventListener('resize', resize);
 resize();
-
-// Auto-play the first song.
-player.play();
