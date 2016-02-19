@@ -16,10 +16,14 @@ var playBtn = document.getElementById('play-btn');
 var pauseBtn = document.getElementById('pause-btn');
 var prevBtn = document.getElementById('prev-btn');
 var nextBtn = document.getElementById('next-btn');
+var playlistBtn = document.getElementById('playlist-btn');
+var volumeBtn = document.getElementById('volume-btn');
 var progress = document.getElementById('progress');
 var bar = document.getElementById('bar');
 var waveform = document.getElementById('wave');
 var loading = document.getElementById('loading');
+var playlist = document.getElementById('playlist');
+var list = document.getElementById('list');
 
 /**
  * Player class containing the state of our playlist and where we are in it.
@@ -32,6 +36,17 @@ var Player = function(playlist) {
 
   // Display the title of the first track.
   track.innerHTML = '1. ' + playlist[0].title;
+
+  // Setup the playlist display.
+  playlist.forEach(function(song) {
+    var div = document.createElement('div');
+    div.className = 'list-song';
+    div.innerHTML = song.title;
+    div.onclick = function() {
+      player.skipTo(playlist.indexOf(song));
+    };
+    list.appendChild(div);
+  });
 };
 Player.prototype = {
   /**
@@ -148,6 +163,16 @@ Player.prototype = {
       }
     }
 
+    self.skipTo(index);
+  },
+
+  /**
+   * Skip to a specific track based on its playlist index.
+   * @param  {Number} index Index in the playlist.
+   */
+  skipTo: function(index) {
+    var self = this;
+
     // Stop the current track.
     if (self.playlist[self.index].howl) {
       self.playlist[self.index].howl.stop();
@@ -202,6 +227,15 @@ Player.prototype = {
   },
 
   /**
+   * Toggle the playlist display on/off.
+   */
+  togglePlaylist: function() {
+    var self = this;
+
+    playlist.style.display = (playlist.style.display === 'block') ? 'none' : 'block';
+  },
+
+  /**
    * Format the time from seconds to M:SS.
    * @param  {Number} secs Seconds to format.
    * @return {String}      Formatted time.
@@ -248,6 +282,12 @@ nextBtn.addEventListener('click', function() {
 });
 waveform.addEventListener('click', function(event) {
   player.seek(event.x / window.innerWidth);
+});
+playlistBtn.addEventListener('click', function() {
+  player.togglePlaylist();
+});
+playlist.addEventListener('click', function() {
+  player.togglePlaylist();
 });
 
 // Setup the "waveform" animation.
