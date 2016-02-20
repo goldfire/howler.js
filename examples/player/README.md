@@ -1,6 +1,6 @@
 # Audio Player ([Live Demo](http://howlerjs.com))
 
-![Audio Player](https://s3.amazonaws.com/howler.js/screenshot.jpg "Player Screenshot")
+![Audio Player](https://s3.amazonaws.com/howler.js/screenshot-player.jpg "Player Screenshot")
 
 ## Description
 This example displays how to construct a basic audio player using howler.js as the engine powering it. The only outside framework being used is [SiriWave.js](https://github.com/CaffeinaLab/SiriWaveJS) to provide some visual sugar.
