@@ -645,7 +645,7 @@
         };
 
         // Play immediately if ready, or wait for the 'canplaythrough'e vent.
-        if (node.readyState === 4 || window && window.ejecta || !node.readyState && navigator.isCocoonJS) {
+        if (self._state === 'loaded') {
           playHtml5();
         } else {
           var listener = function() {
