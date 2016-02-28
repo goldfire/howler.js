@@ -1,7 +1,7 @@
 /*!
  *  Effects Plugin - Adds advanced Web Audio API functionality.
  *  
- *  howler.js v2.0.0-beta7
+ *  howler.js v2.0.0-beta8
  *  howlerjs.com
  *
  *  (c) 2013-2016, James Simpson of GoldFire Studios
@@ -218,7 +218,7 @@
     }
 
     // If the sound hasn't loaded, add it to the load queue to change position when capable.
-    if (!self._loaded) {
+    if (self._state !== 'loaded') {
       self._queue.push({
         event: 'pos',
         action: function() {
@@ -291,7 +291,7 @@
     }
 
     // If the sound hasn't loaded, add it to the load queue to change orientation when capable.
-    if (!self._loaded) {
+    if (self._state !== 'loaded') {
       self._queue.push({
         event: 'orientation',
         action: function() {
@@ -369,7 +369,7 @@
     }
 
     // If the sound hasn't loaded, add it to the load queue to change velocity when capable.
-    if (!self._loaded) {
+    if (self._state !== 'loaded') {
       self._queue.push({
         event: 'velocity',
         action: function() {

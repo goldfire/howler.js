@@ -1,5 +1,5 @@
 /*!
- *  howler.js v2.0.0-beta7
+ *  howler.js v2.0.0-beta8
  *  howlerjs.com
  *
  *  (c) 2013-2016, James Simpson of GoldFire Studios
@@ -188,7 +188,7 @@
       var audioTest = new Audio();
       var mpegTest = audioTest.canPlayType('audio/mpeg;').replace(/^no$/, '');
       var isOpera = /OPR\//.test(navigator.userAgent);
-      
+
       self._codecs = {
         mp3: !!(!isOpera && (mpegTest || audioTest.canPlayType('audio/mp3;').replace(/^no$/, ''))),
         mpeg: !!mpegTest,
@@ -197,11 +197,12 @@
         oga: !!audioTest.canPlayType('audio/ogg; codecs="vorbis"').replace(/^no$/, ''),
         wav: !!audioTest.canPlayType('audio/wav; codecs="1"').replace(/^no$/, ''),
         aac: !!audioTest.canPlayType('audio/aac;').replace(/^no$/, ''),
+        caf: !!audioTest.canPlayType('audio/x-caf;').replace(/^no$/, ''),
         m4a: !!(audioTest.canPlayType('audio/x-m4a;') || audioTest.canPlayType('audio/m4a;') || audioTest.canPlayType('audio/aac;')).replace(/^no$/, ''),
         mp4: !!(audioTest.canPlayType('audio/x-mp4;') || audioTest.canPlayType('audio/mp4;') || audioTest.canPlayType('audio/aac;')).replace(/^no$/, ''),
         weba: !!audioTest.canPlayType('audio/webm; codecs="vorbis"').replace(/^no$/, ''),
         webm: !!audioTest.canPlayType('audio/webm; codecs="vorbis"').replace(/^no$/, ''),
-        dolby: !!audioTest.canPlayType('audio/mp4; codecs="ec-3"').replace(/^no$/, '')        
+        dolby: !!audioTest.canPlayType('audio/mp4; codecs="ec-3"').replace(/^no$/, '')
       };
 
       return self;
@@ -382,7 +383,7 @@
 
       // Setup all other default properties.
       self._duration = 0;
-      self._loaded = false;
+      self._state = 'unloaded';
       self._sounds = [];
       self._endTimers = {};
       self._queue = [];
@@ -477,6 +478,7 @@
       }
 
       self._src = url;
+      self._state = 'loading';
 
       // If the hosting page is HTTPS and the source isn't,
       // drop down to HTML5 Audio to avoid Mixed Content errors.
@@ -546,7 +548,7 @@
 
       // If we have no sprite and the sound hasn't loaded, we must wait
       // for the sound to load to get our audio's duration.
-      if (!self._loaded && !self._sprite[sprite]) {
+      if (self._state !== 'loaded' && !self._sprite[sprite]) {
         self._queue.push({
           event: 'play',
           action: function() {
@@ -624,7 +626,7 @@
           }
         };
 
-        if (self._loaded) {
+        if (self._state === 'loaded') {
           playWebAudio();
         } else {
           // Wait for the audio to load and then begin playback.
@@ -649,7 +651,7 @@
         };
 
         // Play immediately if ready, or wait for the 'canplaythrough'e vent.
-        if (node.readyState === 4 || !node.readyState && navigator.isCocoonJS) {
+        if (self._state === 'loaded') {
           playHtml5();
         } else {
           var listener = function() {
@@ -683,7 +685,7 @@
       var self = this;
 
       // If the sound hasn't loaded, add it to the load queue to pause when capable.
-      if (!self._loaded) {
+      if (self._state !== 'loaded') {
         self._queue.push({
           event: 'pause',
           action: function() {
@@ -758,7 +760,7 @@
       var self = this;
 
       // If the sound hasn't loaded, add it to the load queue to stop when capable.
-      if (!self._loaded) {
+      if (self._state !== 'loaded') {
         if (typeof self._sounds[0]._sprite !== 'undefined') {
           self._queue.push({
             event: 'stop',
@@ -835,7 +837,7 @@
       var self = this;
 
       // If the sound hasn't loaded, add it to the load queue to mute when capable.
-      if (!self._loaded) {
+      if (self._state !== 'loaded') {
         self._queue.push({
           event: 'mute',
           action: function() {
@@ -913,7 +915,7 @@
       var sound;
       if (typeof vol !== 'undefined' && vol >= 0 && vol <= 1) {
         // If the sound hasn't loaded, add it to the load queue to change volume when capable.
-        if (!self._loaded) {
+        if (self._state !== 'loaded') {
           self._queue.push({
             event: 'volume',
             action: function() {
@@ -972,7 +974,7 @@
       var self = this;
 
       // If the sound hasn't loaded, add it to the load queue to fade when capable.
-      if (!self._loaded) {
+      if (self._state !== 'loaded') {
         self._queue.push({
           event: 'fade',
           action: function() {
@@ -1019,7 +1021,7 @@
             var dir = from > to ? 'out' : 'in';
             var steps = diff / 0.01;
             var stepLen = len / steps;
-            
+
             (function() {
               var vol = from;
               sound._interval = setInterval(function(id, sound) {
@@ -1157,7 +1159,7 @@
       var sound;
       if (typeof rate === 'number') {
         // If the sound hasn't loaded, add it to the load queue to change playback rate when capable.
-        if (!self._loaded) {
+        if (self._state !== 'loaded') {
           self._queue.push({
             event: 'rate',
             action: function() {
@@ -1246,7 +1248,7 @@
       }
 
       // If the sound hasn't loaded, add it to the load queue to seek when capable.
-      if (!self._loaded) {
+      if (self._state !== 'loaded') {
         self._queue.push({
           event: 'seek',
           action: function() {
@@ -1315,6 +1317,14 @@
     },
 
     /**
+     * Returns the current loaded state of this Howl.
+     * @return {String} 'unloaded', 'loading', 'loaded'
+     */
+    state: function() {
+      return this._state;
+    },
+
+    /**
      * Unload and destroy the current Howl object.
      * This will immediately stop all sound instances attached to this group.
      */
@@ -1359,6 +1369,7 @@
       }
 
       // Clear out `self`.
+      self._state = 'unloaded';
       self._sounds = [];
       self = null;
 
@@ -1445,7 +1456,7 @@
     _emit: function(event, id, msg) {
       var self = this;
       var events = self['_on' + event];
-      
+
       // Loop through event store and fire all functions.
       for (var i=events.length-1; i>=0; i--) {
         if (!events[i].id || events[i].id === id || event === 'load') {
@@ -1802,7 +1813,7 @@
 
       // Fire an error event and pass back the code.
       self._parent._emit('loaderror', self._id, self._node.error ? self._node.error.code : 0);
-      
+
       // Clear the event listener.
       self._node.removeEventListener('error', self._errorListener, false);
     },
@@ -1822,8 +1833,8 @@
         parent._sprite = {__default: [0, parent._duration * 1000]};
       }
 
-      if (!parent._loaded) {
-        parent._loaded = true;
+      if (parent._state !== 'loaded') {
+        parent._state = 'loaded';
         parent._emit('load');
         parent._loadQueue();
       }
@@ -1886,7 +1897,7 @@
         for (var i=0; i<data.length; ++i) {
           dataView[i] = data.charCodeAt(i);
         }
-        
+
         decodeAudioData(dataView.buffer, self);
       } else {
         // Load the buffer from the URL.
@@ -1894,6 +1905,13 @@
         xhr.open('GET', url, true);
         xhr.responseType = 'arraybuffer';
         xhr.onload = function() {
+          // Make sure we get a successful response back.
+          var code = (xhr.status + '')[0];
+          if (code !== '0' && code !== '2' && code !== '3') {
+            self._emit('loaderror', null, 'Failed loading audio file with status: ' + xhr.status + '.');
+            return;
+          }
+
           decodeAudioData(xhr.response, self);
         };
         xhr.onerror = function() {
@@ -1956,8 +1974,8 @@
       }
 
       // Fire the loaded event.
-      if (!self._loaded) {
-        self._loaded = true;
+      if (self._state !== 'loaded') {
+        self._state = 'loaded';
         self._emit('load');
         self._loadQueue();
       }

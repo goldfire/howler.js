@@ -177,6 +177,9 @@ Get/set whether to loop the sound or group. This method can optionally take 0, 1
 * **loop**: `Boolean` `optional` To loop or not to loop, that is the question.
 * **id**: `Number` `optional` The sound ID. If none is passed, all sounds in group will have their `loop` property updated.
 
+#### state()
+Check the load status of the `Howl`, returns a `unloaded`, `loading` or `loaded`.
+
 #### playing(id)
 Check if a sound is currently playing or not, returns a `Boolean`.
 * **id**: `Number` The sound ID to check.
@@ -221,7 +224,7 @@ Get/set the global volume for all sounds, relative to their own volume.
 
 #### codecs(ext)
 Check supported audio codecs. Returns `true` if the codec is supported in the current browser.
-* **ext**: `String` File extension. One of: "mp3", "mpeg", opus", "ogg", "oga", "wav", "aac", "m4a", "mp4", "weba", "webm", "dolby".
+* **ext**: `String` File extension. One of: "mp3", "mpeg", opus", "ogg", "oga", "wav", "aac", "caf", m4a", "mp4", "weba", "webm", "dolby".
 
 #### unload()
 Unload and destroy all currently loaded Howl objects. This will immediately stop all sounds and remove them from cache.
