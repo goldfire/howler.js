@@ -761,14 +761,12 @@
 
       // If the sound hasn't loaded, add it to the load queue to stop when capable.
       if (self._state !== 'loaded') {
-        if (typeof self._sounds[0]._sprite !== 'undefined') {
-          self._queue.push({
-            event: 'stop',
-            action: function() {
-              self.stop(id);
-            }
-          });
-        }
+        self._queue.push({
+          event: 'stop',
+          action: function() {
+            self.stop(id);
+          }
+        });
 
         return self;
       }
@@ -819,9 +817,9 @@
               sound._node.currentTime = sound._start || 0;
             }
           }
-
-          self._emit('stop', sound._id);
         }
+
+        self._emit('stop', sound._id);
       }
 
       return self;
