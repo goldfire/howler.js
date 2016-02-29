@@ -799,7 +799,9 @@
           }
         }
 
-        self._emit('stop', sound._id);
+        if (sound) {
+          self._emit('stop', sound._id);
+        }
       }
 
       return self;
