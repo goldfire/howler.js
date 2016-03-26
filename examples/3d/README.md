@@ -18,4 +18,4 @@ This example displays how to use howler.js and the Effects Plugin to add immersi
 2. Open `index.html` in your favorite browser.
 
 ## Credits
-Inspired by the great post on JavaScript ray casting on [http://www.playfuljs.com/a-first-person-engine-in-265-lines/](PlayfulJS).
+Inspired by the great post on JavaScript ray casting on [PlayfulJS](http://www.playfuljs.com/a-first-person-engine-in-265-lines/).
