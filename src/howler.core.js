@@ -13,7 +13,7 @@
   'use strict';
 
   // Setup our audio context.
-  var navigator = navigator || null;
+  var navigator = (window && window.navigator) ? window.navigator : null;
   var ctx = null;
   var usingWebAudio = true;
   var noAudio = false;
@@ -229,6 +229,11 @@
       }
 
       self._mobileEnabled = false;
+
+      // Some mobile devices/platforms have distortion issues when opening/closing tabs and/or web views.
+      // Bugs in the browser (especially Mobile Safari) can cause the sampleRate to change from 44100 to 48000.
+      // By calling Howler.unload(), we create a new AudioContext with the correct sampleRate.
+      Howler.unload();
 
       // Call this method on touch start to create and play a buffer,
       // then check if the audio actually played to determine if
