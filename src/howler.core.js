@@ -13,6 +13,7 @@
   'use strict';
 
   // Setup our audio context.
+  var navigator = navigator || null;
   var ctx = null;
   var usingWebAudio = true;
   var noAudio = false;
@@ -189,7 +190,7 @@
       var mpegTest = audioTest.canPlayType('audio/mpeg;').replace(/^no$/, '');
 
       // Opera version <33 has mixed MP3 support, so we need to check for and block it.
-      var checkOpera = navigator.userAgent.match(/OPR\/([0-6].)/g);
+      var checkOpera = navigator && navigator.userAgent.match(/OPR\/([0-6].)/g);
       var isOldOpera = (checkOpera && parseInt(checkOpera[0].split('/')[1], 10) < 33);
 
       self._codecs = {
@@ -221,8 +222,8 @@
       var self = this || Howler;
 
       // Only run this on iOS if audio isn't already eanbled.
-      var isMobile = /iPhone|iPad|iPod|Android|BlackBerry|BB10|Silk/i.test(navigator.userAgent);
-      var isTouch = !!(('ontouchend' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0));
+      var isMobile = /iPhone|iPad|iPod|Android|BlackBerry|BB10|Silk/i.test(navigator && navigator.userAgent);
+      var isTouch = !!(('ontouchend' in window) || (navigator && navigator.maxTouchPoints > 0) || (navigator && navigator.msMaxTouchPoints > 0));
       if (ctx && (self._mobileEnabled || !isMobile || !isTouch)) {
         return;
       }
@@ -2014,12 +2015,12 @@
 
     // Check if a webview is being used on iOS8 or earlier (rather than the browser).
     // If it is, disable Web Audio as it causes crashing.
-    var iOS = (/iP(hone|od|ad)/.test(navigator.platform));
-    var appVersion = navigator.appVersion.match(/OS (\d+)_(\d+)_?(\d+)?/);
+    var iOS = (/iP(hone|od|ad)/.test(navigator && navigator.platform));
+    var appVersion = navigator && navigator.appVersion.match(/OS (\d+)_(\d+)_?(\d+)?/);
     var version = appVersion ? parseInt(appVersion[1], 10) : null;
     if (iOS && version && version < 9) {
-      var safari = /safari/.test(window.navigator.userAgent.toLowerCase());
-      if (window.navigator.standalone && !safari || !window.navigator.standalone && !safari) {
+      var safari = /safari/.test(navigator && navigator.userAgent.toLowerCase());
+      if (navigator && navigator.standalone && !safari || navigator && !navigator.standalone && !safari) {
         usingWebAudio = false;
       }
     }
