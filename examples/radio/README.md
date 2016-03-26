@@ -1,6 +1,6 @@
 # Live Streaming Audio ([Live Demo](http://howlerjs.com))
 
-![Audio Player](https://s3.amazonaws.com/howler.js/screenshot-radio.jpg "Radio Screenshot")
+![Radio Player](https://s3.amazonaws.com/howler.js/screenshot-radio.jpg "Radio Screenshot")
 
 ## Description
 This example displays how to use howler.js to stream live audio, such as in this simple radio app.
