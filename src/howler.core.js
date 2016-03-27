@@ -222,7 +222,7 @@
       var self = this || Howler;
 
       // Only run this on iOS if audio isn't already eanbled.
-      var isMobile = /iPhone|iPad|iPod|Android|BlackBerry|BB10|Silk/i.test(navigator && navigator.userAgent);
+      var isMobile = /iPhone|iPad|iPod|Android|BlackBerry|BB10|Silk|Mobi/i.test(navigator && navigator.userAgent);
       var isTouch = !!(('ontouchend' in window) || (navigator && navigator.maxTouchPoints > 0) || (navigator && navigator.msMaxTouchPoints > 0));
       if (ctx && (self._mobileEnabled || !isMobile || !isTouch)) {
         return;
