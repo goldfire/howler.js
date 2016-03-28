@@ -240,9 +240,8 @@
       // audio has now been unlocked on iOS, Android, etc.
       var unlock = function() {
         // Create an empty buffer.
-        var buffer = ctx.createBuffer(1, 1, 22050);
         var source = ctx.createBufferSource();
-        source.buffer = buffer;
+        source.buffer = self._scratchBuffer;
         source.connect(ctx.destination);
 
         // Play the empty buffer.
@@ -412,16 +411,16 @@
 
       // Web Audio or HTML5 Audio?
       self._webAudio = usingWebAudio && !self._html5;
-      
-      if (self._webAudio) {
-        // scratch buffer for enabling iOS to dispose of web audio buffers correctly
-        // http://stackoverflow.com/questions/24119684/web-audio-api-memory-leaks-on-mobile-platforms/32568948#32568948
-        self._scratchBuffer = ctx.createBuffer(1, 1, 22050);
-      }
 
       // Automatically try to enable audio on iOS.
-      if (typeof ctx !== 'undefined' && ctx && Howler.mobileAutoEnable) {
-        Howler._enableMobileAudio();
+      if (typeof ctx !== 'undefined' && ctx) {
+        // Scratch buffer for enabling iOS to dispose of web audio buffers correctly, as per:
+        // http://stackoverflow.com/questions/24119684
+        self._scratchBuffer = ctx.createBuffer(1, 1, 22050);
+
+        if (Howler.mobileAutoEnable) {
+          Howler._enableMobileAudio();
+        }
       }
 
       // Keep track of this Howl group in the global controller.
@@ -738,14 +737,7 @@
               }
 
               // Clean up the buffer source.
-              sound._node.bufferSource.onended = null;
-              sound._node.bufferSource.disconnect(0);
-              try {
-                sound._node.bufferSource.buffer = self._scratchBuffer;
-              } 
-              catch(e) {
-              }
-              sound._node.bufferSource = null;
+              self._cleanBuffer(sound._node);
             } else if (!isNaN(sound._node.duration) || sound._node.duration === Infinity) {
               sound._node.pause();
             }
@@ -814,14 +806,7 @@
               }
 
               // Clean up the buffer source.
-              sound._node.bufferSource.onended = null;
-              sound._node.bufferSource.disconnect(0);
-              try {
-                sound._node.bufferSource.buffer = self._scratchBuffer;
-              } 
-              catch(e) {
-              }
-              sound._node.bufferSource = null;
+              self._cleanBuffer(sound._node);
             } else if (!isNaN(sound._node.duration) || sound._node.duration === Infinity) {
               sound._node.pause();
               sound._node.currentTime = sound._start || 0;
@@ -1546,7 +1531,7 @@
         self._clearTimer(sound._id);
 
         // Clean up the buffer source.
-        sound._node.bufferSource = null;
+        self._cleanBuffer(sound._node);
 
         // Attempt to auto-suspend AudioContext if no sounds are still playing.
         Howler._autoSuspend();
@@ -1700,6 +1685,22 @@
         sound._node.bufferSource.loopEnd = sound._stop;
       }
       sound._node.bufferSource.playbackRate.value = self._rate;
+
+      return self;
+    },
+
+    /**
+     * Prevent memory leaks by cleaning up the buffer source after playback.
+     * @param  {Object} node Sound's audio node containing the buffer source.
+     * @return {Howl}
+     */
+    _cleanBuffer: function(node) {
+      var self = this;
+
+      node.bufferSource.onended = null;
+      node.bufferSource.disconnect(0);
+      try { node.bufferSource.buffer = self._scratchBuffer; } catch(e) {}
+      node.bufferSource = null;
 
       return self;
     }
