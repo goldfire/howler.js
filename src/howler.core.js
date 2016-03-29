@@ -235,6 +235,10 @@
       // By calling Howler.unload(), we create a new AudioContext with the correct sampleRate.
       Howler.unload();
 
+      // Scratch buffer for enabling iOS to dispose of web audio buffers correctly, as per:
+      // http://stackoverflow.com/questions/24119684
+      self._scratchBuffer = ctx.createBuffer(1, 1, 22050);
+
       // Call this method on touch start to create and play a buffer,
       // then check if the audio actually played to determine if
       // audio has now been unlocked on iOS, Android, etc.
@@ -413,14 +417,8 @@
       self._webAudio = usingWebAudio && !self._html5;
 
       // Automatically try to enable audio on iOS.
-      if (typeof ctx !== 'undefined' && ctx) {
-        // Scratch buffer for enabling iOS to dispose of web audio buffers correctly, as per:
-        // http://stackoverflow.com/questions/24119684
-        self._scratchBuffer = ctx.createBuffer(1, 1, 22050);
-
-        if (Howler.mobileAutoEnable) {
-          Howler._enableMobileAudio();
-        }
+      if (typeof ctx !== 'undefined' && ctx && Howler.mobileAutoEnable) {
+        Howler._enableMobileAudio();
       }
 
       // Keep track of this Howl group in the global controller.
@@ -1697,9 +1695,11 @@
     _cleanBuffer: function(node) {
       var self = this;
 
-      node.bufferSource.onended = null;
-      node.bufferSource.disconnect(0);
-      try { node.bufferSource.buffer = self._scratchBuffer; } catch(e) {}
+      if (self._scratchBuffer) {
+        node.bufferSource.onended = null;
+        node.bufferSource.disconnect(0);
+        try { node.bufferSource.buffer = self._scratchBuffer; } catch(e) {}
+      }
       node.bufferSource = null;
 
       return self;
