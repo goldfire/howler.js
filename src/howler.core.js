@@ -1288,7 +1288,7 @@
     },
 
     /**
-     * Check if a specific sound is currently playing or not (if id is provided), or check if at least one of the sounds in the group is playing or not
+     * Check if a specific sound is currently playing or not (if id is provided), or check if at least one of the sounds in the group is playing or not.
      * @param  {Number}  id The sound id to check. If none is passed, the whole sound group is checked.
      * @return {Boolean} True if playing and false if not.
      */
