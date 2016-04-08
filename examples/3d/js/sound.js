@@ -13,7 +13,7 @@
 /**
  * Setup and control all of the game's audio.
  */
-var Audio = function() {
+var Sound = function() {
   // Setup the shared Howl.
   this.sound = new Howl({
     src: ['./assets/sprite.webm', './assets/sprite.mp3'],
@@ -30,7 +30,7 @@ var Audio = function() {
   this.rain();
   this.thunder();
 };
-Audio.prototype = {
+Sound.prototype = {
   /**
    * Play a rain loop in the background.
    */
