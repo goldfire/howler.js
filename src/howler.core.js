@@ -1295,17 +1295,15 @@
     playing: function(id) {
       var self = this;
 
+      // Check the passed sound ID (if any).
       if (typeof id === 'number') {
         var sound = self._soundById(id);
-        if (sound) {
-          return !sound._paused;
-        }
+        return sound ? !sound._paused : false;
       }
 
-      var sounds = self._sounds;
-      var len = sounds.length;
-      for (var i=0; i<len; i++) {
-        if (!sounds[i]._paused) {
+      // Otherwise, loop through all sounds and check if any are playing.
+      for (var i=0; i<self._sounds.length; i++) {
+        if (!self._sounds[i]._paused) {
           return true;
         }
       }
