@@ -181,7 +181,7 @@ Get/set whether to loop the sound or group. This method can optionally take 0, 1
 Check the load status of the `Howl`, returns a `unloaded`, `loading` or `loaded`.
 
 #### playing(id)
-Check if a sound is currently playing or not, returns a `Boolean`.
+Check if a sound is currently playing or not, returns a `Boolean`. If no sound ID is passed, check if any sound in the `Howl` group is playing.
 * **id**: `Number` The sound ID to check.
 
 #### duration([id])

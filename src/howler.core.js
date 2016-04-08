@@ -1288,15 +1288,27 @@
     },
 
     /**
-     * Check if a specific sound is currently playing or not.
-     * @param  {Number} id The sound id to check. If none is passed, first sound is used.
-     * @return {Boolean}    True if playing and false if not.
+     * Check if a specific sound is currently playing or not (if id is provided), or check if at least one of the sounds in the group is playing or not.
+     * @param  {Number}  id The sound id to check. If none is passed, the whole sound group is checked.
+     * @return {Boolean} True if playing and false if not.
      */
     playing: function(id) {
       var self = this;
-      var sound = self._soundById(id) || self._sounds[0];
 
-      return sound ? !sound._paused : false;
+      // Check the passed sound ID (if any).
+      if (typeof id === 'number') {
+        var sound = self._soundById(id);
+        return sound ? !sound._paused : false;
+      }
+
+      // Otherwise, loop through all sounds and check if any are playing.
+      for (var i=0; i<self._sounds.length; i++) {
+        if (!self._sounds[i]._paused) {
+          return true;
+        }
+      }
+
+      return false;
     },
 
     /**
