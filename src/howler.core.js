@@ -465,19 +465,19 @@
       // Loop through the sources and pick the first one that is compatible.
       for (var i=0; i<self._src.length; i++) {
         var ext, str;
-        
-        // Make sure the source is actually a string
-        if (typeof str !== 'string') {
-          self._emit('loaderror', null, 'Non-string found in selected audio sources - ignoring.');
-          continue;
-        }
 
         if (self._format && self._format[i]) {
           // If an extension was specified, use that instead.
           ext = self._format[i];
         } else {
-          // Extract the file extension from the URL or base64 data URI.
+          // Make sure the source is a string.
           str = self._src[i];
+          if (typeof str !== 'string') {
+            self._emit('loaderror', null, 'Non-string found in selected audio sources - ignoring.');
+            continue;
+          }
+
+          // Extract the file extension from the URL or base64 data URI.
           ext = /^data:audio\/([^;,]+);/i.exec(str);
           if (!ext) {
             ext = /\.([^.]+)$/.exec(str.split('?', 1)[0]);
