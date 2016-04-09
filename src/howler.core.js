@@ -728,6 +728,7 @@
         if (sound && !sound._paused) {
           // Reset the seek position.
           sound._seek = self.seek(ids[i]);
+          sound._rateSeek = 0;
           sound._paused = true;
 
           // Stop currently running fades.
@@ -796,6 +797,7 @@
         if (sound && !sound._paused) {
           // Reset the seek position.
           sound._seek = sound._start || 0;
+          sound._rateSeek = 0;
           sound._paused = true;
           sound._ended = true;
 
@@ -1187,6 +1189,10 @@
           sound = self._soundById(id[i]);
 
           if (sound) {
+            // Keep track of our position when the rate changed and update the playback
+            // start position so we can properly adjust the seek position for time elapsed.
+            sound._rateSeek = self.seek(id[i]);
+            sound._playStart = Howler.ctx.currentTime;
             sound._rate = rate;
 
             // Change the playback rate.
@@ -1289,7 +1295,9 @@
           self._emit('seek', id);
         } else {
           if (self._webAudio) {
-            return (sound._seek + (self.playing(id) ? Howler.ctx.currentTime - sound._playStart : 0));
+            var realTime = self.playing(id) ? Howler.ctx.currentTime - sound._playStart : 0;
+            var rateSeek = sound._rateSeek ? sound._rateSeek - sound._seek : 0;
+            return sound._seek + (rateSeek + realTime * Math.abs(sound._rate));
           } else {
             return sound._node.currentTime;
           }
@@ -1332,7 +1340,7 @@
       var self = this;
       var sound = self._soundById(id) || self._sounds[0];
 
-      return self._duration / sound._rate;
+      return self._duration;
     },
 
     /**
@@ -1541,6 +1549,7 @@
       if (self._webAudio && loop) {
         self._emit('play', sound._id);
         sound._seek = sound._start || 0;
+        sound._rateSeek = 0;
         sound._playStart = Howler.ctx.currentTime;
 
         var timeout = ((sound._stop - sound._start) * 1000) / Math.abs(sound._rate);
@@ -1552,6 +1561,7 @@
         sound._paused = true;
         sound._ended = true;
         sound._seek = sound._start || 0;
+        sound._rateSeek = 0;
         self._clearTimer(sound._id);
 
         // Clean up the buffer source.
@@ -1708,7 +1718,7 @@
         sound._node.bufferSource.loopStart = sound._start || 0;
         sound._node.bufferSource.loopEnd = sound._stop;
       }
-      sound._node.bufferSource.playbackRate.value = self._rate;
+      sound._node.bufferSource.playbackRate.value = sound._rate;
 
       return self;
     },
@@ -1828,6 +1838,7 @@
       self._muted = parent._muted;
       self._rate = parent._rate;
       self._seek = 0;
+      self._rateSeek = 0;
       self._paused = true;
       self._ended = true;
       self._sprite = '__default';
