@@ -67,7 +67,7 @@
         self._volume = vol;
 
         // When using Web Audio, we just need to adjust the master gain.
-        if (usingWebAudio) {
+        if (Howler.usingWebAudio) {
           Howler.masterGain.gain.value = vol;
         }
 
@@ -605,7 +605,7 @@
 
       // Create a timer to fire at the end of playback or the start of a new loop.
       var timeout = (duration * 1000) / Math.abs(sound._rate);
-      if (self._webAudio && timeout !== Infinity) {
+      if (timeout !== Infinity) {
         self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
       }
 
@@ -666,7 +666,6 @@
           node.volume = sound._volume * Howler.volume();
           node.playbackRate = sound._rate;
           setTimeout(function() {
-            node.onended = self._ended.bind(self, sound);
             node.play();
             if (!args[1]) {
               self._emit('play', sound._id);
@@ -681,7 +680,7 @@
         } else {
           var listener = function() {
             // Setup the new end timer.
-            if (self._webAudio && timeout !== Infinity) {
+            if (timeout !== Infinity) {
               self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
             }
 
@@ -1213,10 +1212,8 @@
             var duration = ((self._sprite[sound._sprite][0] + self._sprite[sound._sprite][1]) / 1000) - seek;
             var timeout = (duration * 1000) / Math.abs(sound._rate);
 
-            if (self._webAudio) {
-              self._clearTimer(id[i]);
-              self._endTimers[id[i]] = setTimeout(self._ended.bind(self, sound), timeout);
-            }
+            self._clearTimer(id[i]);
+            self._endTimers[id[i]] = setTimeout(self._ended.bind(self, sound), timeout);
 
             self._emit('rate', sound._id);
           }
