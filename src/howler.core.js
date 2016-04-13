@@ -104,7 +104,7 @@
       self._muted = muted;
 
       // With Web Audio, we just need to mute the master gain.
-      if (usingWebAudio) {
+      if (Howler.usingWebAudio) {
         Howler.masterGain.gain.value = muted ? 0 : self._volume;
       }
 
