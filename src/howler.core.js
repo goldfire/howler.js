@@ -141,10 +141,9 @@
 
       // Create a new AudioContext to make sure it is fully reset.
       if (self.usingWebAudio && typeof self.ctx.close !== 'undefined') {
-        self.ctx = null;
         self.ctx.close();
+        self.ctx = null;
         setupAudioContext();
-        self.ctx = ctx;
       }
 
       return self;
