@@ -194,7 +194,7 @@
       var mpegTest = audioTest.canPlayType('audio/mpeg;').replace(/^no$/, '');
 
       // Opera version <33 has mixed MP3 support, so we need to check for and block it.
-      var checkOpera = Howler._navigator && Howler._navigator.userAgent.match(/OPR\/([0-6].)/g);
+      var checkOpera = self._navigator && self._navigator.userAgent.match(/OPR\/([0-6].)/g);
       var isOldOpera = (checkOpera && parseInt(checkOpera[0].split('/')[1], 10) < 33);
 
       self._codecs = {
@@ -972,7 +972,16 @@
         }
       } else {
         sound = id ? self._soundById(id) : self._sounds[0];
-        return sound ? sound._volume : 0;
+
+        if (sound) {
+          if (self._webAudio) {
+            return sound._node ? sound._node.gain.value : sound._volume;
+          } else {
+            return sound._volume;
+          }
+        } else {
+          return 0;
+        }
       }
 
       return self;
