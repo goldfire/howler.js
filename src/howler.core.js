@@ -40,7 +40,7 @@
 
       // Public properties.
       self.masterGain = null;
-      self.noAudio = true;
+      self.noAudio = false;
       self.usingWebAudio = true;
       self.autoSuspend = true;
       self.ctx = null;
