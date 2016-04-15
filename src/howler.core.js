@@ -186,6 +186,11 @@
     _setupCodecs: function() {
       var self = this || Howler;
       var audioTest = new Audio();
+
+      if (!audioTest || typeof audioTest.canPlayType !== 'function') {
+        return self;
+      }
+
       var mpegTest = audioTest.canPlayType('audio/mpeg;').replace(/^no$/, '');
 
       // Opera version <33 has mixed MP3 support, so we need to check for and block it.
