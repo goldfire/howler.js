@@ -1289,6 +1289,7 @@
 
           // Move the position of the track and cancel timer.
           sound._seek = seek;
+          sound._ended = false;
           self._clearTimer(id);
 
           // Restart the playback if the sound was playing.
