@@ -972,16 +972,7 @@
         }
       } else {
         sound = id ? self._soundById(id) : self._sounds[0];
-
-        if (sound) {
-          if (self._webAudio) {
-            return sound._node ? sound._node.gain.value : sound._volume;
-          } else {
-            return sound._volume;
-          }
-        } else {
-          return 0;
-        }
+        return sound ? sound._volume : 0;
       }
 
       return self;
@@ -997,6 +988,10 @@
      */
     fade: function(from, to, len, id) {
       var self = this;
+      var diff = Math.abs(from - to);
+      var dir = from > to ? 'out' : 'in';
+      var steps = diff / 0.01;
+      var stepLen = len / steps;
 
       // If the sound hasn't loaded, add it to the load queue to fade when capable.
       if (self._state !== 'loaded') {
@@ -1026,52 +1021,46 @@
             self._stopFade(ids[i]);
           }
 
+          // If we are using Web Audio, let the native methods do the actual fade.
           if (self._webAudio && !sound._muted) {
             var currentTime = Howler.ctx.currentTime;
             var end = currentTime + (len / 1000);
             sound._volume = from;
             sound._node.gain.setValueAtTime(from, currentTime);
             sound._node.gain.linearRampToValueAtTime(to, end);
-
-            // Fire the event when complete.
-            sound._timeout = setTimeout(function(id, sound) {
-              delete sound._timeout;
-              setTimeout(function() {
-                sound._volume = to;
-                self._emit('fade', id);
-              }, end - Howler.ctx.currentTime > 0 ? Math.ceil((end - Howler.ctx.currentTime) * 1000) : 0);
-            }.bind(self, ids[i], sound), len);
-          } else {
-            var diff = Math.abs(from - to);
-            var dir = from > to ? 'out' : 'in';
-            var steps = diff / 0.01;
-            var stepLen = len / steps;
-
-            (function() {
-              var vol = from;
-              sound._interval = setInterval(function(id, sound) {
-                // Update the volume amount.
-                vol += (dir === 'in' ? 0.01 : -0.01);
-
-                // Make sure the volume is in the right bounds.
-                vol = Math.max(0, vol);
-                vol = Math.min(1, vol);
-
-                // Round to within 2 decimal points.
-                vol = Math.round(vol * 100) / 100;
-
-                // Change the volume.
-                self.volume(vol, id, true);
-
-                // When the fade is complete, stop it and fire event.
-                if (vol === to) {
-                  clearInterval(sound._interval);
-                  delete sound._interval;
-                  self._emit('fade', id);
-                }
-              }.bind(self, ids[i], sound), stepLen);
-            })();
           }
+
+          var vol = from;
+          sound._interval = setInterval(function(soundId, sound) {
+            // Update the volume amount.
+            vol += (dir === 'in' ? 0.01 : -0.01);
+
+            // Make sure the volume is in the right bounds.
+            vol = Math.max(0, vol);
+            vol = Math.min(1, vol);
+
+            // Round to within 2 decimal points.
+            vol = Math.round(vol * 100) / 100;
+
+            // Change the volume.
+            if (self._webAudio) {
+              if (typeof id === 'undefined') {
+                self._volume = vol;
+              }
+
+              sound._volume = vol;
+            } else {
+              self.volume(vol, soundId, true);
+            }
+
+            // When the fade is complete, stop it and fire event.
+            if (vol === to) {
+              clearInterval(sound._interval);
+              sound._interval = null;
+              self.volume(vol, soundId);
+              self._emit('fade', soundId);
+            }
+          }.bind(self, ids[i], sound), stepLen);
         }
       }
 
@@ -1088,14 +1077,13 @@
       var self = this;
       var sound = self._soundById(id);
 
-      if (sound._interval) {
+      if (sound && sound._interval) {
+        if (self._webAudio) {
+          sound._node.gain.cancelScheduledValues(Howler.ctx.currentTime);
+        }
+
         clearInterval(sound._interval);
-        delete sound._interval;
-        self._emit('fade', id);
-      } else if (sound._timeout) {
-        clearTimeout(sound._timeout);
-        delete sound._timeout;
-        sound._node.gain.cancelScheduledValues(Howler.ctx.currentTime);
+        sound._interval = null;
         self._emit('fade', id);
       }
 
