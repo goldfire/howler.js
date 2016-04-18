@@ -1,7 +1,7 @@
 /*!
  *  Effects Plugin - Adds advanced Web Audio API functionality.
  *  
- *  howler.js v2.0.0-beta11
+ *  howler.js v2.0.0-beta12
  *  howlerjs.com
  *
  *  (c) 2013-2016, James Simpson of GoldFire Studios
