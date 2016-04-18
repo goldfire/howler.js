@@ -26,5 +26,9 @@
     "amd",
     "globals",
     "node"
+  ],
+  "ignore": [
+    "tests",
+    "examples"
   ]
 }
