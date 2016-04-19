@@ -225,10 +225,10 @@
     _enableMobileAudio: function() {
       var self = this || Howler;
 
-      // Only run this on iOS if audio isn't already eanbled.
-      var isMobile = /iPhone|iPad|iPod|Android|BlackBerry|BB10|Silk|Mobi/i.test(Howler._navigator && Howler._navigator.userAgent);
-      var isTouch = !!(('ontouchend' in window) || (Howler._navigator && Howler._navigator.maxTouchPoints > 0) || (Howler._navigator && Howler._navigator.msMaxTouchPoints > 0));
-      if (Howler.ctx && (self._mobileEnabled || !isMobile || !isTouch)) {
+      // Only run this on mobile devices if audio isn't already eanbled.
+      var isMobile = /iPhone|iPad|iPod|Android|BlackBerry|BB10|Silk|Mobi/i.test(self._navigator && self._navigator.userAgent);
+      var isTouch = !!(('ontouchend' in window) || (self._navigator && self._navigator.maxTouchPoints > 0) || (self._navigator && self._navigator.msMaxTouchPoints > 0));
+      if (self._mobileEnabled || !self.ctx || (!isMobile && !isTouch)) {
         return;
       }
 
@@ -237,22 +237,22 @@
       // Some mobile devices/platforms have distortion issues when opening/closing tabs and/or web views.
       // Bugs in the browser (especially Mobile Safari) can cause the sampleRate to change from 44100 to 48000.
       // By calling Howler.unload(), we create a new AudioContext with the correct sampleRate.
-      if (Howler.ctx.sampleRate !== 44100) {
-        Howler.unload();
+      if (self.ctx.sampleRate !== 44100) {
+        self.unload();
       }
 
       // Scratch buffer for enabling iOS to dispose of web audio buffers correctly, as per:
       // http://stackoverflow.com/questions/24119684
-      self._scratchBuffer = Howler.ctx.createBuffer(1, 1, 22050);
+      self._scratchBuffer = self.ctx.createBuffer(1, 1, 22050);
 
       // Call this method on touch start to create and play a buffer,
       // then check if the audio actually played to determine if
       // audio has now been unlocked on iOS, Android, etc.
       var unlock = function() {
         // Create an empty buffer.
-        var source = Howler.ctx.createBufferSource();
+        var source = self.ctx.createBufferSource();
         source.buffer = self._scratchBuffer;
-        source.connect(Howler.ctx.destination);
+        source.connect(self.ctx.destination);
 
         // Play the empty buffer.
         if (typeof source.start === 'undefined') {
