@@ -1381,8 +1381,8 @@
 
         // Remove the source or disconnect.
         if (!self._webAudio) {
-          // Set the source to an empty string to stop any downloading.
-          sounds[i]._node.src = '';
+          // Set the source to 0-second silence to stop any downloading.
+          sounds[i]._node.src = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=';
 
           // Remove any event listeners.
           sounds[i]._node.removeEventListener('error', sounds[i]._errorFn, false);
