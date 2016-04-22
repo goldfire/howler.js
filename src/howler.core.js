@@ -185,7 +185,7 @@
      */
     _setupCodecs: function() {
       var self = this || Howler;
-      var audioTest = (typeof Audio === 'function') ? new Audio() : null;
+      var audioTest = (typeof Audio !== 'undefined') ? new Audio() : null;
 
       if (!audioTest || typeof audioTest.canPlayType !== 'function') {
         return self;
@@ -237,7 +237,8 @@
       // Some mobile devices/platforms have distortion issues when opening/closing tabs and/or web views.
       // Bugs in the browser (especially Mobile Safari) can cause the sampleRate to change from 44100 to 48000.
       // By calling Howler.unload(), we create a new AudioContext with the correct sampleRate.
-      if (self.ctx.sampleRate !== 44100) {
+      if (!self._mobileUnloaded && self.ctx.sampleRate !== 44100) {
+        self._mobileUnloaded = true;
         self.unload();
       }
 
