@@ -1444,10 +1444,11 @@
     off: function(event, fn, id) {
       var self = this;
       var events = self['_on' + event];
+      var i = 0;
 
       if (fn) {
         // Loop through event store and remove the passed function.
-        for (var i=0; i<events.length; i++) {
+        for (i=0; i<events.length; i++) {
           if (fn === events[i].fn && id === events[i].id) {
             events.splice(i, 1);
             break;
@@ -1459,7 +1460,7 @@
       } else {
         // Clear out all events of every type.
         var keys = Object.keys(self);
-        for (var i=0; i<keys.length; i++) {
+        for (i=0; i<keys.length; i++) {
           if ((keys[i].indexOf('_on') === 0) && Array.isArray(self[keys[i]])) {
             self[keys[i]] = [];
           }
@@ -1932,22 +1933,6 @@
     }
 
     if (/^data:[^;]+;base64,/.test(url)) {
-      // Setup polyfill for window.atob to support IE9.
-      // Modified from: https://github.com/davidchambers/Base64.js
-      window.atob = window.atob || function(input) {
-        var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
-        var str = String(input).replace(/=+$/, '');
-        for (
-          var bc = 0, bs, buffer, idx = 0, output = '';
-          buffer = str.charAt(idx++);
-          ~buffer && (bs = bc % 4 ? bs * 64 + buffer : buffer, bc++ % 4) ? output += String.fromCharCode(255 & bs >> (-2 * bc & 6)) : 0
-        ) {
-          buffer = chars.indexOf(buffer);
-        }
-
-        return output;
-      };
-
       // Decode the base64 data URI without XHR, since some browsers don't support it.
       var data = atob(url.split(',')[1]);
       var dataView = new Uint8Array(data.length);
