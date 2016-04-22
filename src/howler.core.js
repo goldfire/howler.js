@@ -1337,15 +1337,21 @@
     },
 
     /**
-     * Get the duration of this sound.
-     * @param  {Number} id The sound id to check. If none is passed, first sound is used.
-     * @return {Number} Audio duration.
+     * Get the duration of this sound. Passing a sound id will return the sprite duration.
+     * @param  {Number} id The sound id to check. If none is passed, return full source duration.
+     * @return {Number} Audio duration in seconds.
      */
     duration: function(id) {
       var self = this;
-      var sound = self._soundById(id) || self._sounds[0];
+      var duration = self._duration;
 
-      return self._duration;
+      // If we pass an ID, get the sound and return the sprite length.
+      var sound = self._soundById(id);
+      if (sound) {
+        duration = self._sprite[sound._sprite][1] / 1000;
+      }
+
+      return duration;
     },
 
     /**

@@ -186,7 +186,7 @@ Check if a sound is currently playing or not, returns a `Boolean`. If no sound I
 
 #### duration([id])
 Get the duration of the audio source. Will return 0 until after the `load` event fires.
-* **id**: `Number` `optional` The sound ID to check. If none is passed, the first sound is checked.
+* **id**: `Number` `optional` The sound ID to check. Passing an ID will return the duration of the sprite being played on this instance; otherwise, the full source duration is returned.
 
 #### on(event, function, [id])
 Listen for events. Multiple events can be added by calling this multiple times.
