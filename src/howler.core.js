@@ -36,7 +36,7 @@
       self._muted = false;
       self._volume = 1;
       self._canPlayEvent = 'canplaythrough';
-      self._navigator = (window && window.navigator) ? window.navigator : null;
+      self._navigator = (typeof window !== 'undefined' && window.navigator) ? window.navigator : null;
 
       // Public properties.
       self.masterGain = null;
@@ -185,7 +185,7 @@
      */
     _setupCodecs: function() {
       var self = this || Howler;
-      var audioTest = new Audio();
+      var audioTest = (typeof Audio === 'function') ? new Audio() : null;
 
       if (!audioTest || typeof audioTest.canPlayType !== 'function') {
         return self;
