@@ -607,12 +607,7 @@
       // Determine how long to play for and where to start playing.
       var seek = sound._seek > 0 ? sound._seek : self._sprite[sprite][0] / 1000;
       var duration = ((self._sprite[sprite][0] + self._sprite[sprite][1]) / 1000) - seek;
-
-      // Create a timer to fire at the end of playback or the start of a new loop.
       var timeout = (duration * 1000) / Math.abs(sound._rate);
-      if (timeout !== Infinity) {
-        self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
-      }
 
       // Update the parameters of the sound
       sound._paused = false;
@@ -643,7 +638,7 @@
           }
 
           // Start a new timer if none is present.
-          if (!self._endTimers[sound._id] && timeout !== Infinity) {
+          if (timeout !== Infinity) {
             self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
           }
 
@@ -670,8 +665,15 @@
           node.muted = sound._muted || self._muted || Howler._muted || node.muted;
           node.volume = sound._volume * Howler.volume();
           node.playbackRate = sound._rate;
+
           setTimeout(function() {
             node.play();
+
+            // Setup the new end timer.
+            if (timeout !== Infinity) {
+              self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
+            }
+
             if (!args[1]) {
               self._emit('play', sound._id);
             }
@@ -684,11 +686,6 @@
           playHtml5();
         } else {
           var listener = function() {
-            // Setup the new end timer.
-            if (timeout !== Infinity) {
-              self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
-            }
-
             // Begin playback.
             playHtml5();
 
