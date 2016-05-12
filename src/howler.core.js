@@ -1024,8 +1024,8 @@
             var currentTime = Howler.ctx.currentTime;
             var end = currentTime + (len / 1000);
             sound._volume = from;
-            sound._node.gain.setValueAtTime(from, currentTime);
-            sound._node.gain.linearRampToValueAtTime(to, end);
+            sound._node.gain.setValueAtTime(from * Howler.volume(), currentTime);
+            sound._node.gain.linearRampToValueAtTime(to * Howler.volume(), end);
           }
 
           var vol = from;
