@@ -63,12 +63,17 @@
       var self = this || Howler;
       vol = parseFloat(vol);
 
+      // If we don't have an AudioContext created yet, run the setup.
+      if (!self.ctx) {
+        setupAudioContext();
+      }
+
       if (typeof vol !== 'undefined' && vol >= 0 && vol <= 1) {
         self._volume = vol;
 
         // When using Web Audio, we just need to adjust the master gain.
-        if (Howler.usingWebAudio) {
-          Howler.masterGain.gain.value = vol;
+        if (self.usingWebAudio) {
+          self.masterGain.gain.value = vol;
         }
 
         // Loop through and change volume for all HTML5 audio nodes.
@@ -101,11 +106,16 @@
     mute: function(muted) {
       var self = this || Howler;
 
+      // If we don't have an AudioContext created yet, run the setup.
+      if (!self.ctx) {
+        setupAudioContext();
+      }
+
       self._muted = muted;
 
       // With Web Audio, we just need to mute the master gain.
-      if (Howler.usingWebAudio) {
-        Howler.masterGain.gain.value = muted ? 0 : self._volume;
+      if (self.usingWebAudio) {
+        self.masterGain.gain.value = muted ? 0 : self._volume;
       }
 
       // Loop through and mute all HTML5 Audio nodes.
