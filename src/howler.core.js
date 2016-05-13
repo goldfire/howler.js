@@ -1278,7 +1278,7 @@
       var sound = self._soundById(id);
 
       if (sound) {
-        if (seek >= 0) {
+        if (typeof seek === 'number' && seek >= 0) {
           // Pause the sound and update position for restarting playback.
           var playing = self.playing(id);
           if (playing) {
