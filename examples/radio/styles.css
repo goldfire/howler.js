@@ -18,7 +18,7 @@ body {
   background: -webkit-linear-gradient(-45deg, #0b62b3 0%, #7dff5f 100%);
   background: linear-gradient(135deg, #0b62b3 0%, #7dff5f 100%);
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#0b62b3', endColorstr='#7dff5f', GradientType=1);
-  font-family: "Helvetica Neue", Arial;
+  font-family: "Helvetica Neue", "Futura", Arial;
   -webkit-user-select: none;
   user-select: none;
   -webkit-tap-highlight-color: rgba(255, 255, 255, 0);
