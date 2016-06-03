@@ -71,6 +71,11 @@
       if (typeof vol !== 'undefined' && vol >= 0 && vol <= 1) {
         self._volume = vol;
 
+        // Don't update any of the nodes if we are muted.
+        if (self._muted) {
+          return self;
+        }
+
         // When using Web Audio, we just need to adjust the master gain.
         if (self.usingWebAudio) {
           self.masterGain.gain.value = vol;
