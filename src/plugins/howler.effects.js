@@ -17,11 +17,6 @@
   // Setup default effects properties.
   HowlerGlobal.prototype._pos = [0, 0, 0];
   HowlerGlobal.prototype._orientation = [0, 0, -1, 0, 1, 0];
-  HowlerGlobal.prototype._velocity = [0, 0, 0];
-  HowlerGlobal.prototype._listenerAttr = {
-    dopplerFactor: 1,
-    speedOfSound: 343.3
-  };
   
   /** Global Methods **/
   /***************************************************************************/
@@ -96,71 +91,6 @@
     return self;
   };
 
-  /**
-   * Get/set the velocity vector of the listener. This controls both direction and speed
-   * in 3D space, and is combined relative to a sound's velocity to determine how much
-   * doppler shift (pitch change) to apply.
-   * @param  {Number} x The x-velocity of the listener.
-   * @param  {Number} y The y-velocity of the listener.
-   * @param  {Number} z The z-velocity of the listener.
-   * @return {Howler/Array}   Self or current listener velocity.
-   */
-  HowlerGlobal.prototype.velocity = function(x, y, z) {
-    var self = this;
-
-    // Stop right here if not using Web Audio.
-    if (!self.ctx || !self.ctx.listener) {
-      return self;
-    }
-
-    // Set the defaults for optional 'y' & 'z'.
-    y = (typeof y !== 'number') ? self._velocity[1] : y;
-    z = (typeof z !== 'number') ? self._velocity[2] : z;
-
-    if (typeof x === 'number') {
-      self._velocity = [x, y, z];
-      self.ctx.listener.setVelocity(self._velocity[0], self._velocity[1], self._velocity[2]);
-    } else {
-      return self._velocity;
-    }
-
-    return self;
-  };
-
-  /**
-   * Get/set the audio listener attributes.
-   *   Attributes:
-   *     dopplerFactor - (`1` by default) Determines the amount of pitch shift from doppler effect.
-   *     speedOfSound - (`343.3` by default) Speed of sound used to calculate doppler shift.
-   * @param  {Object} o The attributes to set.
-   * @return {Howl/Object}   Returns self or current listener attributes.
-   */
-  HowlerGlobal.prototype.listenerAttr = function(o) {
-    var self = this;
-
-    // Stop right here if not using Web Audio.
-    if (!self.ctx || !self.ctx.listener) {
-      return self;
-    }
-
-    var la = self._listenerAttr;
-    if (o) {
-      // Update the listener attribute values.
-      self._listenerAttr = {
-        dopplerFactor: typeof o.dopplerFactor !== 'undefined' ? o.dopplerFactor : la.dopplerFactor,
-        speedOfSound: typeof o.speedOfSound !== 'undefined' ? o.speedOfSound : la.speedOfSound
-      };
-
-      // Apply the new values.
-      self.ctx.listener.dopplerFactor = la.dopplerFactor;
-      self.ctx.listener.speedOfSound = la.speedOfSound;
-    } else {
-      return la;
-    }
-
-    return self;
-  };
-
   /** Group Methods **/
   /***************************************************************************/
 
@@ -176,7 +106,6 @@
       // Setup user-defined default properties.
       self._orientation = o.orientation || [1, 0, 0];
       self._pos = o.pos || null;
-      self._velocity = o.velocity || [0, 0, 0];
       self._pannerAttr = {
         coneInnerAngle: typeof o.coneInnerAngle !== 'undefined' ? o.coneInnerAngle : 360,
         coneOuterAngle: typeof o.coneOuterAngle !== 'undefined' ? o.coneOuterAngle : 360,
@@ -191,7 +120,6 @@
       // Setup event listeners.
       self._onpos = o.onpos ? [{fn: o.onpos}] : [];
       self._onorientation = o.onorientation ? [{fn: o.onorientation}] : [];
-      self._onvelocity = o.onvelocity ? [{fn: o.onvelocity}] : [];
 
       // Complete initilization with howler.js core's init function.
       return _super.call(this, o);
@@ -351,84 +279,6 @@
   };
 
   /**
-   * Get/set the velocity vector of the audio source or group. This controls both
-   * direction and speed in 3D space and is relative to the listener's velocity.
-   * The units are meters/second and are independent of position and orientation.
-   * @param  {Number} x  The x-velocity of the source.
-   * @param  {Number} y  The y-velocity of the source.
-   * @param  {Number} z  The z-velocity of the source.
-   * @param  {Number} id (optional) The sound ID. If none is passed, all in group will be updated.
-   * @return {Howl/Array}    Returns self or the current 3D spatial velocity: [x, y, z].
-   */
-  Howl.prototype.velocity = function(x, y, z, id) {
-    var self = this;
-
-    // Stop right here if not using Web Audio.
-    if (!self._webAudio) {
-      return self;
-    }
-
-    // If the sound hasn't loaded, add it to the load queue to change velocity when capable.
-    if (self._state !== 'loaded') {
-      self._queue.push({
-        event: 'velocity',
-        action: function() {
-          self.velocity(x, y, z, id);
-        }
-      });
-
-      return self;
-    }
-
-    // Set the defaults for optional 'y' & 'z'.
-    y = (typeof y !== 'number') ? self._velocity[1] : y;
-    z = (typeof z !== 'number') ? self._velocity[2] : z;
-
-    // Setup the group's spatial velocity if no ID is passed.
-    if (typeof id === 'undefined') {
-      // Return the group's spatial velocity if no parameters are passed.
-      if (typeof x === 'number') {
-        self._velocity = [x, y, z];
-      } else {
-        return self._velocity;
-      }
-    }
-
-    // Change the spatial velocity of one or all sounds in group.
-    var ids = self._getSoundIds(id);
-    for (var i=0; i<ids.length; i++) {
-      // Get the sound.
-      var sound = self._soundById(ids[i]);
-
-      if (sound) {
-        if (typeof x === 'number') {
-          sound._velocity = [x, y, z];
-
-          if (sound._node) {
-            // Make sure we have a position to setup the node with.
-            if (!sound._pos) {
-              sound._pos = self._pos || [0, 0, -0.5];
-            }
-            
-            // Check if there is a panner setup and create a new one if not.
-            if (!sound._panner) {
-              setupPanner(sound);
-            }
-
-            sound._panner.setVelocity(x, y, z);
-          }
-
-          self._emit('velocity', sound._id);
-        } else {
-          return sound._velocity;
-        }
-      }
-    }
-
-    return self;
-  };
-
-  /**
    * Get/set the panner node's attributes for a sound or group of sounds.
    * This method can optionall take 0, 1 or 2 arguments.
    *   pannerAttr() -> Returns the group's values.
@@ -554,7 +404,6 @@
       // Setup user-defined default properties.
       self._orientation = parent._orientation;
       self._pos = parent._pos;
-      self._velocity = parent._velocity;
       self._pannerAttr = parent._pannerAttr;
 
       // Complete initilization with howler.js core Sound's init function.
@@ -580,7 +429,6 @@
       // Reset all effects module properties on this sound.
       self._orientation = parent._orientation;
       self._pos = parent._pos;
-      self._velocity = parent._velocity;
       self._pannerAttr = parent._pannerAttr;
 
       // Complete resetting of the sound.
@@ -608,7 +456,6 @@
     sound._panner.rolloffFactor = sound._pannerAttr.rolloffFactor;
     sound._panner.setPosition(sound._pos[0], sound._pos[1], sound._pos[2]);
     sound._panner.setOrientation(sound._orientation[0], sound._orientation[1], sound._orientation[2]);
-    sound._panner.setVelocity(sound._velocity[0], sound._velocity[1], sound._velocity[2]);
     sound._panner.connect(sound._node);
 
     // Update the connections.

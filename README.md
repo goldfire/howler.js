@@ -260,13 +260,6 @@ Get/set the direction the audio source is pointing in the 3D cartesian coordinat
 * **z**: `Number` The z-orientation of the source.
 * **id**: `Number` `optional` The sound ID. If none is passed, all in group will be updated.
 
-#### velocity(x, y, z, [id])
-Get/set the velocity vector of the audio source or group. This controls both direction and speed in 3D space and is relative to the listener's velocity. The units are meters/second and are independent of position and orientation.
-* **x**: `Number` The x-velocity of the source.
-* **y**: `Number` The y-velocity of the source.
-* **z**: `Number` The z-velocity of the source.
-* **id**: `Number` `optional` The sound ID. If none is passed, all in group will be updated.
-
 #### pannerAttr(o, [id])
 Get/set the panner node's attributes for a sound or group of sounds. This method can optionall take 0, 1 or 2 arguments.
 * **o**: `Object` All values to update.
@@ -286,16 +279,12 @@ Get/set the panner node's attributes for a sound or group of sounds. This method
 Sets the direction the audio source is pointing in the 3D cartesian coordinate space. Depending on how direction the sound is, based on the `cone` attributes, a sound pointing away from the listener can be quiet or silent.
 #### pos `Array` `null`
 Sets the 3D spatial position of the audio source for this sound or group. The most common usage is to set the `x` position for left/right panning. Setting any value higher than `1.0` will begin to decrease the volume of the sound as it moves further away.
-#### velocity `Array` `[0, 0, 0]`
-Sets the velocity vector of the audio source or group. This controls both direction and speed in 3D space and is relative to the listener's velocity. The units are meters/second and are independent of position and orientation.
 #### pannerAttr `Object`
 Sets the panner node's attributes for a sound or group of sounds. See the `pannerAttr` method for all available options.
 #### onpos `Function`
 Fires when the current sound has the listener position changes. The first parameter is the ID of the sound.
 #### onorientation `Function`
 Fires when the current sound has the direction of the listener changes. The first parameter is the ID of the sound.
-#### onvelocity `Function`
-Fires when the current sound has the listener velocity changes. The first parameter is the ID of the sound.
 
 
 ### Plugin: Global Effects Methods
@@ -313,18 +302,6 @@ Get/set the direction the listener is pointing in the 3D cartesian space. A fron
 * **xUp**: `Number` The x-orientation of the top of the listener.
 * **yUp**: `Number` The y-orientation of the top of the listener.
 * **zUp**: `Number` The z-orientation of the top of the listener.
-
-#### velocity(x, y, z)
-Get/set the velocity vector of the listener. This controls both direction and speed in 3D space, and is combined relative to a sound's velocity to determine how much doppler shift (pitch change) to apply.
-* **x**: `Number` The x-velocity of listener.
-* **y**: `Number` The y-velocity of listener.
-* **z**: `Number` The z-velocity of listener.
-
-#### pannerAttr(o)
-Get/set the audio listener attributes.
-* **o**: `Object` All values to update.
-  * **dopplerFactor** `1` Determines the amount of pitch shift from doppler effect.
-  * **speedOfSound** `343.3` Speed of sound used to calculate doppler shift.
 
 
 ### Mobile Playback
