@@ -38,6 +38,22 @@ var tests = [
   },
 
   function(fn) {
+    sound1.stereo(-1, id);
+
+    label.innerHTML = 'LEFT STEREO';
+    setTimeout(fn, 2000);
+  },
+
+  function(fn) {
+    sound1.stereo(1, id);
+
+    label.innerHTML = 'RIGHT STEREO';
+    setTimeout(function() {
+      fn();
+    }, 2000);
+  },
+
+  function(fn) {
     sound1.pos(-2, 0, -0.5, id);
 
     label.innerHTML = 'LEFT POSITION';
@@ -52,6 +68,25 @@ var tests = [
       sound1.stop();
       fn();
     }, 2000);
+  },
+
+  function(fn) {
+    sound2.pos(-3, 0, -0.5, sound2.play('one'));
+    sound2.once('end', function() {
+      sound2.pos(0, 3, -0.5, sound2.play('two'));
+      sound2.once('end', function() {
+        sound2.pos(3, 0, -0.5, sound2.play('three'));
+        sound2.once('end', function() {
+          sound2.pos(0, -3, -0.5, sound2.play('four'));
+          sound2.once('end', function() {
+            sound2.stop();
+            fn();
+          });
+        });
+      });
+    });
+
+    label.innerHTML = '3D SURROUND';
   }
 ];
 

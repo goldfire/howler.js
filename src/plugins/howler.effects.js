@@ -22,6 +22,28 @@
   /***************************************************************************/
 
   /**
+   * Helper method to update the stereo panning position of all current Howls.
+   * Future Howls will not use this value unless explicitely set.
+   * @param  {Number} pan A value of -1.0 is all the way left and 1.0 is all the way right.
+   * @return {Howler/Number}     Self or current stereo panning value.
+   */
+  HowlerGlobal.prototype.stereo = function(pan) {
+    var self = this;
+
+    // Stop right here if not using Web Audio.
+    if (!self.ctx || !self.ctx.listener) {
+      return self;
+    }
+
+    // Loop through all Howls and update their stereo panning.
+    for (var i=self._howls.length-1; i>=0; i--) {
+      self._howls[i].stereo(pan);
+    }
+
+    return self;
+  };
+
+  /**
    * Get/set the position of the listener in 3D cartesian space. Sounds using
    * 3D position will be relative to the listener's position.
    * @param  {Number} x The x-position of the listener.
@@ -105,6 +127,7 @@
 
       // Setup user-defined default properties.
       self._orientation = o.orientation || [1, 0, 0];
+      self._stereo = o.stereo || null;
       self._pos = o.pos || null;
       self._pannerAttr = {
         coneInnerAngle: typeof o.coneInnerAngle !== 'undefined' ? o.coneInnerAngle : 360,
@@ -118,6 +141,7 @@
       };
 
       // Setup event listeners.
+      self._onstereo = o.onstereo ? [{fn: o.onstereo}] : [];
       self._onpos = o.onpos ? [{fn: o.onpos}] : [];
       self._onorientation = o.onorientation ? [{fn: o.onorientation}] : [];
 
@@ -125,6 +149,83 @@
       return _super.call(this, o);
     };
   })(Howl.prototype.init);
+
+  /**
+   * Get/set the stereo panning of the audio source for this sound or all in the group.
+   * @param  {Number} pan  A value of -1.0 is all the way left and 1.0 is all the way right.
+   * @param  {Number} id (optional) The sound ID. If none is passed, all in group will be updated.
+   * @return {Howl/Number}    Returns self or the current stereo panning value.
+   */
+  Howl.prototype.stereo = function(pan, id) {
+    var self = this;
+
+    // Stop right here if not using Web Audio.
+    if (!self._webAudio) {
+      return self;
+    }
+
+    // If the sound hasn't loaded, add it to the load queue to change stereo pan when capable.
+    if (self._state !== 'loaded') {
+      self._queue.push({
+        event: 'stereo',
+        action: function() {
+          self.stereo(pan, id);
+        }
+      });
+
+      return self;
+    }
+
+    // Check for PannerStereoNode support and fallback to PannerNode if it doesn't exist.
+    var pannerType = (typeof Howler.ctx.createStereoPanner === 'undefined') ? 'spatial' : 'stereo';
+
+    // Setup the group's stereo panning if no ID is passed.
+    if (typeof id === 'undefined') {
+      // Return the group's stereo panning if no parameters are passed.
+      if (typeof pan === 'number') {
+        self._stereo = pan;
+        self._pos = [pan, 0, 0];
+      } else {
+        return self._stereo;
+      }
+    }
+
+    // Change the streo panning of one or all sounds in group.
+    var ids = self._getSoundIds(id);
+    for (var i=0; i<ids.length; i++) {
+      // Get the sound.
+      var sound = self._soundById(ids[i]);
+
+      if (sound) {
+        if (typeof pan === 'number') {
+          sound._stereo = pan;
+          sound._pos = [pan, 0, 0];
+
+          if (sound._node) {
+            // If we are falling back, make sure the panningModel is equalpower.
+            sound._pannerAttr.panningModel = 'equalpower';
+
+            // Check if there is a panner setup and create a new one if not.
+            if (!sound._panner || !sound._panner.pan) {
+              setupPanner(sound, pannerType);
+            }
+
+            if (pannerType === 'spatial') {
+              sound._panner.setPosition(pan, 0, 0);
+            } else {
+              sound._panner.pan.value = pan;
+            }
+          }
+
+          self._emit('stereo', sound._id);
+        } else {
+          return sound._stereo;
+        }
+      }
+    }
+
+    return self;
+  };
 
   /**
    * Get/set the 3D spatial position of the audio source for this sound or
@@ -183,8 +284,8 @@
 
           if (sound._node) {
             // Check if there is a panner setup and create a new one if not.
-            if (!sound._panner) {
-              setupPanner(sound);
+            if (!sound._panner || sound._panner.pan) {
+              setupPanner(sound, 'spatial');
             }
 
             sound._panner.setPosition(x, y, z);
@@ -262,7 +363,7 @@
                 sound._pos = self._pos || [0, 0, -0.5];
               }
 
-              setupPanner(sound);
+              setupPanner(sound, 'spatial');
             }
 
             sound._panner.setOrientation(x, y, z);
@@ -380,7 +481,7 @@
           }
 
           // Create a new panner node.
-          setupPanner(sound);
+          setupPanner(sound, 'spatial');
         }
       }
     }
@@ -403,14 +504,17 @@
 
       // Setup user-defined default properties.
       self._orientation = parent._orientation;
+      self._stereo = parent._stereo;
       self._pos = parent._pos;
       self._pannerAttr = parent._pannerAttr;
 
       // Complete initilization with howler.js core Sound's init function.
       _super.call(this);
 
-      // If a position was specified, set it up.
-      if (self._pos) {
+      // If a stereo or position was specified, set it up.
+      if (self._stereo) {
+        parent.stereo(self._stereo);
+      } else if (self._pos) {
         parent.pos(self._pos[0], self._pos[1], self._pos[2], self._id);
       }
     };
@@ -442,20 +546,29 @@
   /**
    * Create a new panner node and save it on the sound.
    * @param  {Sound} sound Specific sound to setup panning on.
+   * @param {String} type Type of panner to create: 'stereo' or 'spatial'.
    */
-  var setupPanner = function(sound) {
+  var setupPanner = function(sound, type) {
+    type = type || 'spatial';
+
     // Create the new panner node.
-    sound._panner = Howler.ctx.createPanner();
-    sound._panner.coneInnerAngle = sound._pannerAttr.coneInnerAngle;
-    sound._panner.coneOuterAngle = sound._pannerAttr.coneOuterAngle;
-    sound._panner.coneOuterGain = sound._pannerAttr.coneOuterGain;
-    sound._panner.distanceModel = sound._pannerAttr.distanceModel;
-    sound._panner.maxDistance = sound._pannerAttr.maxDistance;
-    sound._panner.panningModel = sound._pannerAttr.panningModel;
-    sound._panner.refDistance = sound._pannerAttr.refDistance;
-    sound._panner.rolloffFactor = sound._pannerAttr.rolloffFactor;
-    sound._panner.setPosition(sound._pos[0], sound._pos[1], sound._pos[2]);
-    sound._panner.setOrientation(sound._orientation[0], sound._orientation[1], sound._orientation[2]);
+    if (type === 'spatial') {
+      sound._panner = Howler.ctx.createPanner();
+      sound._panner.coneInnerAngle = sound._pannerAttr.coneInnerAngle;
+      sound._panner.coneOuterAngle = sound._pannerAttr.coneOuterAngle;
+      sound._panner.coneOuterGain = sound._pannerAttr.coneOuterGain;
+      sound._panner.distanceModel = sound._pannerAttr.distanceModel;
+      sound._panner.maxDistance = sound._pannerAttr.maxDistance;
+      sound._panner.panningModel = sound._pannerAttr.panningModel;
+      sound._panner.refDistance = sound._pannerAttr.refDistance;
+      sound._panner.rolloffFactor = sound._pannerAttr.rolloffFactor;
+      sound._panner.setPosition(sound._pos[0], sound._pos[1], sound._pos[2]);
+      sound._panner.setOrientation(sound._orientation[0], sound._orientation[1], sound._orientation[2]);
+    } else {
+      sound._panner = Howler.ctx.createStereoPanner();
+      sound._panner.pan.value = sound._stereo;
+    }
+
     sound._panner.connect(sound._node);
 
     // Update the connections.

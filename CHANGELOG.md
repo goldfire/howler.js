@@ -36,8 +36,8 @@ Howler.js now also has the concept of plugins. The core represents 100% compatib
 - `ADDED`: Support for playback of CAFF audio files.
 - `ADDED`: New codec recommendations and notes have been added to the documentation.
 - `ADDED`: Web Audio AudioContext now automatically suspends and resumes to lower processing and power usage.
-- `ADDED`: (Effects) New `Howler` listener methods `pos`, `orientation`, `velocity` and `listenerAttr`.
-- `ADDED`: (Effects) New `Howl` methods `pos`, `orientation`, `velocity` and `pannerAttr` to control spatial audio of single sounds or groups of sounds.
+- `ADDED`: (Effects) New `Howler` listener methods `stereo`, `pos` and `orientation`.
+- `ADDED`: (Effects) New `Howl` methods `stereo`, `pos`, `orientation` and `pannerAttr` to control stereo and spatial audio of single sounds or groups of sounds.
 - `ADDED`: (Effects) `pannerAttr` allows for control of `coneInnerAngle`, `coneOUterAngle`, `coneOuterGain`, `distanceModel`, `maxDistance`, `panningModel`, `refDistance` and `rolloffFactor`.
 - `UPDATED`: (Effects) When using Web Audio, a panner node is only added when spatial audio is used.
 - `UPDATED`: The `play` method no longer takes a callback and immediately returns the playback sound id (this means you can no longer chain onto the `play` method, but all others work the same).

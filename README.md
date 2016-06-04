@@ -246,8 +246,13 @@ Exposes the master `GainNode` with Web Audio API. This can be useful for writing
 
 
 ### Plugin: Effects Methods
+#### stereo(pan, [id])
+Get/set the stereo panning of the audio source for this sound or all in the group.
+* **pan**: `Number` A value of `-1.0` is all the way left and `1.0` is all the way right.
+* **id**: `Number` `optional` The sound ID. If none is passed, all in group will be updated.
+
 #### pos(x, y, z, [id])
-Get/set the 3D spatial position of the audio source for this sound or group. The most common usage is to set the `x` position for left/right panning. Setting any value higher than `1.0` will begin to decrease the volume of the sound as it moves further away.
+Get/set the 3D spatial position of the audio source for this sound or group. Setting any value higher than `1.0` will begin to decrease the volume of the sound as it moves further away.
 * **x**: `Number` The x-position of the audio from `-1000.0` to `1000.0`.
 * **y**: `Number` The y-position of the audio from `-1000.0` to `1000.0`.
 * **z**: `Number` The z-position of the audio from `-1000.0` to `1000.0`.
@@ -277,17 +282,25 @@ Get/set the panner node's attributes for a sound or group of sounds. This method
 ### Plugin: Effects Properties
 #### orientation `Array` `[1, 0, 0]`
 Sets the direction the audio source is pointing in the 3D cartesian coordinate space. Depending on how direction the sound is, based on the `cone` attributes, a sound pointing away from the listener can be quiet or silent.
+#### stereo `Number` `null`
+Sets the stereo panning value of the audio source for this sound or group. This makes it easy to setup left/right panning with a value of `-1.0` being far left and a value of `1.0` being far right.
 #### pos `Array` `null`
-Sets the 3D spatial position of the audio source for this sound or group. The most common usage is to set the `x` position for left/right panning. Setting any value higher than `1.0` will begin to decrease the volume of the sound as it moves further away.
+Sets the 3D spatial position of the audio source for this sound or group. Setting any value higher than `1.0` will begin to decrease the volume of the sound as it moves further away.
 #### pannerAttr `Object`
 Sets the panner node's attributes for a sound or group of sounds. See the `pannerAttr` method for all available options.
+#### onstereo `Function`
+Fires when the current sound has the stereo panning changed. The first parameter is the ID of the sound.
 #### onpos `Function`
-Fires when the current sound has the listener position changes. The first parameter is the ID of the sound.
+Fires when the current sound has the listener position changed. The first parameter is the ID of the sound.
 #### onorientation `Function`
-Fires when the current sound has the direction of the listener changes. The first parameter is the ID of the sound.
+Fires when the current sound has the direction of the listener changed. The first parameter is the ID of the sound.
 
 
 ### Plugin: Global Effects Methods
+#### pos(x, y, z)
+Helper method to update the stereo panning position of all current `Howls`. Future `Howls` will not use this value unless explicitely set.
+* **pan**: `Number` A value of -1.0 is all the way left and 1.0 is all the way right.
+
 #### pos(x, y, z)
 Get/set the position of the listener in 3D cartesian space. Sounds using 3D position will be relative to the listener's position.
 * **x**: `Number` The x-position of the listener.
