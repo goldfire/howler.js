@@ -1414,8 +1414,16 @@
         }
       }
 
-      // Delete this sound from the cache.
-      if (cache) {
+      // Delete this sound from the cache (if no other Howl is using it).
+      var remCache = true;
+      for (i=0; i<Howler._howls.length; i++) {
+        if (Howler._howls[i]._src === self._src) {
+          remCache = false;
+          break;
+        }
+      }
+
+      if (cache && remCache) {
         delete cache[self._src];
       }
 
