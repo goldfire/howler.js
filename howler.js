@@ -507,7 +507,6 @@
           }
         } else {
           if (node.readyState === 4 || !node.readyState && navigator.isCocoonJS) {
-            node.readyState = 4;
             node.id = soundId;
             node.currentTime = pos;
             node.muted = Howler._muted || node.muted;
@@ -1091,7 +1090,6 @@
       node[index].gain.value = self._volume;
       node[index].paused = true;
       node[index]._pos = 0;
-      node[index].readyState = 4;
       node[index].connect(masterGain);
 
       // create the panner
@@ -1214,7 +1212,7 @@
         loadSound(obj);
         return;
       }
-      
+
       if (/^data:[^;]+;base64,/.test(url)) {
         // Decode base64 data-URIs because some browsers cannot load data-URIs with XMLHttpRequest.
         var data = atob(url.split(',')[1]);
@@ -1222,7 +1220,7 @@
         for (var i=0; i<data.length; ++i) {
           dataView[i] = data.charCodeAt(i);
         }
-        
+
         decodeAudioData(dataView.buffer, obj, url);
       } else {
         // load the buffer from the URL
