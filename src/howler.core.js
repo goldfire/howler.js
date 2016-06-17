@@ -1226,8 +1226,11 @@
             var duration = ((self._sprite[sound._sprite][0] + self._sprite[sound._sprite][1]) / 1000) - seek;
             var timeout = (duration * 1000) / Math.abs(sound._rate);
 
-            self._clearTimer(id[i]);
-            self._endTimers[id[i]] = setTimeout(self._ended.bind(self, sound), timeout);
+            // Start a new end timer if sound is already playing.
+            if (self._endTimers[id[i]] || !sound._paused) {
+              self._clearTimer(id[i]);
+              self._endTimers[id[i]] = setTimeout(self._ended.bind(self, sound), timeout);
+            }
 
             self._emit('rate', sound._id);
           }
