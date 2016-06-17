@@ -1310,6 +1310,11 @@
             self.play(id, true);
           }
 
+          // Update the seek position for HTML5 Audio.
+          if (!self._webAudio && sound._node) {
+            sound._node.currentTime = seek;
+          }
+
           self._emit('seek', id);
         } else {
           if (self._webAudio) {
