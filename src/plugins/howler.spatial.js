@@ -1,5 +1,5 @@
 /*!
- *  Effects Plugin - Adds advanced Web Audio API functionality.
+ *  Spatial Plugin - Adds support for stereo and 3D audio where Web Audio is supported.
  *  
  *  howler.js v2.0.0-beta14
  *  howlerjs.com
@@ -14,7 +14,7 @@
 
   'use strict';
 
-  // Setup default effects properties.
+  // Setup default properties.
   HowlerGlobal.prototype._pos = [0, 0, 0];
   HowlerGlobal.prototype._orientation = [0, 0, -1, 0, 1, 0];
   
@@ -521,7 +521,7 @@
   })(Sound.prototype.init);
 
   /**
-   * Override the Sound.reset method to clean up properties from the effects plugin.
+   * Override the Sound.reset method to clean up properties from the spatial plugin.
    * @param  {Function} _super Sound reset method.
    * @return {Sound}
    */
@@ -530,7 +530,7 @@
       var self = this;
       var parent = self._parent;
 
-      // Reset all effects module properties on this sound.
+      // Reset all spatial plugin properties on this sound.
       self._orientation = parent._orientation;
       self._pos = parent._pos;
       self._pannerAttr = parent._pannerAttr;

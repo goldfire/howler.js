@@ -22,7 +22,7 @@ var sound2 = new Howl({
 // Enable the start button when the sounds have loaded.
 sound1.once('load', function() {
   start.removeAttribute('disabled');
-  start.innerHTML = 'BEGIN EFFECTS TESTS';
+  start.innerHTML = 'BEGIN SPATIAL TESTS';
 });
 
 // Define the tests to run.

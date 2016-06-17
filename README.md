@@ -245,7 +245,7 @@ Exposes the `AudioContext` with Web Audio API.
 Exposes the master `GainNode` with Web Audio API. This can be useful for writing plugins or advanced usage.
 
 
-### Plugin: Effects Methods
+### Plugin: Spatial Methods
 #### stereo(pan, [id])
 Get/set the stereo panning of the audio source for this sound or all in the group.
 * **pan**: `Number` A value of `-1.0` is all the way left and `1.0` is all the way right.
@@ -279,7 +279,7 @@ Get/set the panner node's attributes for a sound or group of sounds. This method
 * **id**: `Number` `optional` The sound ID. If none is passed, all in group will be updated.
 
 
-### Plugin: Effects Properties
+### Plugin: Spatial Properties
 #### orientation `Array` `[1, 0, 0]`
 Sets the direction the audio source is pointing in the 3D cartesian coordinate space. Depending on how direction the sound is, based on the `cone` attributes, a sound pointing away from the listener can be quiet or silent.
 #### stereo `Number` `null`
@@ -296,7 +296,7 @@ Fires when the current sound has the listener position changed. The first parame
 Fires when the current sound has the direction of the listener changed. The first parameter is the ID of the sound.
 
 
-### Plugin: Global Effects Methods
+### Plugin: Global Spatial Methods
 #### pos(x, y, z)
 Helper method to update the stereo panning position of all current `Howls`. Future `Howls` will not use this value unless explicitely set.
 * **pan**: `Number` A value of -1.0 is all the way left and 1.0 is all the way right.
