@@ -98,6 +98,11 @@ var chain = function(i) {
     } else {
       label.innerHTML = 'COMPLETE!';
       label.style.color = '#74b074';
+
+      // Wait for 5 seconds and then go back to the tests index.
+      setTimeout(function() {
+        window.location = './';
+      }, 5000);
     }
   };
 };
