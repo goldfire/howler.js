@@ -77,3 +77,9 @@ body {
   justify-content: center;
   align-items: center;
 }
+
+@media screen and (max-height: 400px) {
+  .button {
+    padding: 5px;
+  }
+}
