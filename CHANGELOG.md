@@ -11,6 +11,7 @@ Howler (global) ->
 
 Howler.js now also has the concept of plugins. The core represents 100% compatibility across hTML5 Audio and Web Audio, adhering to the initial goals of the library. There is also a new Effects Plugin that adds advanced features only available in the Web Audio API.
 
+- `ADDED`: XHR onprogress functionality (issues #489).
 - `ADDED`: Lots of general code cleanup, simplification and reogranziation.
 - `ADDED`: Howler.js is now modularized. The core represents the initial goal for howler.js with 100% compatibility across hTML5 Audio and Web Audio. The effects plugin adds many of the advanced features provided by the Web Audio API.
 - `ADDED`: The new structure allows for full control of sprite playback (this was buggy or didn't work at all before).
@@ -252,7 +253,7 @@ Howler.js now also has the concept of plugins. The core represents 100% compatib
 - `FIXED:` Round volume values to fix inconsistencies in fade in/out methods.
 
 ## 1.0.3 (February 2, 2013)
-- `FIXED:` Make sure `self` is always defined before returning it. 
+- `FIXED:` Make sure `self` is always defined before returning it.
 
 ## 1.0.2 (February 1, 2013)
 - `ADDED:` New `off` method that allows for the removal of custom events.

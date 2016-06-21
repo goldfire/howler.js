@@ -443,6 +443,7 @@
       self._onvolume = o.onvolume ? [{fn: o.onvolume}] : [];
       self._onrate = o.onrate ? [{fn: o.onrate}] : [];
       self._onseek = o.onseek ? [{fn: o.onseek}] : [];
+      self._onxhrprogress = o.onxhrprogress ? [{fn: o.onxhrprogress}] : [];
 
       // Web Audio or HTML5 Audio?
       self._webAudio = Howler.usingWebAudio && !self._html5;
@@ -1997,6 +1998,11 @@
           self.load();
         }
       };
+
+      xhr.onprogress =  function(oEvent) {
+        self._emit('xhrprogress', oEvent);
+      };
+
       safeXhrSend(xhr);
     }
   };

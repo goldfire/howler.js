@@ -130,6 +130,8 @@ Fires when the sound's playback rate has changed. The first parameter is the ID 
 Fires when the sound has been seeked. The first parameter is the ID of the sound.
 #### onfade `Function`
 Fires when the current sound finishes fading in/out. The first parameter is the ID of the sound.
+#### onxhrprogress `Function`
+Fires when an XHR event is triggered. The first parameter is the XHR event object.
 
 
 ### Core Methods
