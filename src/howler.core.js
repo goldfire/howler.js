@@ -555,6 +555,9 @@
       if (typeof sprite === 'number') {
         id = sprite;
         sprite = null;
+      } else if ( typeof sprite === 'string' && self._state === 'loaded' && !self._sprite[sprite] ) {
+        // If the sound to play within the sprite doesn't exist, do nothing
+        return null;
       } else if (typeof sprite === 'undefined') {
         // Use the default sound sprite (plays the full audio length).
         sprite = '__default';
