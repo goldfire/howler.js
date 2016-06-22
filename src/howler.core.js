@@ -543,14 +543,13 @@
 
     /**
      * Play a sound or resume previous playback.
-     * @param  {String/Number} sprite Sprite name for sprite playback or sound id to continue previous.
-     * @param  {Boolean}       [internal=false]
-     * @return {Number}        Sound ID.
+     * @param  {String/Number} sprite   Sprite name for sprite playback or sound id to continue previous.
+     * @param  {Boolean} internal Internal Use: true prevents event firing.
+     * @return {Number}          Sound ID.
      */
     play: function(sprite, internal) {
       var self = this;
       var id = null;
-      internal = internal || false;
 
       // Determine if a sprite, sound id or nothing was passed
       if (typeof sprite === 'number') {
@@ -793,12 +792,11 @@
     /**
      * Stop playback and reset to start.
      * @param  {Number} id The sound ID (empty to stop all in group).
-     * @param  {Boolean} [internal=false]
+     * @param  {Boolean} internal Internal Use: true prevents event firing.
      * @return {Howl}
      */
     stop: function(id, internal) {
       var self = this;
-      internal = internal || false;
 
       // If the sound hasn't loaded, add it to the load queue to stop when capable.
       if (self._state !== 'loaded') {
@@ -1589,7 +1587,7 @@
 
       // Restart the playback for HTML5 Audio loop.
       if (!self._webAudio && loop) {
-        self.stop(sound._id, true).play(sound._id, true);
+        self.stop(sound._id, true).play(sound._id);
       }
 
       // Restart this timer if on a Web Audio loop.
