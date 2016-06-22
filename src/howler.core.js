@@ -544,12 +544,13 @@
     /**
      * Play a sound or resume previous playback.
      * @param  {String/Number} sprite Sprite name for sprite playback or sound id to continue previous.
+     * @param  {Boolean}       [internal=false]
      * @return {Number}        Sound ID.
      */
-    play: function(sprite) {
+    play: function(sprite, internal) {
       var self = this;
-      var args = arguments;
       var id = null;
+      internal = internal || false;
 
       // Determine if a sprite, sound id or nothing was passed
       if (typeof sprite === 'number') {
@@ -608,7 +609,7 @@
       // Don't play the sound if an id was passed and it is already playing.
       if (id && !sound._paused) {
         // Trigger the play event, in order to keep iterating through queue.
-        if (!args[1]) {
+        if (!internal) {
           setTimeout(function() {
             self._emit('play', sound._id);
           }, 0);
@@ -660,7 +661,7 @@
             self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
           }
 
-          if (!args[1]) {
+          if (!internal) {
             setTimeout(function() {
               self._emit('play', sound._id);
             }, 0);
@@ -692,7 +693,7 @@
               self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
             }
 
-            if (!args[1]) {
+            if (!internal) {
               self._emit('play', sound._id);
             }
           }, 0);
@@ -792,10 +793,12 @@
     /**
      * Stop playback and reset to start.
      * @param  {Number} id The sound ID (empty to stop all in group).
+     * @param  {Boolean} [internal=false]
      * @return {Howl}
      */
-    stop: function(id) {
+    stop: function(id, internal) {
       var self = this;
+      internal = internal || false;
 
       // If the sound hasn't loaded, add it to the load queue to stop when capable.
       if (self._state !== 'loaded') {
@@ -851,7 +854,7 @@
           }
         }
 
-        if (sound) {
+        if (sound && !internal) {
           self._emit('stop', sound._id);
         }
       }
@@ -1586,7 +1589,7 @@
 
       // Restart the playback for HTML5 Audio loop.
       if (!self._webAudio && loop) {
-        self.stop(sound._id).play(sound._id);
+        self.stop(sound._id, true).play(sound._id, true);
       }
 
       // Restart this timer if on a Web Audio loop.
