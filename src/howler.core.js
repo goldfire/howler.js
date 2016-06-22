@@ -1528,8 +1528,6 @@
      * @return {Howl}
      */
     _emit: function(event, id, msg) {
-      console.log(event, id, msg);
-
       var self = this;
       var events = self['_on' + event];
 
