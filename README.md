@@ -18,7 +18,7 @@ More documentation, examples and demos can be found at **[howlerjs.com](http://h
 * Supports Web Audio 3D sound positioning
 * Methods can be chained
 * Uses no outside libraries, just pure Javascript
-* Lightweight, 9kb filesize (3kb gzipped)
+* As light as 7kb gzipped
 
 ### Browser Compatibility
 Tested in the following browsers/versions:
