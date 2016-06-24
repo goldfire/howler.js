@@ -24,7 +24,7 @@
     "uglify-js": "2.x"
   },
   "main": "dist/ho,ler.js",
-  "version": "2.0.0-beta14",
+  "version": "2.0.0-rc1",
   "license": {
     "type": "MIT",
     "url": "https://raw.githubusercontent.com/goldfire/howler.js/master/LICENSE.md"
