@@ -846,8 +846,8 @@
               // Clean up the buffer source.
               self._cleanBuffer(sound._node);
             } else if (!isNaN(sound._node.duration) || sound._node.duration === Infinity) {
-              sound._node.pause();
               sound._node.currentTime = sound._start || 0;
+              sound._node.pause();
             }
           }
         }
