@@ -1,4 +1,4 @@
-# Live Streaming Audio ([Live Demo](http://howlerjs.com))
+# Live Streaming Audio ([Live Demo](https://howlerjs.com/#radio))
 
 ![Radio Player](https://s3.amazonaws.com/howler.js/screenshot-radio.jpg "Radio Screenshot")
 

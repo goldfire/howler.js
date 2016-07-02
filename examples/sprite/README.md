@@ -1,4 +1,4 @@
-# Audio Sprite Visual ([Live Demo](http://howlerjs.com))
+# Audio Sprite Visual ([Live Demo](https://howlerjs.com/#sprite))
 
 ![Audio Sprite Visual](https://s3.amazonaws.com/howler.js/screenshot-sprite.jpg "Sprite Screenshot")
 

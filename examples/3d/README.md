@@ -1,4 +1,4 @@
-# 3D Spatial Audio ([Live Demo](http://howlerjs.com))
+# 3D Spatial Audio ([Live Demo](https://howlerjs.com/#spatial))
 
 ![3D Spatial Audio](https://s3.amazonaws.com/howler.js/screenshot-3d.jpg "3D Audio Screenshot")
 

@@ -1,4 +1,4 @@
-# Audio Player ([Live Demo](http://howlerjs.com))
+# Audio Player ([Live Demo](https://howlerjs.com/#player))
 
 ![Audio Player](https://s3.amazonaws.com/howler.js/screenshot-player.jpg "Player Screenshot")
 
