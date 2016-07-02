@@ -1,5 +1,5 @@
 /*!
- *  howler.js v2.0.0-rc1
+ *  howler.js v2.0.0-rc2
  *  howlerjs.com
  *
  *  (c) 2013-2016, James Simpson of GoldFire Studios
@@ -644,7 +644,7 @@
           self._refreshBuffer(sound);
 
           // Setup the playback params.
-          var vol = (sound._muted || self._muted) ? 0 : sound._volume * Howler.volume();
+          var vol = (sound._muted || self._muted) ? 0 : sound._volume;
           node.gain.setValueAtTime(vol, Howler.ctx.currentTime);
           sound._playStart = Howler.ctx.currentTime;
 
@@ -846,8 +846,8 @@
               // Clean up the buffer source.
               self._cleanBuffer(sound._node);
             } else if (!isNaN(sound._node.duration) || sound._node.duration === Infinity) {
-              sound._node.pause();
               sound._node.currentTime = sound._start || 0;
+              sound._node.pause();
             }
           }
         }
@@ -901,7 +901,7 @@
           sound._muted = muted;
 
           if (self._webAudio && sound._node) {
-            sound._node.gain.setValueAtTime(muted ? 0 : sound._volume * Howler.volume(), Howler.ctx.currentTime);
+            sound._node.gain.setValueAtTime(muted ? 0 : sound._volume, Howler.ctx.currentTime);
           } else if (sound._node) {
             sound._node.muted = Howler._muted ? true : muted;
           }
@@ -979,7 +979,7 @@
             }
 
             if (self._webAudio && sound._node && !sound._muted) {
-              sound._node.gain.setValueAtTime(vol * Howler.volume(), Howler.ctx.currentTime);
+              sound._node.gain.setValueAtTime(vol, Howler.ctx.currentTime);
             } else if (sound._node && !sound._muted) {
               sound._node.volume = vol * Howler.volume();
             }
@@ -1043,8 +1043,8 @@
             var currentTime = Howler.ctx.currentTime;
             var end = currentTime + (len / 1000);
             sound._volume = from;
-            sound._node.gain.setValueAtTime(from * Howler.volume(), currentTime);
-            sound._node.gain.linearRampToValueAtTime(to * Howler.volume(), end);
+            sound._node.gain.setValueAtTime(from, currentTime);
+            sound._node.gain.linearRampToValueAtTime(to, end);
           }
 
           var vol = from;
@@ -1837,7 +1837,7 @@
     create: function() {
       var self = this;
       var parent = self._parent;
-      var volume = (Howler._muted || self._muted || self._parent._muted) ? 0 : self._volume * Howler.volume();
+      var volume = (Howler._muted || self._muted || self._parent._muted) ? 0 : self._volume;
 
       if (parent._webAudio) {
         // Create the gain node for controlling volume (the source will connect to this).
@@ -1859,7 +1859,7 @@
         // Setup the new audio node.
         self._node.src = parent._src;
         self._node.preload = 'auto';
-        self._node.volume = volume;
+        self._node.volume = volume * Howler.volume();
 
         // Begin loading the source.
         self._node.load();
@@ -2162,7 +2162,7 @@
 /*!
  *  Spatial Plugin - Adds support for stereo and 3D audio where Web Audio is supported.
  *  
- *  howler.js v2.0.0-rc1
+ *  howler.js v2.0.0-rc2
  *  howlerjs.com
  *
  *  (c) 2013-2016, James Simpson of GoldFire Studios
