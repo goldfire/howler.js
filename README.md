@@ -1,23 +1,23 @@
 ![howler.js](http://goldfirestudios.com/proj/howlerjs/howlerjs_logo.png "howler.js")
 
-## Description
-[**howler.js**](http://howlerjs.com) is an audio library for the modern web. It defaults to [Web Audio API](http://webaudio.github.io/web-audio-api/) and falls back to [HTML5 Audio](http://www.whatwg.org/specs/web-apps/current-work/#the-audio-element).
+# Description
+[howler.js](https://howlerjs.com) is an audio library for the modern web. It defaults to [Web Audio API](http://webaudio.github.io/web-audio-api/) and falls back to [HTML5 Audio](https://html.spec.whatwg.org/multipage/embedded-content.html#the-audio-element). This makes working with audio in JavaScript easy and reliable across all platforms.
 
-More documentation, examples and demos can be found at **[howlerjs.com](http://howlerjs.com)**.
+Additional information, live demos and a user showcase are available at [howlerjs.com](https://howlerjs.com).
 
 ### Features
-* Defaults to Web Audio API
-* Falls back to HTML5 Audio
-* Supports multiple file formats to support all browsers
-* Automatic caching for Web Audio API
-* Implements cache pool for HTML5 Audio
-* Per-sound and global mute/unmute and volume control
-* Playback of multiple sounds at the same time
+* Single API for all audio needs
+* Defaults to Web Audio API and falls back to HTML5 Audio
+* Handles edge cases and bugs across environments
+* Supports all codecs for full cross-browser support
+* Automatic caching for improved performance
+* Control sounds individually, in groups or globally
+* Playback of multiple sounds at once
 * Easy sound sprite definition and playback
-* Fade in/out sounds
-* Supports Web Audio 3D sound positioning
-* Methods can be chained
-* Uses no outside libraries, just pure Javascript
+* Full control for fading, rate, seek, volume, etc.
+* Easily add 3D spatial sound or stereo panning
+* Modular - use what you want and easy to extend
+* No outside dependencies, just pure JavaScript
 * As light as 7kb gzipped
 
 ### Browser Compatibility
@@ -28,17 +28,52 @@ Tested in the following browsers/versions:
 * Safari 5.1.4+
 * Mobile Safari 6.0+ (after user input)
 * Opera 12.0+
+* Microsoft Edge
 
-## Documentation
+### Live Demos
+* [Audio Player](https://howlerjs.com/#player)
+* [Radio](https://howlerjs.com/#radio)
+* [Spatial Audio](https://howlerjs.com/#spatial)
+* [Audio Sprites](https://howlerjs.com/#sprite)
+
+# Documentation
+
+### Contents
+* [Quick Start](#quick-start)
+* [Examples](#examples)
+* [Core](#core)
+  * [Options](#options)
+  * [Methods](#methods)
+  * [Global Options](#global-options)
+  * [Global Methods](#global-methods)
+* [Plugin: Spatial](#plugin-spatial)
+  * [Options](#options-1)
+  * [Methods](#methods-1)
+  * [Global Methods](#global-methods-1)
+* [Mobile Playback](#mobile-playback)
+* [Dolby Audio Playback](#dolby-audio-playback)
+* [Format Recommendations](#format-recommendations)
+* [License](#license)
 
 ### Quick Start
 
 Several options to get up and running:
 
 * Clone the repo: `git clone https://github.com/goldfire/howler.js.git`
-* Install with [Bower](http://bower.io/): `bower install howler`
 * Install with [npm](https://www.npmjs.com/package/howler): `npm install howler`
+* Install with [Bower](http://bower.io/): `bower install howler`
 * Hosted CDN: [`cdnjs`](https://cdnjs.com/libraries/howler) [`jsDelivr`](https://www.jsdelivr.com/projects/howler.js)
+
+In the browser:
+
+```html
+<script src="/path/to/howler.js"></script>
+<script>
+    var sound = new Howl({
+      src: ['sound.webm', 'sound.mp3']
+    });
+</script>
+```
 
 ### Examples
 
@@ -75,12 +110,49 @@ var sound = new Howl({
   }
 });
 
-// shoot the laser!
+// Shoot the laser!
 sound.play('laser');
 ```
 
+##### Listen for events:
+```javascript
+var sound = new Howl({
+  src: ['sound.webm', 'sound.mp3']
+});
 
-### Core Properties
+// Clear listener after first call.
+sound.once('load', function(){
+  sound.play();
+});
+
+// Fires when the sound finishes playing.
+sound.on('end', function(){
+  console.log('Finished!');
+});
+```
+
+##### Control multiple sounds:
+```javascript
+var sound = new Howl({
+  src: ['sound.webm', 'sound.mp3']
+});
+
+// Play returns a uniqe Sound ID that can be passed
+// into any method on Howl to control that specific sound.
+var id1 = sound.play();
+var id2 = sound.play();
+
+// Fade out the first sound and speed up the second.
+sound.fade(1, 0, 1000, id1);
+sound.rate(1.5, id2);
+```
+
+More in-depth examples (with accompanying live demos) can be found in the [examples directory](https://github.com/goldfire/howler.js/examples).
+
+
+## Core
+
+### Options
 #### src `Array` `[]` *`required`*
 The sources to the track(s) to be loaded for the sound (URLs or base64 data URIs). These should be in order of preference, howler.js will automatically load the first one that is compatible with the current browser. If your files have no extensions, you will need to explicitly specify the extension using the `ext` property.
 #### volume `Number` `1.0`
@@ -132,7 +204,7 @@ Fires when the sound has been seeked. The first parameter is the ID of the sound
 Fires when the current sound finishes fading in/out. The first parameter is the ID of the sound.
 
 
-### Core Methods
+### Methods
 #### play([sprite/id])
 Begins playback of a sound. Returns the sound id to be used with other methods. Only method that can't be chained.
 * **sprite/id**: `String/Number` `optional` Takes one parameter that can either be a sprite or sound ID. If a sprite is passed, a new sound will play based on the sprite's definition. If a sound ID is passed, the previously played sound will be played (for example, after pausing it). However, if an ID of a sound that has been drained from the pool is passed, nothing will play.
@@ -212,7 +284,23 @@ This is called by default, but if you set `preload` to false, you must call `loa
 #### unload()
 Unload and destroy a Howl object. This will immediately stop all sounds attached to this sound and remove it from the cache.
 
-### Global Core Methods
+
+### Global Options
+#### usingWebAudio `Boolean`
+`true` if the Web Audio API is available.
+#### noAudio `Boolean`
+`true` if any audio is available.
+#### mobileAutoEnable `Boolean` `true`
+Automatically attempts to enable audio on mobile (iOS, Android, etc) devices.
+#### autoSuspend `Boolean` `true`
+Automatically suspends the Web Audio AudioContext after 30 seconds of inactivity to decrease processing and energy usage. Automatically resumes upon new playback. Set this property to `false` to disable this behavior.
+#### ctx `Boolean` *`Web Audio Only`*
+Exposes the `AudioContext` with Web Audio API.
+#### masterGain `Boolean` *`Web Audio Only`*
+Exposes the master `GainNode` with Web Audio API. This can be useful for writing plugins or advanced usage.
+
+
+### Global Methods
 The following methods are used to modify all sounds globally, and are called from the `Howler` object.
 #### mute(muted)
 Mute or unmute all sounds.
@@ -230,22 +318,26 @@ Check supported audio codecs. Returns `true` if the codec is supported in the cu
 Unload and destroy all currently loaded Howl objects. This will immediately stop all sounds and remove them from cache.
 
 
-### Global Core Properties
-#### usingWebAudio `Boolean`
-`true` if the Web Audio API is available.
-#### noAudio `Boolean`
-`true` if any audio is available.
-#### mobileAutoEnable `Boolean` `true`
-Automatically attempts to enable audio on mobile (iOS, Android, etc) devices.
-#### autoSuspend `Boolean` `true`
-Automatically suspends the Web Audio AudioContext after 30 seconds of inactivity to decrease processing and energy usage. Automatically resumes upon new playback. Set this property to `false` to disable this behavior.
-#### ctx `Boolean` *`Web Audio Only`*
-Exposes the `AudioContext` with Web Audio API.
-#### masterGain `Boolean` *`Web Audio Only`*
-Exposes the master `GainNode` with Web Audio API. This can be useful for writing plugins or advanced usage.
+## Plugin: Spatial
+
+### Options
+#### orientation `Array` `[1, 0, 0]`
+Sets the direction the audio source is pointing in the 3D cartesian coordinate space. Depending on how direction the sound is, based on the `cone` attributes, a sound pointing away from the listener can be quiet or silent.
+#### stereo `Number` `null`
+Sets the stereo panning value of the audio source for this sound or group. This makes it easy to setup left/right panning with a value of `-1.0` being far left and a value of `1.0` being far right.
+#### pos `Array` `null`
+Sets the 3D spatial position of the audio source for this sound or group. Setting any value higher than `1.0` will begin to decrease the volume of the sound as it moves further away.
+#### pannerAttr `Object`
+Sets the panner node's attributes for a sound or group of sounds. See the `pannerAttr` method for all available options.
+#### onstereo `Function`
+Fires when the current sound has the stereo panning changed. The first parameter is the ID of the sound.
+#### onpos `Function`
+Fires when the current sound has the listener position changed. The first parameter is the ID of the sound.
+#### onorientation `Function`
+Fires when the current sound has the direction of the listener changed. The first parameter is the ID of the sound.
 
 
-### Plugin: Spatial Methods
+### Methods
 #### stereo(pan, [id])
 Get/set the stereo panning of the audio source for this sound or all in the group.
 * **pan**: `Number` A value of `-1.0` is all the way left and `1.0` is all the way right.
@@ -279,24 +371,7 @@ Get/set the panner node's attributes for a sound or group of sounds. This method
 * **id**: `Number` `optional` The sound ID. If none is passed, all in group will be updated.
 
 
-### Plugin: Spatial Properties
-#### orientation `Array` `[1, 0, 0]`
-Sets the direction the audio source is pointing in the 3D cartesian coordinate space. Depending on how direction the sound is, based on the `cone` attributes, a sound pointing away from the listener can be quiet or silent.
-#### stereo `Number` `null`
-Sets the stereo panning value of the audio source for this sound or group. This makes it easy to setup left/right panning with a value of `-1.0` being far left and a value of `1.0` being far right.
-#### pos `Array` `null`
-Sets the 3D spatial position of the audio source for this sound or group. Setting any value higher than `1.0` will begin to decrease the volume of the sound as it moves further away.
-#### pannerAttr `Object`
-Sets the panner node's attributes for a sound or group of sounds. See the `pannerAttr` method for all available options.
-#### onstereo `Function`
-Fires when the current sound has the stereo panning changed. The first parameter is the ID of the sound.
-#### onpos `Function`
-Fires when the current sound has the listener position changed. The first parameter is the ID of the sound.
-#### onorientation `Function`
-Fires when the current sound has the direction of the listener changed. The first parameter is the ID of the sound.
-
-
-### Plugin: Global Spatial Methods
+### Global Methods
 #### pos(x, y, z)
 Helper method to update the stereo panning position of all current `Howls`. Future `Howls` will not use this value unless explicitely set.
 * **pan**: `Number` A value of -1.0 is all the way left and 1.0 is all the way right.
@@ -347,6 +422,6 @@ ffmpeg -i sound1.wav -dash 1 sound1.webm
 
 ### License
 
-Copyright (c) 2013-2016 James Simpson and GoldFire Studios, Inc.
+Copyright (c) 2013-2016 [James Simpson](https://twitter.com/GoldFireStudios) and [GoldFire Studios, Inc.](http://goldfirestudios.com)
 
-Released under the MIT License.
+Released under the [MIT License](https://github.com/goldfire/howler.js/LICENSE.md).
