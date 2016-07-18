@@ -372,7 +372,7 @@ Get/set the panner node's attributes for a sound or group of sounds. This method
 
 
 ### Global Methods
-#### pos(x, y, z)
+#### stereo(pan)
 Helper method to update the stereo panning position of all current `Howls`. Future `Howls` will not use this value unless explicitely set.
 * **pan**: `Number` A value of -1.0 is all the way left and 1.0 is all the way right.
 
