@@ -1,4 +1,4 @@
-## 2.0.0 (TBD)
+## 2.0.0 (July 19, 2016)
 This major release contains just a few breaking changes outlined below. Howler.js has been rewritten from the ground up using the knowledge and work since the initial release. There's a long list of additions and improvements, which I urge you to read through as the library has evolved quite a bit over this time.
 
 The biggest change is how you should think about your audio when using howler.js. There is now the concept of global (`Howler`), group (`Howl`) and single sound (`Sound`). Each sound that is played gets its own `Sound` object that can be manipulated, giving much greater control over playback, whether using sprites or not. `Howl` method calls can then apply to one sound or all in the group.
@@ -10,6 +10,8 @@ Howler (global) ->
 ```
 
 Howler.js now also has the concept of plugins. The core represents 100% compatibility across hTML5 Audio and Web Audio, adhering to the initial goals of the library. There is also a new Spatial Plugin that adds 3D and stereo audio support only available in the Web Audio API.
+
+Read more about the update [in this blog post](http://goldfirestudios.com/blog/143/howler.js-v2.0-Released).
 
 ### Breaking Changes
 - The `buffer` option is now named `html5`. Use this to force HTML5 Audio usage.

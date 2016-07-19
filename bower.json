@@ -1,7 +1,7 @@
 {
   "name": "howler.js",
   "description": "Javascript audio library for the modern web.",
-  "homepage": "http://howlerjs.com",
+  "homepage": "https://howlerjs.com",
   "keywords": [
     "howler",
     "howler.js",
@@ -15,7 +15,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git://github.com/goldfire/howler.js.git#2.0"
+    "url": "git://github.com/goldfire/howler.js.git"
   },
   "main": "dist/howler.js",
   "license": {
