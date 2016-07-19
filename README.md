@@ -147,7 +147,7 @@ sound.fade(1, 0, 1000, id1);
 sound.rate(1.5, id2);
 ```
 
-More in-depth examples (with accompanying live demos) can be found in the [examples directory](https://github.com/goldfire/howler.js/examples).
+More in-depth examples (with accompanying live demos) can be found in the [examples directory](https://github.com/goldfire/howler.js/tree/master/examples).
 
 
 ## Core
