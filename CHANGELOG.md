@@ -57,7 +57,7 @@ sound.once('fade', function(){
 ```
 
 ### New Features
-- Lots of general code cleanup, simplification and reogranziation.
+- Lots of general code cleanup, simplification and reorganization.
 - Howler.js is now modularized. The core represents the initial goal for howler.js with 100% compatibility across HTML5 Audio and Web Audio. The spatial plugin adds spatial and stereo support through Web Audio API.
 - The new structure allows for full control of sprite playback (this was buggy or didn't work at all before).
 - New `once` method to setup event listeners that will automatically remove themselves once fired.
