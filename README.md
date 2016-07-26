@@ -424,4 +424,4 @@ ffmpeg -i sound1.wav -dash 1 sound1.webm
 
 Copyright (c) 2013-2016 [James Simpson](https://twitter.com/GoldFireStudios) and [GoldFire Studios, Inc.](http://goldfirestudios.com)
 
-Released under the [MIT License](https://github.com/goldfire/howler.js/LICENSE.md).
+Released under the [MIT License](https://github.com/goldfire/howler.js/blob/master/LICENSE.md).
