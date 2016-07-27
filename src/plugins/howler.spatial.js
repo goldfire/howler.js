@@ -23,7 +23,7 @@
 
   /**
    * Helper method to update the stereo panning position of all current Howls.
-   * Future Howls will not use this value unless explicitely set.
+   * Future Howls will not use this value unless explicitly set.
    * @param  {Number} pan A value of -1.0 is all the way left and 1.0 is all the way right.
    * @return {Howler/Number}     Self or current stereo panning value.
    */
