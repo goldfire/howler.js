@@ -170,7 +170,7 @@
      * @return {Boolean}
      */
     codecs: function(ext) {
-      return (this || Howler)._codecs[ext];
+      return (this || Howler)._codecs[ext.replace(/^x-/, '')];
     },
 
     /**
