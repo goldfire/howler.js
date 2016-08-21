@@ -130,6 +130,22 @@ Player.prototype = {
     playBtn.style.display = 'block';
     pauseBtn.style.display = 'none';
   },
+  
+  /**
+   * Check if track is currently playing
+   */
+  isPlaying: function() {
+    var self = this;
+
+    // Get the Howl we want to manipulate.
+    var sound = self.playlist[self.index].howl;
+
+    // No Howl element yet implemented
+    if(sound===null) return false; 
+
+    return sound.playing() ? true : false ; 
+
+  },
 
   /**
    * Skip to the next or previous track.
@@ -286,6 +302,21 @@ var player = new Player([
     howl: null
   }
 ]);
+
+//Bind keyboard control
+document.addEventListener('keyup', function(e) {
+  e = e || window.event;
+
+  if (e.keyCode == '37') {
+    player.skip('prev');
+  } 
+  else if (e.keyCode == '39') {
+   player.skip('next');
+  }
+  else if (e.keyCode == '32') { 
+    player.isPlaying() ? player.pause():  player.play() ; 
+  }
+});
 
 // Bind our player controls.
 playBtn.addEventListener('click', function() {
