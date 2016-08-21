@@ -930,7 +930,7 @@
       if (args.length === 0) {
         // Return the value of the groups' volume.
         return self._volume;
-      } else if (args.length === 1) {
+      } else if (args.length === 1 || args.length === 2 && typeof args[1] === 'undefined') {
         // First check if this is an ID, and if not, assume it is a new volume.
         var ids = self._getSoundIds();
         var index = ids.indexOf(args[0]);
@@ -1008,7 +1008,7 @@
       var diff = Math.abs(from - to);
       var dir = from > to ? 'out' : 'in';
       var steps = diff / 0.01;
-      var stepLen = len / steps;
+      var stepLen = (steps > 0) ? len / steps : len;
 
       // If the sound hasn't loaded, add it to the load queue to fade when capable.
       if (self._state !== 'loaded') {
@@ -1049,8 +1049,10 @@
 
           var vol = from;
           sound._interval = setInterval(function(soundId, sound) {
-            // Update the volume amount.
-            vol += (dir === 'in' ? 0.01 : -0.01);
+            // Update the volume amount, but only if the volume should change.
+            if (steps > 0) {
+              vol += (dir === 'in' ? 0.01 : -0.01);
+            }
 
             // Make sure the volume is in the right bounds.
             vol = Math.max(0, vol);
