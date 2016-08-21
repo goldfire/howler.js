@@ -820,7 +820,7 @@
         // Get the sound.
         var sound = self._soundById(ids[i]);
 
-        if (sound && !sound._paused) {
+        if (sound) {
           // Reset the seek position.
           sound._seek = sound._start || 0;
           sound._rateSeek = 0;
