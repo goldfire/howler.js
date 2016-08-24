@@ -15,6 +15,7 @@ Read more about the update [in this blog post](http://goldfirestudios.com/blog/1
 
 ### Breaking Changes
 - The `buffer` option is now named `html5`. Use this to force HTML5 Audio usage.
+- The `urls` option is now named `src` to specify the audio file(s) to play.
 - The `pos` method has been renamed to `seek`.
 
 ```javascript
