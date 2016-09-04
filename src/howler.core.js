@@ -834,6 +834,10 @@
             if (self._webAudio) {
               // make sure the sound has been created
               if (!sound._node.bufferSource) {
+                if (!internal) {
+                  self._emit('stop', sound._id);
+                }
+
                 return self;
               }
 
