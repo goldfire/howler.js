@@ -1442,7 +1442,7 @@
       }
 
       // Clear global errors
-      Howler.noAudio = false
+      Howler.noAudio = false;
 
       // Clear out `self`.
       self._state = 'unloaded';
