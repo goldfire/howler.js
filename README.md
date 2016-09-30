@@ -289,7 +289,7 @@ Unload and destroy a Howl object. This will immediately stop all sounds attached
 #### usingWebAudio `Boolean`
 `true` if the Web Audio API is available.
 #### noAudio `Boolean`
-`true` if any audio is available.
+`true` if no audio is available.
 #### mobileAutoEnable `Boolean` `true`
 Automatically attempts to enable audio on mobile (iOS, Android, etc) devices.
 #### autoSuspend `Boolean` `true`
