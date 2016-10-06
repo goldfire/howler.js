@@ -200,7 +200,12 @@
      */
     _setupCodecs: function() {
       var self = this || Howler;
-      var audioTest = (typeof Audio !== 'undefined') ? new Audio() : null;
+      try {
+        var audioTest = (typeof Audio !== 'undefined') ? new Audio() : null;
+      }
+      catch(e) {
+        return self;
+      }
 
       if (!audioTest || typeof audioTest.canPlayType !== 'function') {
         return self;
