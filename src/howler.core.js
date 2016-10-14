@@ -1015,6 +1015,12 @@
       var steps = diff / 0.01;
       var stepLen = (steps > 0) ? len / steps : len;
 
+      // Since browsers clamp timeouts to 4ms, we need to clamp our steps to that too.
+      if (stepLen < 4) {
+        steps = Math.ceil(steps / (4 / stepLen));
+        stepLen = 4;
+      }
+
       // If the sound hasn't loaded, add it to the load queue to fade when capable.
       if (self._state !== 'loaded') {
         self._queue.push({
