@@ -1,3 +1,14 @@
+## 2.0.1 (October 14, 2016)
+- `ADDED` Support for FLAC audio files.
+- `FIXED` Improve fading performance when short fade times are used ([#621](https://github.com/goldfire/howler.js/issues/621)).
+- `FIXED` Correctly handle fades from 0 to 0 volume ([#575](https://github.com/goldfire/howler.js/issues/575)).
+- `FIXED` Prevent a load error from blocking all future playback ([#613](https://github.com/goldfire/howler.js/issues/613)).
+- `FIXED` Reset `noAudio` to `false` when a sound is unloaded ([#617](https://github.com/goldfire/howler.js/pull/617)).
+- `FIXED` Stop a sound even if it is not playing ([#595](https://github.com/goldfire/howler.js/issues/595)).
+- `FIXED` Emit `stop` event before returning from `stop` ([#616](https://github.com/goldfire/howler.js/pull/616)).
+- `FIXED` Improve codec checks by removing `x-` prefix ([#576](https://github.com/goldfire/howler.js/issues/576)).
+- `FIXED` Set correct loop start/end when calling `loop` on a sprite ([#604](https://github.com/goldfire/howler.js/issues/604)).
+
 ## 2.0.0 (July 19, 2016)
 This major release contains just a few breaking changes outlined below. Howler.js has been rewritten from the ground up using the knowledge and work since the initial release. There's a long list of additions and improvements, which I urge you to read through as the library has evolved quite a bit over this time.
 

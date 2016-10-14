@@ -1,5 +1,5 @@
 /*!
- *  howler.js v2.0.0
+ *  howler.js v2.0.1
  *  howlerjs.com
  *
  *  (c) 2013-2016, James Simpson of GoldFire Studios
@@ -170,7 +170,7 @@
      * @return {Boolean}
      */
     codecs: function(ext) {
-      return (this || Howler)._codecs[ext];
+      return (this || Howler)._codecs[ext.replace(/^x-/, '')];
     },
 
     /**
@@ -225,7 +225,8 @@
         mp4: !!(audioTest.canPlayType('audio/x-mp4;') || audioTest.canPlayType('audio/mp4;') || audioTest.canPlayType('audio/aac;')).replace(/^no$/, ''),
         weba: !!audioTest.canPlayType('audio/webm; codecs="vorbis"').replace(/^no$/, ''),
         webm: !!audioTest.canPlayType('audio/webm; codecs="vorbis"').replace(/^no$/, ''),
-        dolby: !!audioTest.canPlayType('audio/mp4; codecs="ec-3"').replace(/^no$/, '')
+        dolby: !!audioTest.canPlayType('audio/mp4; codecs="ec-3"').replace(/^no$/, ''),
+        flac: !!(audioTest.canPlayType('audio/x-flac;') || audioTest.canPlayType('audio/flac;')).replace(/^no$/, '')
       };
 
       return self;
@@ -820,7 +821,7 @@
         // Get the sound.
         var sound = self._soundById(ids[i]);
 
-        if (sound && !sound._paused) {
+        if (sound) {
           // Reset the seek position.
           sound._seek = sound._start || 0;
           sound._rateSeek = 0;
@@ -834,6 +835,10 @@
             if (self._webAudio) {
               // make sure the sound has been created
               if (!sound._node.bufferSource) {
+                if (!internal) {
+                  self._emit('stop', sound._id);
+                }
+
                 return self;
               }
 
@@ -930,7 +935,7 @@
       if (args.length === 0) {
         // Return the value of the groups' volume.
         return self._volume;
-      } else if (args.length === 1) {
+      } else if (args.length === 1 || args.length === 2 && typeof args[1] === 'undefined') {
         // First check if this is an ID, and if not, assume it is a new volume.
         var ids = self._getSoundIds();
         var index = ids.indexOf(args[0]);
@@ -1008,7 +1013,13 @@
       var diff = Math.abs(from - to);
       var dir = from > to ? 'out' : 'in';
       var steps = diff / 0.01;
-      var stepLen = len / steps;
+      var stepLen = (steps > 0) ? len / steps : len;
+
+      // Since browsers clamp timeouts to 4ms, we need to clamp our steps to that too.
+      if (stepLen < 4) {
+        steps = Math.ceil(steps / (4 / stepLen));
+        stepLen = 4;
+      }
 
       // If the sound hasn't loaded, add it to the load queue to fade when capable.
       if (self._state !== 'loaded') {
@@ -1049,8 +1060,10 @@
 
           var vol = from;
           sound._interval = setInterval(function(soundId, sound) {
-            // Update the volume amount.
-            vol += (dir === 'in' ? 0.01 : -0.01);
+            // Update the volume amount, but only if the volume should change.
+            if (steps > 0) {
+              vol += (dir === 'in' ? 0.01 : -0.01);
+            }
 
             // Make sure the volume is in the right bounds.
             vol = Math.max(0, vol);
@@ -1147,6 +1160,10 @@
           sound._loop = loop;
           if (self._webAudio && sound._node && sound._node.bufferSource) {
             sound._node.bufferSource.loop = loop;
+            if (loop) {
+              sound._node.bufferSource.loopStart = sound._start || 0;
+              sound._node.bufferSource.loopEnd = sound._stop;
+            }
           }
         }
       }
@@ -1438,6 +1455,9 @@
       if (cache && remCache) {
         delete cache[self._src];
       }
+
+      // Clear global errors.
+      Howler.noAudio = false;
 
       // Clear out `self`.
       self._state = 'unloaded';
@@ -1900,10 +1920,6 @@
     _errorListener: function() {
       var self = this;
 
-      if (self._node.error && self._node.error.code === 4) {
-        Howler.noAudio = true;
-      }
-
       // Fire an error event and pass back the code.
       self._parent._emit('loaderror', self._id, self._node.error ? self._node.error.code : 0);
 
@@ -2162,7 +2178,7 @@
 /*!
  *  Spatial Plugin - Adds support for stereo and 3D audio where Web Audio is supported.
  *  
- *  howler.js v2.0.0
+ *  howler.js v2.0.1
  *  howlerjs.com
  *
  *  (c) 2013-2016, James Simpson of GoldFire Studios
