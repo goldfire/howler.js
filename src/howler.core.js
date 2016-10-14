@@ -1914,10 +1914,6 @@
     _errorListener: function() {
       var self = this;
 
-      if (self._node.error && self._node.error.code === 4) {
-        Howler.noAudio = true;
-      }
-
       // Fire an error event and pass back the code.
       self._parent._emit('loaderror', self._id, self._node.error ? self._node.error.code : 0);
 
