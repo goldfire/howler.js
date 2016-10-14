@@ -1446,6 +1446,9 @@
         delete cache[self._src];
       }
 
+      // Clear global errors
+      Howler.noAudio = false;
+
       // Clear out `self`.
       self._state = 'unloaded';
       self._sounds = [];
