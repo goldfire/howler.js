@@ -1154,6 +1154,10 @@
           sound._loop = loop;
           if (self._webAudio && sound._node && sound._node.bufferSource) {
             sound._node.bufferSource.loop = loop;
+            if (loop) {
+              sound._node.bufferSource.loopStart = sound._start || 0;
+              sound._node.bufferSource.loopEnd = sound._stop;
+            }
           }
         }
       }
@@ -1446,7 +1450,7 @@
         delete cache[self._src];
       }
 
-      // Clear global errors
+      // Clear global errors.
       Howler.noAudio = false;
 
       // Clear out `self`.
