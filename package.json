@@ -7,9 +7,13 @@
     "howler.js",
     "audio",
     "sound",
+    "web audio",
     "webaudio",
     "browser",
-    "html5"
+    "html5",
+    "html5 audio",
+    "audio sprite",
+    "audiosprite"
   ],
   "author": "James Simpson <james@goldfirestudios.com> (http://goldfirestudios.com)",
   "repository": {
