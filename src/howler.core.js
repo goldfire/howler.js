@@ -186,6 +186,33 @@
       // Automatically begin the 30-second suspend process
       self._autoSuspend();
 
+      // Check if audio is available.
+      if (!self.usingWebAudio) {
+        // No audio is available on this system if noAudio is set to true.
+        if (typeof Audio !== 'undefined') {
+          try {
+            var test = new Audio();
+
+            // Check if the canplaythrough event is available.
+            if (typeof test.oncanplaythrough === 'undefined') {
+              self._canPlayEvent = 'canplay';
+            }
+          } catch(e) {
+            self.noAudio = true;
+          }
+        } else {
+          self.noAudio = true;
+        }
+      }
+
+      // Test to make sure audio isn't disabled in Internet Explorer.
+      try {
+        var test = new Audio();
+        if (test.muted) {
+          self.noAudio = true;
+        }
+      } catch (e) {}
+
       // Check for supported codecs.
       if (!self.noAudio) {
         self._setupCodecs();
@@ -2094,8 +2121,6 @@
    * Setup the audio context when available, or switch to HTML5 Audio mode.
    */
   var setupAudioContext = function() {
-    Howler.noAudio = false;
-
     // Check if we are using Web Audio and setup the AudioContext if we are.
     try {
       if (typeof AudioContext !== 'undefined') {
@@ -2108,32 +2133,6 @@
     } catch(e) {
       Howler.usingWebAudio = false;
     }
-
-    if (!Howler.usingWebAudio) {
-      // No audio is available on this system if noAudio is set to true.
-      if (typeof Audio !== 'undefined') {
-        try {
-          var test = new Audio();
-
-          // Check if the canplaythrough event is available.
-          if (typeof test.oncanplaythrough === 'undefined') {
-            Howler._canPlayEvent = 'canplay';
-          }
-        } catch(e) {
-          Howler.noAudio = true;
-        }
-      } else {
-        Howler.noAudio = true;
-      }
-    }
-
-    // Test to make sure audio isn't disabled in Internet Explorer
-    try {
-      var test = new Audio();
-      if (test.muted) {
-        Howler.noAudio = true;
-      }
-    } catch (e) {}
 
     // Check if a webview is being used on iOS8 or earlier (rather than the browser).
     // If it is, disable Web Audio as it causes crashing.
