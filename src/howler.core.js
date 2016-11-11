@@ -370,6 +370,11 @@
         self.state = 'resuming';
         self.ctx.resume().then(function() {
           self.state = 'running';
+
+          // Emit to all Howls that the audio has resumed.
+          for (var i=0; i<self._howls.length; i++) {
+            self._howls[i]._emit('resume');
+          }
         });
 
         if (self._suspendTimer) {
@@ -451,6 +456,7 @@
       self._onvolume = o.onvolume ? [{fn: o.onvolume}] : [];
       self._onrate = o.onrate ? [{fn: o.onrate}] : [];
       self._onseek = o.onseek ? [{fn: o.onseek}] : [];
+      self._onresume = [];
 
       // Web Audio or HTML5 Audio?
       self._webAudio = Howler.usingWebAudio && !self._html5;
@@ -675,11 +681,12 @@
           }
         };
 
-        if (self._state === 'loaded') {
+        var isRunning = (Howler.state === 'running');
+        if (self._state === 'loaded' && isRunning) {
           playWebAudio();
         } else {
           // Wait for the audio to load and then begin playback.
-          self.once('load', playWebAudio, sound._id);
+          self.once(isRunning ? 'load' : 'resume', playWebAudio, isRunning ? sound._id : null);
 
           // Cancel the end timer.
           self._clearTimer(sound._id);
