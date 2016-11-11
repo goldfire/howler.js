@@ -786,11 +786,11 @@
               sound._node.pause();
             }
           }
+        }
 
-          // Fire the pause event, unless `true` is passed as the 2nd argument.
-          if (!arguments[1]) {
-            self._emit('pause', sound._id);
-          }
+        // Fire the pause event, unless `true` is passed as the 2nd argument.
+        if (!arguments[1]) {
+          self._emit('pause', sound ? sound._id : null);
         }
       }
 
