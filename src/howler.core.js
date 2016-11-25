@@ -1926,6 +1926,11 @@
         self._loadFn = self._loadListener.bind(self);
         self._node.addEventListener(Howler._canPlayEvent, self._loadFn, false);
 
+        // Listen for 'ended' event to let us know the sound has ended.
+        // Normally we'd do fine without, but this will help a Safari edge case with infinite html5 audio
+        self._endFn = self._endListener.bind(self);
+        self._node.addEventListener('ended', self._endFn, false);
+
         // Setup the new audio node.
         self._node.src = parent._src;
         self._node.preload = 'auto';
@@ -2000,6 +2005,21 @@
 
       // Clear the event listener.
       self._node.removeEventListener(Howler._canPlayEvent, self._loadFn, false);
+    },
+
+    /**
+     * HTML5 Audio ended listener callback.
+     */
+    _endListener: function() {
+      var self = this;
+
+      // Fire an end event - the duration should have been infinite but the audio ended anyways.
+      if (self._parent._duration === Infinity) {
+        self._parent._ended(self);
+      }
+
+      // Clear the event listener.
+      self._node.removeEventListener('ended', self._endFn, false);
     }
   };
 
