@@ -496,6 +496,16 @@
       // Keep track of this Howl group in the global controller.
       Howler._howls.push(self);
 
+      // If they selected autoplay, add a play event to the load queue.
+      if (self._autoplay) {
+        self._queue.push({
+          event: 'play',
+          action: function() {
+            self.play();
+          }
+        });
+      }
+
       // Load the source file unless otherwise specified.
       if (self._preload) {
         self.load();
@@ -1989,10 +1999,6 @@
         parent._loadQueue();
       }
 
-      if (parent._autoplay) {
-        parent.play();
-      }
-
       // Clear the event listener.
       self._node.removeEventListener(Howler._canPlayEvent, self._loadFn, false);
     }
@@ -2109,11 +2115,6 @@
       self._state = 'loaded';
       self._emit('load');
       self._loadQueue();
-    }
-
-    // Begin playback if specified.
-    if (self._autoplay) {
-      self.play();
     }
   };
 
