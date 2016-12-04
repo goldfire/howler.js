@@ -1,5 +1,5 @@
 /*!
- *  howler.js v2.0.1
+ *  howler.js v2.0.2
  *  howlerjs.com
  *
  *  (c) 2013-2016, James Simpson of GoldFire Studios
@@ -155,7 +155,7 @@
       }
 
       // Create a new AudioContext to make sure it is fully reset.
-      if (self.usingWebAudio && typeof self.ctx.close !== 'undefined') {
+      if (self.usingWebAudio && self.ctx && typeof self.ctx.close !== 'undefined') {
         self.ctx.close();
         self.ctx = null;
         setupAudioContext();
@@ -186,6 +186,33 @@
       // Automatically begin the 30-second suspend process
       self._autoSuspend();
 
+      // Check if audio is available.
+      if (!self.usingWebAudio) {
+        // No audio is available on this system if noAudio is set to true.
+        if (typeof Audio !== 'undefined') {
+          try {
+            var test = new Audio();
+
+            // Check if the canplaythrough event is available.
+            if (typeof test.oncanplaythrough === 'undefined') {
+              self._canPlayEvent = 'canplay';
+            }
+          } catch(e) {
+            self.noAudio = true;
+          }
+        } else {
+          self.noAudio = true;
+        }
+      }
+
+      // Test to make sure audio isn't disabled in Internet Explorer.
+      try {
+        var test = new Audio();
+        if (test.muted) {
+          self.noAudio = true;
+        }
+      } catch (e) {}
+
       // Check for supported codecs.
       if (!self.noAudio) {
         self._setupCodecs();
@@ -200,7 +227,14 @@
      */
     _setupCodecs: function() {
       var self = this || Howler;
-      var audioTest = (typeof Audio !== 'undefined') ? new Audio() : null;
+      var audioTest = null;
+
+      // Must wrap in a try/catch because IE11 in server mode throws an error.
+      try {
+        audioTest = (typeof Audio !== 'undefined') ? new Audio() : null;
+      } catch (err) {
+        return self;
+      }
 
       if (!audioTest || typeof audioTest.canPlayType !== 'function') {
         return self;
@@ -363,6 +397,11 @@
         self.state = 'resuming';
         self.ctx.resume().then(function() {
           self.state = 'running';
+
+          // Emit to all Howls that the audio has resumed.
+          for (var i=0; i<self._howls.length; i++) {
+            self._howls[i]._emit('resume');
+          }
         });
 
         if (self._suspendTimer) {
@@ -444,6 +483,7 @@
       self._onvolume = o.onvolume ? [{fn: o.onvolume}] : [];
       self._onrate = o.onrate ? [{fn: o.onrate}] : [];
       self._onseek = o.onseek ? [{fn: o.onseek}] : [];
+      self._onresume = [];
 
       // Web Audio or HTML5 Audio?
       self._webAudio = Howler.usingWebAudio && !self._html5;
@@ -455,6 +495,16 @@
 
       // Keep track of this Howl group in the global controller.
       Howler._howls.push(self);
+
+      // If they selected autoplay, add a play event to the load queue.
+      if (self._autoplay) {
+        self._queue.push({
+          event: 'play',
+          action: function() {
+            self.play();
+          }
+        });
+      }
 
       // Load the source file unless otherwise specified.
       if (self._preload) {
@@ -624,8 +674,8 @@
       }
 
       // Determine how long to play for and where to start playing.
-      var seek = sound._seek > 0 ? sound._seek : self._sprite[sprite][0] / 1000;
-      var duration = ((self._sprite[sprite][0] + self._sprite[sprite][1]) / 1000) - seek;
+      var seek = Math.max(0, sound._seek > 0 ? sound._seek : self._sprite[sprite][0] / 1000);
+      var duration = Math.max(0, ((self._sprite[sprite][0] + self._sprite[sprite][1]) / 1000) - seek);
       var timeout = (duration * 1000) / Math.abs(sound._rate);
 
       // Update the parameters of the sound
@@ -668,11 +718,12 @@
           }
         };
 
-        if (self._state === 'loaded') {
+        var isRunning = (Howler.state === 'running');
+        if (self._state === 'loaded' && isRunning) {
           playWebAudio();
         } else {
           // Wait for the audio to load and then begin playback.
-          self.once('load', playWebAudio, sound._id);
+          self.once(isRunning ? 'load' : 'resume', playWebAudio, isRunning ? sound._id : null);
 
           // Cancel the end timer.
           self._clearTimer(sound._id);
@@ -779,11 +830,11 @@
               sound._node.pause();
             }
           }
+        }
 
-          // Fire the pause event, unless `true` is passed as the 2nd argument.
-          if (!arguments[1]) {
-            self._emit('pause', sound._id);
-          }
+        // Fire the pause event, unless `true` is passed as the 2nd argument.
+        if (!arguments[1]) {
+          self._emit('pause', sound ? sound._id : null);
         }
       }
 
@@ -1948,10 +1999,6 @@
         parent._loadQueue();
       }
 
-      if (parent._autoplay) {
-        parent.play();
-      }
-
       // Clear the event listener.
       self._node.removeEventListener(Howler._canPlayEvent, self._loadFn, false);
     }
@@ -2069,19 +2116,12 @@
       self._emit('load');
       self._loadQueue();
     }
-
-    // Begin playback if specified.
-    if (self._autoplay) {
-      self.play();
-    }
   };
 
   /**
    * Setup the audio context when available, or switch to HTML5 Audio mode.
    */
   var setupAudioContext = function() {
-    Howler.noAudio = false;
-
     // Check if we are using Web Audio and setup the AudioContext if we are.
     try {
       if (typeof AudioContext !== 'undefined') {
@@ -2094,32 +2134,6 @@
     } catch(e) {
       Howler.usingWebAudio = false;
     }
-
-    if (!Howler.usingWebAudio) {
-      // No audio is available on this system if noAudio is set to true.
-      if (typeof Audio !== 'undefined') {
-        try {
-          var test = new Audio();
-
-          // Check if the canplaythrough event is available.
-          if (typeof test.oncanplaythrough === 'undefined') {
-            Howler._canPlayEvent = 'canplay';
-          }
-        } catch(e) {
-          Howler.noAudio = true;
-        }
-      } else {
-        Howler.noAudio = true;
-      }
-    }
-
-    // Test to make sure audio isn't disabled in Internet Explorer
-    try {
-      var test = new Audio();
-      if (test.muted) {
-        Howler.noAudio = true;
-      }
-    } catch (e) {}
 
     // Check if a webview is being used on iOS8 or earlier (rather than the browser).
     // If it is, disable Web Audio as it causes crashing.
@@ -2178,7 +2192,7 @@
 /*!
  *  Spatial Plugin - Adds support for stereo and 3D audio where Web Audio is supported.
  *  
- *  howler.js v2.0.1
+ *  howler.js v2.0.2
  *  howlerjs.com
  *
  *  (c) 2013-2016, James Simpson of GoldFire Studios

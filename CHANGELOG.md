@@ -1,3 +1,12 @@
+## 2.0.2 (December 4, 2016)
+- `FIXED` Wait to begin playback until AudioContext has resumed ([#643](https://github.com/goldfire/howler.js/issues/643)).
+- `FIXED` Run `noAudio` check on initial setup instead of waiting for first `Howl` ([#619](https://github.com/goldfire/howler.js/issues/619)).
+- `FIXED` Add `play` event to start of queue when `autoplay` is used ([#659](https://github.com/goldfire/howler.js/issues/659)).
+- `FIXED` Make sure `seek` and `duration` are always >= 0 to prevent errors ([#682](https://github.com/goldfire/howler.js/pull/652)).
+- `FIXED` Audio test wouldn't work in IE11 Enhanced Security Mode ([#631](https://github.com/goldfire/howler.js/pull/631)).
+- `FIXED` Ensure AudioContext exists on `unload` ([#646](https://github.com/goldfire/howler.js/pull/646)).
+- `FIXED` Always fire pause event even if sound is already paused ([#639](https://github.com/goldfire/howler.js/issues/639)).
+
 ## 2.0.1 (October 14, 2016)
 - `ADDED` Support for FLAC audio files.
 - `FIXED` Improve fading performance when short fade times are used ([#621](https://github.com/goldfire/howler.js/issues/621)).
