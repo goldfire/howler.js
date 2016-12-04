@@ -1,4 +1,4 @@
-![howler.js](http://goldfirestudios.com/proj/howlerjs/howlerjs_logo.png "howler.js")
+[![howler.js](https://s3.amazonaws.com/howler.js/howler-logo.png "howler.js")](https://howlerjs.com)
 
 # Description
 [howler.js](https://howlerjs.com) is an audio library for the modern web. It defaults to [Web Audio API](http://webaudio.github.io/web-audio-api/) and falls back to [HTML5 Audio](https://html.spec.whatwg.org/multipage/embedded-content.html#the-audio-element). This makes working with audio in JavaScript easy and reliable across all platforms.
@@ -147,7 +147,7 @@ sound.fade(1, 0, 1000, id1);
 sound.rate(1.5, id2);
 ```
 
-More in-depth examples (with accompanying live demos) can be found in the [examples directory](https://github.com/goldfire/howler.js/examples).
+More in-depth examples (with accompanying live demos) can be found in the [examples directory](https://github.com/goldfire/howler.js/tree/master/examples).
 
 
 ## Core
@@ -373,7 +373,7 @@ Get/set the panner node's attributes for a sound or group of sounds. This method
 
 ### Global Methods
 #### stereo(pan)
-Helper method to update the stereo panning position of all current `Howls`. Future `Howls` will not use this value unless explicitely set.
+Helper method to update the stereo panning position of all current `Howls`. Future `Howls` will not use this value unless explicitly set.
 * **pan**: `Number` A value of -1.0 is all the way left and 1.0 is all the way right.
 
 #### pos(x, y, z)
@@ -424,4 +424,4 @@ ffmpeg -i sound1.wav -dash 1 sound1.webm
 
 Copyright (c) 2013-2016 [James Simpson](https://twitter.com/GoldFireStudios) and [GoldFire Studios, Inc.](http://goldfirestudios.com)
 
-Released under the [MIT License](https://github.com/goldfire/howler.js/LICENSE.md).
+Released under the [MIT License](https://github.com/goldfire/howler.js/blob/master/LICENSE.md).
