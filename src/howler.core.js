@@ -652,7 +652,7 @@
           if (typeof node.bufferSource.start === 'undefined') {
             sound._loop ? node.bufferSource.noteGrainOn(0, seek, 86400) : node.bufferSource.noteGrainOn(0, seek, duration);
           } else {
-            sound._loop ? node.bufferSource.start(0, seek, 86400) : node.bufferSource.start(0, seek, duration);
+            sound._loop ? node.bufferSource.start(0, seek) : node.bufferSource.start(0, seek, duration);
           }
 
           // Start a new timer if none is present.
