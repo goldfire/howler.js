@@ -463,7 +463,7 @@
       self._sprite = o.sprite || {};
       self._src = (typeof o.src !== 'string') ? o.src : [o.src];
       self._volume = o.volume !== undefined ? o.volume : 1;
-      self.timeout = o.timeout || 10000;
+      self._timeout = o.timeout || 10000;
       
       // Setup all other default properties.
       self._duration = 0;
@@ -2042,9 +2042,9 @@
       var xhr = new XMLHttpRequest();
       xhr.open('GET', url, true);
       xhr.responseType = 'arraybuffer';
-      xhr.timeout = obj.timeout;
+      xhr.timeout = self._timeout;
       xhr.ontimeout = function(){
-         obj.on('loaderror', new Error('File load timed out.'));
+         self._emit('loaderror', new Error('File load timed out.'));
       }
       xhr.onload = function() {
         // Make sure we get a successful response back.
