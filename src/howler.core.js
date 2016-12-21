@@ -1468,7 +1468,6 @@
         // Stop the sound if it is currently playing.
         if (!sounds[i]._paused) {
           self.stop(sounds[i]._id);
-          self._emit('end', sounds[i]._id);
         }
 
         // Remove the source or disconnect.
