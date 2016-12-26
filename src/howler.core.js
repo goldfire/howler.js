@@ -300,6 +300,9 @@
       // then check if the audio actually played to determine if
       // audio has now been unlocked on iOS, Android, etc.
       var unlock = function() {
+        // Fix Android can not play in suspend state.
+        Howler._autoResume();
+
         // Create an empty buffer.
         var source = self.ctx.createBufferSource();
         source.buffer = self._scratchBuffer;
@@ -394,7 +397,7 @@
         clearTimeout(self._suspendTimer);
         self._suspendTimer = null;
       } else if (self.state === 'suspended') {
-        self.state = 'resuming';
+        //self.state = 'resuming';
         self.ctx.resume().then(function() {
           self.state = 'running';
 
