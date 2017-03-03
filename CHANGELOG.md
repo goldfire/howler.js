@@ -1,4 +1,24 @@
-## 2.0.0 (TBD)
+## 2.0.2 (December 4, 2016)
+- `FIXED` Wait to begin playback until AudioContext has resumed ([#643](https://github.com/goldfire/howler.js/issues/643)).
+- `FIXED` Run `noAudio` check on initial setup instead of waiting for first `Howl` ([#619](https://github.com/goldfire/howler.js/issues/619)).
+- `FIXED` Add `play` event to start of queue when `autoplay` is used ([#659](https://github.com/goldfire/howler.js/issues/659)).
+- `FIXED` Make sure `seek` and `duration` are always >= 0 to prevent errors ([#682](https://github.com/goldfire/howler.js/pull/652)).
+- `FIXED` Audio test wouldn't work in IE11 Enhanced Security Mode ([#631](https://github.com/goldfire/howler.js/pull/631)).
+- `FIXED` Ensure AudioContext exists on `unload` ([#646](https://github.com/goldfire/howler.js/pull/646)).
+- `FIXED` Always fire pause event even if sound is already paused ([#639](https://github.com/goldfire/howler.js/issues/639)).
+
+## 2.0.1 (October 14, 2016)
+- `ADDED` Support for FLAC audio files.
+- `FIXED` Improve fading performance when short fade times are used ([#621](https://github.com/goldfire/howler.js/issues/621)).
+- `FIXED` Correctly handle fades from 0 to 0 volume ([#575](https://github.com/goldfire/howler.js/issues/575)).
+- `FIXED` Prevent a load error from blocking all future playback ([#613](https://github.com/goldfire/howler.js/issues/613)).
+- `FIXED` Reset `noAudio` to `false` when a sound is unloaded ([#617](https://github.com/goldfire/howler.js/pull/617)).
+- `FIXED` Stop a sound even if it is not playing ([#595](https://github.com/goldfire/howler.js/issues/595)).
+- `FIXED` Emit `stop` event before returning from `stop` ([#616](https://github.com/goldfire/howler.js/pull/616)).
+- `FIXED` Improve codec checks by removing `x-` prefix ([#576](https://github.com/goldfire/howler.js/issues/576)).
+- `FIXED` Set correct loop start/end when calling `loop` on a sprite ([#604](https://github.com/goldfire/howler.js/issues/604)).
+
+## 2.0.0 (July 19, 2016)
 This major release contains just a few breaking changes outlined below. Howler.js has been rewritten from the ground up using the knowledge and work since the initial release. There's a long list of additions and improvements, which I urge you to read through as the library has evolved quite a bit over this time.
 
 The biggest change is how you should think about your audio when using howler.js. There is now the concept of global (`Howler`), group (`Howl`) and single sound (`Sound`). Each sound that is played gets its own `Sound` object that can be manipulated, giving much greater control over playback, whether using sprites or not. `Howl` method calls can then apply to one sound or all in the group.
@@ -11,8 +31,11 @@ Howler (global) ->
 
 Howler.js now also has the concept of plugins. The core represents 100% compatibility across hTML5 Audio and Web Audio, adhering to the initial goals of the library. There is also a new Spatial Plugin that adds 3D and stereo audio support only available in the Web Audio API.
 
+Read more about the update [in this blog post](http://goldfirestudios.com/blog/143/howler.js-v2.0-Released).
+
 ### Breaking Changes
 - The `buffer` option is now named `html5`. Use this to force HTML5 Audio usage.
+- The `urls` option is now named `src` to specify the audio file(s) to play.
 - The `pos` method has been renamed to `seek`.
 
 ```javascript
@@ -55,7 +78,7 @@ sound.once('fade', function(){
 ```
 
 ### New Features
-- Lots of general code cleanup, simplification and reogranziation.
+- Lots of general code cleanup, simplification and reorganization.
 - Howler.js is now modularized. The core represents the initial goal for howler.js with 100% compatibility across HTML5 Audio and Web Audio. The spatial plugin adds spatial and stereo support through Web Audio API.
 - The new structure allows for full control of sprite playback (this was buggy or didn't work at all before).
 - New `once` method to setup event listeners that will automatically remove themselves once fired.
@@ -134,7 +157,7 @@ sound.once('fade', function(){
 - `FIXED` Small error fix in iOS check.
 
 ## 1.1.23 (July 2, 2014)
-- `FIXED` Playing multiple sprites rapdily with HTML5 Audio cause the sprite to break due to a v1.1.22 update.
+- `FIXED` Playing multiple sprites rapidly with HTML5 Audio cause the sprite to break due to a v1.1.22 update.
 - `FIXED` Don't run the iOS test if there is no audio context, which prevents a breaking error.
 
 ## 1.1.22 (June 28, 2014)
@@ -251,7 +274,7 @@ sound.once('fade', function(){
 - `ADDED` New `pos3d` method that allows for positional audio (Web Audio API only).
 - `ADDED` Multi-playback control system that allows for control of specific play instances when sprites are used. A callback has been added to the `play` method that returns the `soundId` for the playback instance. This can then be passed as the optional last parameter to other methods to control that specific playback instead of the whole sound object.
 - `ADDED` Pass the `Howl` object reference as the first parameter in the custom event callbacks.
-- `ADDED` New optional parameter in sprite defintions to define a sprite as looping rather than the whole track. In the sprite definition array, set the 3rd value to true for looping (`spriteName: [pos, duration, loop]`).
+- `ADDED` New optional parameter in sprite definitions to define a sprite as looping rather than the whole track. In the sprite definition array, set the 3rd value to true for looping (`spriteName: [pos, duration, loop]`).
 - `FIXED` Now all audio acts as a sound sprite internally, which helps to fix several lingering bugs (doesn't affect the API at all).
 - `FIXED` Improved implementation of Web Audio API looping.
 - `FIXED` Improved implementation of HTML5 Audio looping.

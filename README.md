@@ -1,4 +1,4 @@
-![howler.js](http://goldfirestudios.com/proj/howlerjs/howlerjs_logo.png "howler.js")
+[![howler.js](https://s3.amazonaws.com/howler.js/howler-logo.png "howler.js")](https://howlerjs.com)
 
 # Description
 [howler.js](https://howlerjs.com) is an audio library for the modern web. It defaults to [Web Audio API](http://webaudio.github.io/web-audio-api/) and falls back to [HTML5 Audio](https://html.spec.whatwg.org/multipage/embedded-content.html#the-audio-element). This makes working with audio in JavaScript easy and reliable across all platforms.
@@ -104,9 +104,9 @@ var sound = new Howl({
 var sound = new Howl({
   src: ['sounds.webm', 'sounds.mp3'],
   sprite: {
-    blast: [0, 1000],
-    laser: [2000, 3000],
-    winner: [4000, 7500]
+    blast: [0, 3000],
+    laser: [4000, 1000],
+    winner: [6000, 5000]
   }
 });
 
@@ -147,14 +147,14 @@ sound.fade(1, 0, 1000, id1);
 sound.rate(1.5, id2);
 ```
 
-More in-depth examples (with accompanying live demos) can be found in the [examples directory](https://github.com/goldfire/howler.js/examples).
+More in-depth examples (with accompanying live demos) can be found in the [examples directory](https://github.com/goldfire/howler.js/tree/master/examples).
 
 
 ## Core
 
 ### Options
 #### src `Array` `[]` *`required`*
-The sources to the track(s) to be loaded for the sound (URLs or base64 data URIs). These should be in order of preference, howler.js will automatically load the first one that is compatible with the current browser. If your files have no extensions, you will need to explicitly specify the extension using the `ext` property.
+The sources to the track(s) to be loaded for the sound (URLs or base64 data URIs). These should be in order of preference, howler.js will automatically load the first one that is compatible with the current browser. If your files have no extensions, you will need to explicitly specify the extension using the `format` property.
 #### volume `Number` `1.0`
 The volume of the specific track, from `0.0` to `1.0`.
 #### html5 `Boolean` `false`
@@ -289,7 +289,7 @@ Unload and destroy a Howl object. This will immediately stop all sounds attached
 #### usingWebAudio `Boolean`
 `true` if the Web Audio API is available.
 #### noAudio `Boolean`
-`true` if any audio is available.
+`true` if no audio is available.
 #### mobileAutoEnable `Boolean` `true`
 Automatically attempts to enable audio on mobile (iOS, Android, etc) devices.
 #### autoSuspend `Boolean` `true`
@@ -312,7 +312,7 @@ Get/set the global volume for all sounds, relative to their own volume.
 
 #### codecs(ext)
 Check supported audio codecs. Returns `true` if the codec is supported in the current browser.
-* **ext**: `String` File extension. One of: "mp3", "mpeg", opus", "ogg", "oga", "wav", "aac", "caf", m4a", "mp4", "weba", "webm", "dolby".
+* **ext**: `String` File extension. One of: "mp3", "mpeg", "opus", "ogg", "oga", "wav", "aac", "caf", m4a", "mp4", "weba", "webm", "dolby", "flac".
 
 #### unload()
 Unload and destroy all currently loaded Howl objects. This will immediately stop all sounds and remove them from cache.
@@ -373,7 +373,7 @@ Get/set the panner node's attributes for a sound or group of sounds. This method
 
 ### Global Methods
 #### stereo(pan)
-Helper method to update the stereo panning position of all current `Howls`. Future `Howls` will not use this value unless explicitely set.
+Helper method to update the stereo panning position of all current `Howls`. Future `Howls` will not use this value unless explicitly set.
 * **pan**: `Number` A value of -1.0 is all the way left and 1.0 is all the way right.
 
 #### pos(x, y, z)
@@ -424,4 +424,4 @@ ffmpeg -i sound1.wav -dash 1 sound1.webm
 
 Copyright (c) 2013-2016 [James Simpson](https://twitter.com/GoldFireStudios) and [GoldFire Studios, Inc.](http://goldfirestudios.com)
 
-Released under the [MIT License](https://github.com/goldfire/howler.js/LICENSE.md).
+Released under the [MIT License](https://github.com/goldfire/howler.js/blob/master/LICENSE.md).

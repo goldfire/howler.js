@@ -1,7 +1,7 @@
 /*!
  *  Spatial Plugin - Adds support for stereo and 3D audio where Web Audio is supported.
  *  
- *  howler.js v2.0.0-rc2
+ *  howler.js v2.0.2
  *  howlerjs.com
  *
  *  (c) 2013-2016, James Simpson of GoldFire Studios
@@ -23,7 +23,7 @@
 
   /**
    * Helper method to update the stereo panning position of all current Howls.
-   * Future Howls will not use this value unless explicitely set.
+   * Future Howls will not use this value unless explicitly set.
    * @param  {Number} pan A value of -1.0 is all the way left and 1.0 is all the way right.
    * @return {Howler/Number}     Self or current stereo panning value.
    */
