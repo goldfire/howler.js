@@ -562,8 +562,13 @@
           }
         }
 
+        // Log a warning if no extension was found.
+        if (!ext) {
+          console.warn('No file extension was found. Consider using the "format" property or specify an extension.');
+        }
+
         // Check if this extension is available.
-        if (Howler.codecs(ext)) {
+        if (ext && Howler.codecs(ext)) {
           url = self._src[i];
           break;
         }
