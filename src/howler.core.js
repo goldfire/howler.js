@@ -735,7 +735,6 @@
           node.muted = sound._muted || self._muted || Howler._muted || node.muted;
           node.volume = sound._volume * Howler.volume();
           node.playbackRate = sound._rate;
-
           node.play();
 
           // Setup the new end timer.
