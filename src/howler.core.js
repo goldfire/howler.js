@@ -30,6 +30,9 @@
     init: function() {
       var self = this || Howler;
 
+      // Create a global ID counter.
+      self._counter = 0;
+
       // Internal properties.
       self._codecs = {};
       self._howls = [];
@@ -1886,7 +1889,7 @@
       self._sprite = '__default';
 
       // Generate a unique ID for this sound.
-      self._id = Math.round(Date.now() * Math.random());
+      self._id = ++Howler._counter;
 
       // Add itself to the parent's pool.
       parent._sounds.push(self);
@@ -1956,7 +1959,7 @@
       self._sprite = '__default';
 
       // Generate a new ID so that it isn't confused with the previous sound.
-      self._id = Math.round(Date.now() * Math.random());
+      self._id = ++Howler._counter;
 
       return self;
     },
