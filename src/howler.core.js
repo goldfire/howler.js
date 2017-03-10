@@ -1135,10 +1135,10 @@
             }
 
             // When the fade is complete, stop it and fire event.
-            if (vol === to) {
+            if ((to < from && vol <= to) || (to > from && vol >= to)) {
               clearInterval(sound._interval);
               sound._interval = null;
-              self.volume(vol, soundId);
+              self.volume(to, soundId);
               self._emit('fade', soundId);
             }
           }.bind(self, ids[i], sound), stepLen);
