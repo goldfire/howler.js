@@ -726,12 +726,13 @@
           }
         };
 
-        var isRunning = (Howler.state !== 'suspended');
+        var isRunning = (Howler.state === 'running');
         if (self._state === 'loaded' && isRunning) {
           playWebAudio();
         } else {
           // Wait for the audio to load and then begin playback.
-          self.once(isRunning ? 'load' : 'resume', playWebAudio, isRunning ? sound._id : null);
+          var event = !isRunning && self._state === 'loaded' ? 'resume' : 'load';
+          self.once(event, playWebAudio, isRunning ? sound._id : null);
 
           // Cancel the end timer.
           self._clearTimer(sound._id);
