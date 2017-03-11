@@ -2,7 +2,7 @@
  *  Howler.js Audio Sprite Demo
  *  howlerjs.com
  *
- *  (c) 2013-2016, James Simpson of GoldFire Studios
+ *  (c) 2013-2017, James Simpson of GoldFire Studios
  *  goldfirestudios.com
  *
  *  MIT License
