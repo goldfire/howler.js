@@ -726,7 +726,7 @@
           }
         };
 
-        var isRunning = (Howler.state === 'running');
+        var isRunning = (Howler.state !== 'suspended');
         if (self._state === 'loaded' && isRunning) {
           playWebAudio();
         } else {
