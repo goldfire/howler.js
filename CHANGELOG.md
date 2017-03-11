@@ -1,3 +1,12 @@
+## 2.0.3 (March 11, 2017)
+- `CHANGED` Unloading a sound no longer fires the `end` event ([#675](https://github.com/goldfire/howler.js/pull/675)).
+- `FIXED` Remove `setTimeout` wrapper on HTML5 `play` call to fix issues on mobile browsers ([#694](https://github.com/goldfire/howler.js/pull/694)).
+- `FIXED` Remove rare possibility of duplicate sound ID's by using global counter ([#709](https://github.com/goldfire/howler.js/issues/709)).
+- `FIXED` Support fades with 2+ decmial places ([#696](https://github.com/goldfire/howler.js/issues/696)).
+- `FIXED` Error in Firefox caused by invalid silent WAV on `unload` ([#678](https://github.com/goldfire/howler.js/issues/678)).
+- `FIXED` Check for and warn about missing file extension ([#680](https://github.com/goldfire/howler.js/issues/680)).
+- `FIXED` Regression in Firefox relating to spatial audio ([#664](https://github.com/goldfire/howler.js/issues/664)).
+
 ## 2.0.2 (December 4, 2016)
 - `FIXED` Wait to begin playback until AudioContext has resumed ([#643](https://github.com/goldfire/howler.js/issues/643)).
 - `FIXED` Run `noAudio` check on initial setup instead of waiting for first `Howl` ([#619](https://github.com/goldfire/howler.js/issues/619)).

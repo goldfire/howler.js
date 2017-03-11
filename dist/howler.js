@@ -1,8 +1,8 @@
 /*!
- *  howler.js v2.0.2
+ *  howler.js v2.0.3
  *  howlerjs.com
  *
- *  (c) 2013-2016, James Simpson of GoldFire Studios
+ *  (c) 2013-2017, James Simpson of GoldFire Studios
  *  goldfirestudios.com
  *
  *  MIT License
@@ -29,6 +29,9 @@
      */
     init: function() {
       var self = this || Howler;
+
+      // Create a global ID counter.
+      self._counter = 0;
 
       // Internal properties.
       self._codecs = {};
@@ -559,8 +562,13 @@
           }
         }
 
+        // Log a warning if no extension was found.
+        if (!ext) {
+          console.warn('No file extension was found. Consider using the "format" property or specify an extension.');
+        }
+
         // Check if this extension is available.
-        if (Howler.codecs(ext)) {
+        if (ext && Howler.codecs(ext)) {
           url = self._src[i];
           break;
         }
@@ -723,7 +731,8 @@
           playWebAudio();
         } else {
           // Wait for the audio to load and then begin playback.
-          self.once(isRunning ? 'load' : 'resume', playWebAudio, isRunning ? sound._id : null);
+          var event = !isRunning && self._state === 'loaded' ? 'resume' : 'load';
+          self.once(event, playWebAudio, isRunning ? sound._id : null);
 
           // Cancel the end timer.
           self._clearTimer(sound._id);
@@ -735,19 +744,16 @@
           node.muted = sound._muted || self._muted || Howler._muted || node.muted;
           node.volume = sound._volume * Howler.volume();
           node.playbackRate = sound._rate;
+          node.play();
 
-          setTimeout(function() {
-            node.play();
+          // Setup the new end timer.
+          if (timeout !== Infinity) {
+            self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
+          }
 
-            // Setup the new end timer.
-            if (timeout !== Infinity) {
-              self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
-            }
-
-            if (!internal) {
-              self._emit('play', sound._id);
-            }
-          }, 0);
+          if (!internal) {
+            self._emit('play', sound._id);
+          }
         };
 
         // Play immediately if ready, or wait for the 'canplaythrough'e vent.
@@ -1135,10 +1141,10 @@
             }
 
             // When the fade is complete, stop it and fire event.
-            if (vol === to) {
+            if ((to < from && vol <= to) || (to > from && vol >= to)) {
               clearInterval(sound._interval);
               sound._interval = null;
-              self.volume(vol, soundId);
+              self.volume(to, soundId);
               self._emit('fade', soundId);
             }
           }.bind(self, ids[i], sound), stepLen);
@@ -1468,13 +1474,12 @@
         // Stop the sound if it is currently playing.
         if (!sounds[i]._paused) {
           self.stop(sounds[i]._id);
-          self._emit('end', sounds[i]._id);
         }
 
         // Remove the source or disconnect.
         if (!self._webAudio) {
           // Set the source to 0-second silence to stop any downloading.
-          sounds[i]._node.src = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=';
+          sounds[i]._node.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
 
           // Remove any event listeners.
           sounds[i]._node.removeEventListener('error', sounds[i]._errorFn, false);
@@ -1890,7 +1895,7 @@
       self._sprite = '__default';
 
       // Generate a unique ID for this sound.
-      self._id = Math.round(Date.now() * Math.random());
+      self._id = ++Howler._counter;
 
       // Add itself to the parent's pool.
       parent._sounds.push(self);
@@ -1960,7 +1965,7 @@
       self._sprite = '__default';
 
       // Generate a new ID so that it isn't confused with the previous sound.
-      self._id = Math.round(Date.now() * Math.random());
+      self._id = ++Howler._counter;
 
       return self;
     },
@@ -2192,10 +2197,10 @@
 /*!
  *  Spatial Plugin - Adds support for stereo and 3D audio where Web Audio is supported.
  *  
- *  howler.js v2.0.2
+ *  howler.js v2.0.3
  *  howlerjs.com
  *
- *  (c) 2013-2016, James Simpson of GoldFire Studios
+ *  (c) 2013-2017, James Simpson of GoldFire Studios
  *  goldfirestudios.com
  *
  *  MIT License
