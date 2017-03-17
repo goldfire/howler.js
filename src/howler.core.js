@@ -745,26 +745,39 @@
           node.muted = sound._muted || self._muted || Howler._muted || node.muted;
           node.volume = sound._volume * Howler.volume();
           node.playbackRate = sound._rate;
+          var playpromise;
 
-          var playpromise = node.play()
+          if (Promise && Promise.resolve) {
+              playpromise = Promise.resolve(node.play());
+          }
+          else{
+              playpromise = node.play();
+          }
 
-          playpromise.catch(function(error){
-              self._emit('playerror', null, error.message);
-
-              self.stop();
-          })
-
-          playpromise.then(function(success){
+          if (playpromise) {
+              playpromise.catch(function (error) {
+                  self._emit('playerror', null, error.message);
+                  self.stop();
+              })
+              playpromise.then(function (success) {
+                  // Setup the new end timer.
+                  if (timeout !== Infinity) {
+                      self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
+                  }
+                  if (!internal) {
+                      self._emit('play', sound._id);
+                  }
+              })
+          }
+          else{ //Assume success
               // Setup the new end timer.
               if (timeout !== Infinity) {
                   self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
               }
-
               if (!internal) {
                   self._emit('play', sound._id);
               }
-
-          })
+          }
 
         };
 
