@@ -481,6 +481,7 @@
       self._onloaderror = o.onloaderror ? [{fn: o.onloaderror}] : [];
       self._onpause = o.onpause ? [{fn: o.onpause}] : [];
       self._onplay = o.onplay ? [{fn: o.onplay}] : [];
+      self._onplayerror = o.onplayerror ? [{fn: o.onplayerror}] : [];
       self._onstop = o.onstop ? [{fn: o.onstop}] : [];
       self._onmute = o.onmute ? [{fn: o.onmute}] : [];
       self._onvolume = o.onvolume ? [{fn: o.onvolume}] : [];
@@ -744,16 +745,27 @@
           node.muted = sound._muted || self._muted || Howler._muted || node.muted;
           node.volume = sound._volume * Howler.volume();
           node.playbackRate = sound._rate;
-          node.play();
 
-          // Setup the new end timer.
-          if (timeout !== Infinity) {
-            self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
-          }
+          var playpromise = node.play()
 
-          if (!internal) {
-            self._emit('play', sound._id);
-          }
+          playpromise.catch(function(error){
+              self._emit('playerror', null, error.message);
+
+              self.stop();
+          })
+
+          playpromise.then(function(success){
+              // Setup the new end timer.
+              if (timeout !== Infinity) {
+                  self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
+              }
+
+              if (!internal) {
+                  self._emit('play', sound._id);
+              }
+
+          })
+
         };
 
         // Play immediately if ready, or wait for the 'canplaythrough'e vent.
