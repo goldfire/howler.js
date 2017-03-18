@@ -749,13 +749,12 @@
           var playpromise = node.play();
 
           if (Promise && playpromise instanceof Promise) {
-              playpromise.catch(function (error) {
-                  self._emit('playerror', null, error.message);
-                  node.pause();
-              })
+
               playpromise.then(function (success) {
+                  if (!node.duration || node.paused){
+                      throw new Error ("Failed to play");
+                  }
                   // Setup the new end timer.
-                  console.log('DURATION? ', node.duration, 'PAUSED? ', node.paused);
                   if (timeout !== Infinity) {
                       self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
                   }
@@ -763,11 +762,14 @@
                       self._emit('play', sound._id);
                   }
               })
+              .catch(function (error) {
+                  self._emit('playerror', sound._id, error);
+                  node.pause();
+              })
           }
           else{
-              console.log('DURATION? ', node.duration, 'PAUSED? ', node.paused);
               if (!node.duration || node.paused){
-                self._emit('playerror', null, "Failed to play");
+                self._emit('playerror', sound._id, {message: "Failed to play"});
                 node.pause();
               }
               else {
@@ -1446,18 +1448,31 @@
     playing: function(id) {
       var self = this;
 
-      // Check the passed sound ID (if any).
-      if (typeof id === 'number') {
-        var sound = self._soundById(id);
-        return sound ? !sound._paused : false;
+          // Check the passed sound ID (if any).
+          if (typeof id === 'number') {
+              var sound = self._soundById(id);
+              if (sound) {
+                  return self._webAudio ? !sound._paused : !(sound._paused || sound._node.paused);
+              }
+              else {
+                  return false;
+              }
+          }
+
+          // Otherwise, loop through all sounds and check if any are playing.
+          for (var i = 0; i < self._sounds.length; i++) {
+            if (self._webAudio) {
+                if (!self._sounds[i]._paused) {
+                    return true;
+                }
+            }
+            else{
+                if (!(self._sounds[i]._paused || self._sounds[i]._node.paused)) {
+                    return true;
+                }
+          }
       }
 
-      // Otherwise, loop through all sounds and check if any are playing.
-      for (var i=0; i<self._sounds.length; i++) {
-        if (!self._sounds[i]._paused) {
-          return true;
-        }
-      }
 
       return false;
     },
