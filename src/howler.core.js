@@ -751,10 +751,11 @@
           if (Promise && playpromise instanceof Promise) {
               playpromise.catch(function (error) {
                   self._emit('playerror', null, error.message);
-                  self.stop();
+                  node.pause();
               })
               playpromise.then(function (success) {
                   // Setup the new end timer.
+                  console.log('DURATION? ', node.duration, 'PAUSED? ', node.paused);
                   if (timeout !== Infinity) {
                       self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
                   }
@@ -764,10 +765,10 @@
               })
           }
           else{
-
-              if (node.duration == 0 || node.paused){
+              console.log('DURATION? ', node.duration, 'PAUSED? ', node.paused);
+              if (!node.duration || node.paused){
                 self._emit('playerror', null, "Failed to play");
-                self.stop();
+                node.pause();
               }
               else {
                 // Setup the new end timer.
