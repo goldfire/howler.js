@@ -890,32 +890,27 @@
 
           if (sound._node) {
             if (self._webAudio) {
-              // make sure the sound has been created
-              if (!sound._node.bufferSource) {
-                if (!internal) {
-                  self._emit('stop', sound._id);
+              // make sure the sound's AudioBufferSourceNode has been created
+              if (sound._node.bufferSource) {
+
+                if (typeof sound._node.bufferSource.stop === 'undefined') {
+                  sound._node.bufferSource.noteOff(0);
+                } else {
+                  sound._node.bufferSource.stop(0);
                 }
 
-                return self;
+                // Clean up the buffer source.
+                self._cleanBuffer(sound._node);
               }
-
-              if (typeof sound._node.bufferSource.stop === 'undefined') {
-                sound._node.bufferSource.noteOff(0);
-              } else {
-                sound._node.bufferSource.stop(0);
-              }
-
-              // Clean up the buffer source.
-              self._cleanBuffer(sound._node);
             } else if (!isNaN(sound._node.duration) || sound._node.duration === Infinity) {
               sound._node.currentTime = sound._start || 0;
               sound._node.pause();
             }
           }
-        }
 
-        if (sound && !internal) {
-          self._emit('stop', sound._id);
+          if (!internal) {
+            self._emit('stop', sound._id);
+          }
         }
       }
 
