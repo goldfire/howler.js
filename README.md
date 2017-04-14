@@ -137,7 +137,7 @@ var sound = new Howl({
   src: ['sound.webm', 'sound.mp3']
 });
 
-// Play returns a uniqe Sound ID that can be passed
+// Play returns a unique Sound ID that can be passed
 // into any method on Howl to control that specific sound.
 var id1 = sound.play();
 var id2 = sound.play();
