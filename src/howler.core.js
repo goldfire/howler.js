@@ -275,6 +275,84 @@
      * Concept from: http://paulbakaus.com/tutorials/html5/web-audio-on-ios/
      * @return {Howler}
      */
+    enableMobileAudio: function() {
+      var self = this || Howler;
+      
+      if (!Howler.ctx) {
+        Howler.setupAudioContext();
+      }
+
+      self._enableMobileAudio();
+
+      return self;
+    },
+
+    /**
+     * Call this method during a user interaction (touchstart, click, etc.) to create and play a buffer,
+     * then check if the audio actually played to determine if
+     * audio has now been unlocked on iOS, Android, etc.
+     * Concept from: http://paulbakaus.com/tutorials/html5/web-audio-on-ios/
+     * @return {Howler}
+     */
+    unlockMobileAudio: function() {
+      var self = this || Howler;
+      
+      if (!Howler.ctx) {
+        Howler.setupAudioContext();
+      }
+
+      self._unlockMobileAudio();
+
+      return self;
+    },
+
+    /**
+     * Create and play a buffer, then check if the audio actually played to determine if
+     * audio has now been unlocked on iOS, Android, etc.
+     * Concept from: http://paulbakaus.com/tutorials/html5/web-audio-on-ios/
+     * @param  {Function} fn    (optional) Function to call when completed.
+     * @return {Howler}
+     */
+    _unlockMobileAudio: function(fn) {
+      var self = this || Howler;
+
+      // Scratch buffer for enabling iOS to dispose of web audio buffers correctly, as per:
+      // http://stackoverflow.com/questions/24119684
+      self._scratchBuffer = self.ctx.createBuffer(1, 1, 22050);
+
+      // Create an empty buffer.
+      var source = self.ctx.createBufferSource();
+      source.buffer = self._scratchBuffer;
+      source.connect(self.ctx.destination);
+
+      // Play the empty buffer.
+      if (typeof source.start === 'undefined') {
+        source.noteOn(0);
+      } else {
+        source.start(0);
+      }
+
+      // Setup a timeout to check that we are unlocked on the next event loop.
+      source.onended = function() {
+        source.disconnect(0);
+
+        // Update the unlocked state and prevent this check from happening again.
+        self._mobileEnabled = true;
+        self.mobileAutoEnable = false;
+
+        if (typeof fn === 'function')
+          fn();
+      };
+
+      return self;
+    },
+
+    /**
+     * Mobile browsers will only allow audio to be played after a user interaction.
+     * Attempt to automatically unlock audio on the first user interaction.
+     * Concept from: http://paulbakaus.com/tutorials/html5/web-audio-on-ios/
+     * @return {Howler}
+     */
     _enableMobileAudio: function() {
       var self = this || Howler;
 
@@ -295,37 +373,11 @@
         self.unload();
       }
 
-      // Scratch buffer for enabling iOS to dispose of web audio buffers correctly, as per:
-      // http://stackoverflow.com/questions/24119684
-      self._scratchBuffer = self.ctx.createBuffer(1, 1, 22050);
-
-      // Call this method on touch start to create and play a buffer,
-      // then check if the audio actually played to determine if
-      // audio has now been unlocked on iOS, Android, etc.
       var unlock = function() {
-        // Create an empty buffer.
-        var source = self.ctx.createBufferSource();
-        source.buffer = self._scratchBuffer;
-        source.connect(self.ctx.destination);
-
-        // Play the empty buffer.
-        if (typeof source.start === 'undefined') {
-          source.noteOn(0);
-        } else {
-          source.start(0);
-        }
-
-        // Setup a timeout to check that we are unlocked on the next event loop.
-        source.onended = function() {
-          source.disconnect(0);
-
-          // Update the unlocked state and prevent this check from happening again.
-          self._mobileEnabled = true;
-          self.mobileAutoEnable = false;
-
+        self._unlockMobileAudio(function() {
           // Remove the touch start listener.
           document.removeEventListener('touchend', unlock, true);
-        };
+        });
       };
 
       // Setup a touch start listener to attempt an unlock in.
