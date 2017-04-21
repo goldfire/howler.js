@@ -270,6 +270,20 @@
     },
 
     /**
+     * Indicates whether audio needs to be unlocked on mobile.
+     */
+    needsMobileUnlock: function() {
+      var self = this || Howler;
+
+      if (self._mobileEnabled)
+        return false;
+
+      var isMobile = /iPhone|iPad|iPod|Android|BlackBerry|BB10|Silk|Mobi/i.test(self._navigator && self._navigator.userAgent);
+
+      return isMobile;
+    },
+
+    /**
      * Mobile browsers will only allow audio to be played after a user interaction.
      * Attempt to automatically unlock audio on the first user interaction.
      * Concept from: http://paulbakaus.com/tutorials/html5/web-audio-on-ios/
@@ -357,9 +371,8 @@
       var self = this || Howler;
 
       // Only run this on mobile devices if audio isn't already eanbled.
-      var isMobile = /iPhone|iPad|iPod|Android|BlackBerry|BB10|Silk|Mobi/i.test(self._navigator && self._navigator.userAgent);
       var isTouch = !!(('ontouchend' in window) || (self._navigator && self._navigator.maxTouchPoints > 0) || (self._navigator && self._navigator.msMaxTouchPoints > 0));
-      if (self._mobileEnabled || !self.ctx || (!isMobile && !isTouch)) {
+      if (!self.ctx || (!self.needsMobileUnlock() && !isTouch)) {
         return;
       }
 
