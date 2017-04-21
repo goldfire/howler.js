@@ -68,7 +68,7 @@
 
       // If we don't have an AudioContext created yet, run the setup.
       if (!self.ctx) {
-        setupAudioContext();
+        Howler.setupAudioContext();
       }
 
       if (typeof vol !== 'undefined' && vol >= 0 && vol <= 1) {
@@ -116,7 +116,7 @@
 
       // If we don't have an AudioContext created yet, run the setup.
       if (!self.ctx) {
-        setupAudioContext();
+        Howler.setupAudioContext();
       }
 
       self._muted = muted;
@@ -161,7 +161,7 @@
       if (self.usingWebAudio && self.ctx && typeof self.ctx.close !== 'undefined') {
         self.ctx.close();
         self.ctx = null;
-        setupAudioContext();
+        Howler.setupAudioContext();
       }
 
       return self;
@@ -422,6 +422,46 @@
   // Setup the global audio controller.
   var Howler = new HowlerGlobal();
 
+  /**
+   * Setup the audio context when available, or switch to HTML5 Audio mode.
+   */
+  Howler.setupAudioContext = function() {
+    // Check if we are using Web Audio and setup the AudioContext if we are.
+    try {
+      if (typeof AudioContext !== 'undefined') {
+        Howler.ctx = new AudioContext();
+      } else if (typeof webkitAudioContext !== 'undefined') {
+        Howler.ctx = new webkitAudioContext();
+      } else {
+        Howler.usingWebAudio = false;
+      }
+    } catch(e) {
+      Howler.usingWebAudio = false;
+    }
+
+    // Check if a webview is being used on iOS8 or earlier (rather than the browser).
+    // If it is, disable Web Audio as it causes crashing.
+    var iOS = (/iP(hone|od|ad)/.test(Howler._navigator && Howler._navigator.platform));
+    var appVersion = Howler._navigator && Howler._navigator.appVersion.match(/OS (\d+)_(\d+)_?(\d+)?/);
+    var version = appVersion ? parseInt(appVersion[1], 10) : null;
+    if (iOS && version && version < 9) {
+      var safari = /safari/.test(Howler._navigator && Howler._navigator.userAgent.toLowerCase());
+      if (Howler._navigator && Howler._navigator.standalone && !safari || Howler._navigator && !Howler._navigator.standalone && !safari) {
+        Howler.usingWebAudio = false;
+      }
+    }
+
+    // Create and expose the master GainNode when using Web Audio (useful for plugins or advanced usage).
+    if (Howler.usingWebAudio) {
+      Howler.masterGain = (typeof Howler.ctx.createGain === 'undefined') ? Howler.ctx.createGainNode() : Howler.ctx.createGain();
+      Howler.masterGain.gain.value = 1;
+      Howler.masterGain.connect(Howler.ctx.destination);
+    }
+
+    // Re-run the setup on Howler.
+    Howler._setup();
+  };
+
   /** Group Methods **/
   /***************************************************************************/
 
@@ -451,7 +491,7 @@
 
       // If we don't have an AudioContext created yet, run the setup.
       if (!Howler.ctx) {
-        setupAudioContext();
+        Howler.setupAudioContext();
       }
 
       // Setup user-defined default properties.
@@ -2121,46 +2161,6 @@
       self._emit('load');
       self._loadQueue();
     }
-  };
-
-  /**
-   * Setup the audio context when available, or switch to HTML5 Audio mode.
-   */
-  var setupAudioContext = function() {
-    // Check if we are using Web Audio and setup the AudioContext if we are.
-    try {
-      if (typeof AudioContext !== 'undefined') {
-        Howler.ctx = new AudioContext();
-      } else if (typeof webkitAudioContext !== 'undefined') {
-        Howler.ctx = new webkitAudioContext();
-      } else {
-        Howler.usingWebAudio = false;
-      }
-    } catch(e) {
-      Howler.usingWebAudio = false;
-    }
-
-    // Check if a webview is being used on iOS8 or earlier (rather than the browser).
-    // If it is, disable Web Audio as it causes crashing.
-    var iOS = (/iP(hone|od|ad)/.test(Howler._navigator && Howler._navigator.platform));
-    var appVersion = Howler._navigator && Howler._navigator.appVersion.match(/OS (\d+)_(\d+)_?(\d+)?/);
-    var version = appVersion ? parseInt(appVersion[1], 10) : null;
-    if (iOS && version && version < 9) {
-      var safari = /safari/.test(Howler._navigator && Howler._navigator.userAgent.toLowerCase());
-      if (Howler._navigator && Howler._navigator.standalone && !safari || Howler._navigator && !Howler._navigator.standalone && !safari) {
-        Howler.usingWebAudio = false;
-      }
-    }
-
-    // Create and expose the master GainNode when using Web Audio (useful for plugins or advanced usage).
-    if (Howler.usingWebAudio) {
-      Howler.masterGain = (typeof Howler.ctx.createGain === 'undefined') ? Howler.ctx.createGainNode() : Howler.ctx.createGain();
-      Howler.masterGain.gain.value = 1;
-      Howler.masterGain.connect(Howler.ctx.destination);
-    }
-
-    // Re-run the setup on Howler.
-    Howler._setup();
   };
 
   // Add support for AMD (Asynchronous Module Definition) libraries such as require.js.
