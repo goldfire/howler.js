@@ -29,10 +29,7 @@
   },
   "main": "dist/howler.js",
   "version": "2.0.3",
-  "license": {
-    "type": "MIT",
-    "url": "https://raw.githubusercontent.com/goldfire/howler.js/master/LICENSE.md"
-  },
+  "license": "MIT",
   "files": [
     "src",
     "dist/howler.js",
