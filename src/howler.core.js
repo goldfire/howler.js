@@ -315,6 +315,9 @@
           source.start(0);
         }
 
+        // fix for Chrome in Android. Warn: An AudioContext in a cross origin iframe must be created or resumed from a user gesture to enable audio output.
+        Howler._autoResume();
+        
         // Setup a timeout to check that we are unlocked on the next event loop.
         source.onended = function() {
           source.disconnect(0);
@@ -393,19 +396,25 @@
         return;
       }
 
+      var resumeFunction = function() {
+        self.ctx.resume().then(function() {
+              self.state = 'running';
+
+              // Emit to all Howls that the audio has resumed.
+              for (var i=0; i<self._howls.length; i++) {
+                  self._howls[i]._emit('resume');
+              }
+          });
+      }
+
+
       if (self.state === 'running' && self._suspendTimer) {
         clearTimeout(self._suspendTimer);
         self._suspendTimer = null;
       } else if (self.state === 'suspended') {
         self.state = 'resuming';
-        self.ctx.resume().then(function() {
-          self.state = 'running';
 
-          // Emit to all Howls that the audio has resumed.
-          for (var i=0; i<self._howls.length; i++) {
-            self._howls[i]._emit('resume');
-          }
-        });
+        resumeFunction();
 
         if (self._suspendTimer) {
           clearTimeout(self._suspendTimer);
@@ -413,6 +422,10 @@
         }
       } else if (self.state === 'suspending') {
         self._resumeAfterSuspend = true;
+      } else if (self.state === 'resuming') {
+        // in Android Chrome, state will remain resuming because self.ctx.resume will throw an warn 
+        // and it will never go next, so we need to cover also the case where state is resuming.
+          resumeFunction();
       }
 
       return self;
