@@ -424,7 +424,8 @@
         self._resumeAfterSuspend = true;
       } else if (self.state === 'resuming') {
         // in Android Chrome, state will remain resuming because self.ctx.resume will throw an warn 
-        // and it will never go next, so we need to cover also the case where state is resuming.
+        // and it will never go next, so we need to cover also the case where state is resuming and 
+        // try again to resume after a user gesture
           resumeFunction();
       }
 
