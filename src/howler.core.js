@@ -68,7 +68,7 @@
 
       // If we don't have an AudioContext created yet, run the setup.
       if (!self.ctx) {
-        setupAudioContext();
+        Howler.setupAudioContext();
       }
 
       if (typeof vol !== 'undefined' && vol >= 0 && vol <= 1) {
@@ -116,7 +116,7 @@
 
       // If we don't have an AudioContext created yet, run the setup.
       if (!self.ctx) {
-        setupAudioContext();
+        Howler.setupAudioContext();
       }
 
       self._muted = muted;
@@ -161,7 +161,7 @@
       if (self.usingWebAudio && self.ctx && typeof self.ctx.close !== 'undefined') {
         self.ctx.close();
         self.ctx = null;
-        setupAudioContext();
+        Howler.setupAudioContext();
       }
 
       return self;
@@ -270,6 +270,98 @@
     },
 
     /**
+     * Indicates whether audio needs to be unlocked on mobile.
+     */
+    needsMobileUnlock: function() {
+      var self = this || Howler;
+
+      if (self._mobileEnabled)
+        return false;
+
+      var isMobile = /iPhone|iPad|iPod|Android|BlackBerry|BB10|Silk|Mobi/i.test(self._navigator && self._navigator.userAgent);
+
+      return isMobile;
+    },
+
+    /**
+     * Mobile browsers will only allow audio to be played after a user interaction.
+     * Attempt to automatically unlock audio on the first user interaction.
+     * Concept from: http://paulbakaus.com/tutorials/html5/web-audio-on-ios/
+     * @return {Howler}
+     */
+    enableMobileAudio: function() {
+      var self = this || Howler;
+      
+      if (!Howler.ctx) {
+        Howler.setupAudioContext();
+      }
+
+      self._enableMobileAudio();
+
+      return self;
+    },
+
+    /**
+     * Call this method during a user interaction (touchstart, click, etc.) to create and play a buffer,
+     * then check if the audio actually played to determine if
+     * audio has now been unlocked on iOS, Android, etc.
+     * Concept from: http://paulbakaus.com/tutorials/html5/web-audio-on-ios/
+     * @return {Howler}
+     */
+    unlockMobileAudio: function() {
+      var self = this || Howler;
+      
+      if (!Howler.ctx) {
+        Howler.setupAudioContext();
+      }
+
+      self._unlockMobileAudio();
+
+      return self;
+    },
+
+    /**
+     * Create and play a buffer, then check if the audio actually played to determine if
+     * audio has now been unlocked on iOS, Android, etc.
+     * Concept from: http://paulbakaus.com/tutorials/html5/web-audio-on-ios/
+     * @param  {Function} fn    (optional) Function to call when completed.
+     * @return {Howler}
+     */
+    _unlockMobileAudio: function(fn) {
+      var self = this || Howler;
+
+      // Scratch buffer for enabling iOS to dispose of web audio buffers correctly, as per:
+      // http://stackoverflow.com/questions/24119684
+      self._scratchBuffer = self.ctx.createBuffer(1, 1, 22050);
+
+      // Create an empty buffer.
+      var source = self.ctx.createBufferSource();
+      source.buffer = self._scratchBuffer;
+      source.connect(self.ctx.destination);
+
+      // Play the empty buffer.
+      if (typeof source.start === 'undefined') {
+        source.noteOn(0);
+      } else {
+        source.start(0);
+      }
+
+      // Setup a timeout to check that we are unlocked on the next event loop.
+      source.onended = function() {
+        source.disconnect(0);
+
+        // Update the unlocked state and prevent this check from happening again.
+        self._mobileEnabled = true;
+        self.mobileAutoEnable = false;
+
+        if (typeof fn === 'function')
+          fn();
+      };
+
+      return self;
+    },
+
+    /**
      * Mobile browsers will only allow audio to be played after a user interaction.
      * Attempt to automatically unlock audio on the first user interaction.
      * Concept from: http://paulbakaus.com/tutorials/html5/web-audio-on-ios/
@@ -279,9 +371,8 @@
       var self = this || Howler;
 
       // Only run this on mobile devices if audio isn't already eanbled.
-      var isMobile = /iPhone|iPad|iPod|Android|BlackBerry|BB10|Silk|Mobi/i.test(self._navigator && self._navigator.userAgent);
       var isTouch = !!(('ontouchend' in window) || (self._navigator && self._navigator.maxTouchPoints > 0) || (self._navigator && self._navigator.msMaxTouchPoints > 0));
-      if (self._mobileEnabled || !self.ctx || (!isMobile && !isTouch)) {
+      if (!self.ctx || (!self.needsMobileUnlock() && !isTouch)) {
         return;
       }
 
@@ -295,37 +386,11 @@
         self.unload();
       }
 
-      // Scratch buffer for enabling iOS to dispose of web audio buffers correctly, as per:
-      // http://stackoverflow.com/questions/24119684
-      self._scratchBuffer = self.ctx.createBuffer(1, 1, 22050);
-
-      // Call this method on touch start to create and play a buffer,
-      // then check if the audio actually played to determine if
-      // audio has now been unlocked on iOS, Android, etc.
       var unlock = function() {
-        // Create an empty buffer.
-        var source = self.ctx.createBufferSource();
-        source.buffer = self._scratchBuffer;
-        source.connect(self.ctx.destination);
-
-        // Play the empty buffer.
-        if (typeof source.start === 'undefined') {
-          source.noteOn(0);
-        } else {
-          source.start(0);
-        }
-
-        // Setup a timeout to check that we are unlocked on the next event loop.
-        source.onended = function() {
-          source.disconnect(0);
-
-          // Update the unlocked state and prevent this check from happening again.
-          self._mobileEnabled = true;
-          self.mobileAutoEnable = false;
-
+        self._unlockMobileAudio(function() {
           // Remove the touch start listener.
           document.removeEventListener('touchend', unlock, true);
-        };
+        });
       };
 
       // Setup a touch start listener to attempt an unlock in.
@@ -422,6 +487,46 @@
   // Setup the global audio controller.
   var Howler = new HowlerGlobal();
 
+  /**
+   * Setup the audio context when available, or switch to HTML5 Audio mode.
+   */
+  Howler.setupAudioContext = function() {
+    // Check if we are using Web Audio and setup the AudioContext if we are.
+    try {
+      if (typeof AudioContext !== 'undefined') {
+        Howler.ctx = new AudioContext();
+      } else if (typeof webkitAudioContext !== 'undefined') {
+        Howler.ctx = new webkitAudioContext();
+      } else {
+        Howler.usingWebAudio = false;
+      }
+    } catch(e) {
+      Howler.usingWebAudio = false;
+    }
+
+    // Check if a webview is being used on iOS8 or earlier (rather than the browser).
+    // If it is, disable Web Audio as it causes crashing.
+    var iOS = (/iP(hone|od|ad)/.test(Howler._navigator && Howler._navigator.platform));
+    var appVersion = Howler._navigator && Howler._navigator.appVersion.match(/OS (\d+)_(\d+)_?(\d+)?/);
+    var version = appVersion ? parseInt(appVersion[1], 10) : null;
+    if (iOS && version && version < 9) {
+      var safari = /safari/.test(Howler._navigator && Howler._navigator.userAgent.toLowerCase());
+      if (Howler._navigator && Howler._navigator.standalone && !safari || Howler._navigator && !Howler._navigator.standalone && !safari) {
+        Howler.usingWebAudio = false;
+      }
+    }
+
+    // Create and expose the master GainNode when using Web Audio (useful for plugins or advanced usage).
+    if (Howler.usingWebAudio) {
+      Howler.masterGain = (typeof Howler.ctx.createGain === 'undefined') ? Howler.ctx.createGainNode() : Howler.ctx.createGain();
+      Howler.masterGain.gain.value = 1;
+      Howler.masterGain.connect(Howler.ctx.destination);
+    }
+
+    // Re-run the setup on Howler.
+    Howler._setup();
+  };
+
   /** Group Methods **/
   /***************************************************************************/
 
@@ -451,7 +556,7 @@
 
       // If we don't have an AudioContext created yet, run the setup.
       if (!Howler.ctx) {
-        setupAudioContext();
+        Howler.setupAudioContext();
       }
 
       // Setup user-defined default properties.
@@ -2113,46 +2218,6 @@
       self._emit('load');
       self._loadQueue();
     }
-  };
-
-  /**
-   * Setup the audio context when available, or switch to HTML5 Audio mode.
-   */
-  var setupAudioContext = function() {
-    // Check if we are using Web Audio and setup the AudioContext if we are.
-    try {
-      if (typeof AudioContext !== 'undefined') {
-        Howler.ctx = new AudioContext();
-      } else if (typeof webkitAudioContext !== 'undefined') {
-        Howler.ctx = new webkitAudioContext();
-      } else {
-        Howler.usingWebAudio = false;
-      }
-    } catch(e) {
-      Howler.usingWebAudio = false;
-    }
-
-    // Check if a webview is being used on iOS8 or earlier (rather than the browser).
-    // If it is, disable Web Audio as it causes crashing.
-    var iOS = (/iP(hone|od|ad)/.test(Howler._navigator && Howler._navigator.platform));
-    var appVersion = Howler._navigator && Howler._navigator.appVersion.match(/OS (\d+)_(\d+)_?(\d+)?/);
-    var version = appVersion ? parseInt(appVersion[1], 10) : null;
-    if (iOS && version && version < 9) {
-      var safari = /safari/.test(Howler._navigator && Howler._navigator.userAgent.toLowerCase());
-      if (Howler._navigator && Howler._navigator.standalone && !safari || Howler._navigator && !Howler._navigator.standalone && !safari) {
-        Howler.usingWebAudio = false;
-      }
-    }
-
-    // Create and expose the master GainNode when using Web Audio (useful for plugins or advanced usage).
-    if (Howler.usingWebAudio) {
-      Howler.masterGain = (typeof Howler.ctx.createGain === 'undefined') ? Howler.ctx.createGainNode() : Howler.ctx.createGain();
-      Howler.masterGain.gain.value = 1;
-      Howler.masterGain.connect(Howler.ctx.destination);
-    }
-
-    // Re-run the setup on Howler.
-    Howler._setup();
   };
 
   // Add support for AMD (Asynchronous Module Definition) libraries such as require.js.
