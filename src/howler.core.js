@@ -1473,7 +1473,6 @@
         // Remove the source or disconnect.
         if (!self._webAudio) {
           // Set the source to 0-second silence to stop any downloading.
-          sounds[i]._node.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
 
           // Remove any event listeners.
           sounds[i]._node.removeEventListener('error', sounds[i]._errorFn, false);
@@ -1654,6 +1653,14 @@
      */
     _ended: function(sound) {
       var self = this;
+      // If we are using IE and there was network latency we may be clipping
+      // audio before it completes playing. Lets check the node to make sure it
+      // believes it has completed, before ending the playback.
+      if (!self._webAudio && !self._node.ended) {
+        setTimeout(self._ended.bind(self, sound), 100);
+        return self;
+      }
+
       var sprite = sound._sprite;
 
       // Should this sound loop?
@@ -1979,7 +1986,7 @@
       self._parent._emit('loaderror', self._id, self._node.error ? self._node.error.code : 0);
 
       // Clear the event listener.
-      self._node.removeEventListener('error', self._errorListener, false);
+      self._node.removeEventListener('error', self._errorFn, false);
     },
 
     /**
