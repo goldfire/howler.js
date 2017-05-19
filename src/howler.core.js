@@ -31,7 +31,7 @@
       var self = this || Howler;
 
       // Create a global ID counter.
-      self._counter = 0;
+      self._counter = 1000;
 
       // Internal properties.
       self._codecs = {};
