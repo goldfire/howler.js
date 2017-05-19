@@ -1657,6 +1657,8 @@
      */
     _ended: function(sound) {
       var self = this;
+      var sprite = sound._sprite;
+
       // If we are using IE and there was network latency we may be clipping
       // audio before it completes playing. Lets check the node to make sure it
       // believes it has completed, before ending the playback.
@@ -1664,8 +1666,6 @@
         setTimeout(self._ended.bind(self, sound), 100);
         return self;
       }
-
-      var sprite = sound._sprite;
 
       // Should this sound loop?
       var loop = !!(sound._loop || self._sprite[sprite][2]);
