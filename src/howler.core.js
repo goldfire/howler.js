@@ -1548,10 +1548,17 @@
       var events = self['_on' + event];
       var i = 0;
 
-      if (fn) {
+      // Allow passing just an event and ID.
+      if (typeof fn === 'number') {
+        id = fn;
+        fn = null;
+      }
+
+      if (fn || id) {
         // Loop through event store and remove the passed function.
         for (i=0; i<events.length; i++) {
-          if (fn === events[i].fn && id === events[i].id) {
+          var isId = (id === events[i].id);
+          if (fn === events[i].fn && isId || !fn && isId) {
             events.splice(i, 1);
             break;
           }
