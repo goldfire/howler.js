@@ -1955,7 +1955,6 @@
       self._muted = parent._muted;
       self._loop = parent._loop;
       self._volume = parent._volume;
-      self._muted = parent._muted;
       self._rate = parent._rate;
       self._seek = 0;
       self._rateSeek = 0;
