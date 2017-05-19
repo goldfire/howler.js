@@ -819,9 +819,9 @@
 
           if (sound._node) {
             if (self._webAudio) {
-              // make sure the sound has been created
-              if (!sound._node.bufferSource) {
-                return self;
+              // Make sure the sound has been created.
+              if (sound._node.bufferSource) {
+                continue;
               }
 
               if (typeof sound._node.bufferSource.stop === 'undefined') {
@@ -890,9 +890,8 @@
 
           if (sound._node) {
             if (self._webAudio) {
-              // make sure the sound's AudioBufferSourceNode has been created
+              // Make sure the sound's AudioBufferSourceNode has been created.
               if (sound._node.bufferSource) {
-
                 if (typeof sound._node.bufferSource.stop === 'undefined') {
                   sound._node.bufferSource.noteOff(0);
                 } else {
