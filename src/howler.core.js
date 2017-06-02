@@ -2168,7 +2168,7 @@
     // Create and expose the master GainNode when using Web Audio (useful for plugins or advanced usage).
     if (Howler.usingWebAudio) {
       Howler.masterGain = (typeof Howler.ctx.createGain === 'undefined') ? Howler.ctx.createGainNode() : Howler.ctx.createGain();
-      Howler.masterGain.gain.value = 1;
+      Howler.masterGain.gain.value = Howler._muted ? 0 : 1;
       Howler.masterGain.connect(Howler.ctx.destination);
     }
 
