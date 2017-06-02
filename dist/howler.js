@@ -481,6 +481,7 @@
       self._onloaderror = o.onloaderror ? [{fn: o.onloaderror}] : [];
       self._onpause = o.onpause ? [{fn: o.onpause}] : [];
       self._onplay = o.onplay ? [{fn: o.onplay}] : [];
+      self._onplayerror = o.onplayerror ? [{fn: o.onplayerror}] : [];
       self._onstop = o.onstop ? [{fn: o.onstop}] : [];
       self._onmute = o.onmute ? [{fn: o.onmute}] : [];
       self._onvolume = o.onvolume ? [{fn: o.onvolume}] : [];
@@ -744,16 +745,44 @@
           node.muted = sound._muted || self._muted || Howler._muted || node.muted;
           node.volume = sound._volume * Howler.volume();
           node.playbackRate = sound._rate;
-          node.play();
 
-          // Setup the new end timer.
-          if (timeout !== Infinity) {
-            self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
+          var playpromise = node.play();
+
+          if (Promise && playpromise instanceof Promise) {
+
+              playpromise.then(function (success) {
+                  if (!node.duration || node.paused){
+                      throw new Error ("Failed to play");
+                  }
+                  // Setup the new end timer.
+                  if (timeout !== Infinity) {
+                      self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
+                  }
+                  if (!internal) {
+                      self._emit('play', sound._id);
+                  }
+              })
+              .catch(function (error) {
+                  self._emit('playerror', sound._id, error);
+                  node.pause();
+              })
+          }
+          else{
+              if (!node.duration || node.paused){
+                self._emit('playerror', sound._id, {message: "Failed to play"});
+                node.pause();
+              }
+              else {
+                // Setup the new end timer.
+                if (timeout !== Infinity) {
+                  self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
+                }
+                if (!internal) {
+                  self._emit('play', sound._id);
+                }
+              }
           }
 
-          if (!internal) {
-            self._emit('play', sound._id);
-          }
         };
 
         // Play immediately if ready, or wait for the 'canplaythrough'e vent.
@@ -1419,18 +1448,31 @@
     playing: function(id) {
       var self = this;
 
-      // Check the passed sound ID (if any).
-      if (typeof id === 'number') {
-        var sound = self._soundById(id);
-        return sound ? !sound._paused : false;
+          // Check the passed sound ID (if any).
+          if (typeof id === 'number') {
+              var sound = self._soundById(id);
+              if (sound) {
+                  return self._webAudio ? !sound._paused : !(sound._paused || sound._node.paused);
+              }
+              else {
+                  return false;
+              }
+          }
+
+          // Otherwise, loop through all sounds and check if any are playing.
+          for (var i = 0; i < self._sounds.length; i++) {
+            if (self._webAudio) {
+                if (!self._sounds[i]._paused) {
+                    return true;
+                }
+            }
+            else{
+                if (!(self._sounds[i]._paused || self._sounds[i]._node.paused)) {
+                    return true;
+                }
+          }
       }
 
-      // Otherwise, loop through all sounds and check if any are playing.
-      for (var i=0; i<self._sounds.length; i++) {
-        if (!self._sounds[i]._paused) {
-          return true;
-        }
-      }
 
       return false;
     },
