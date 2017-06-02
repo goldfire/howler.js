@@ -653,13 +653,14 @@
         sprite = sound._sprite || '__default';
       }
 
-      // If we have no sprite and the sound hasn't loaded, we must wait
-      // for the sound to load to get our audio's duration.
-      if (self._state !== 'loaded' && !self._sprite[sprite]) {
+      // If If the sound hasn't loaded, we must wait to get the audio's duration.
+      // We also need to wait to make sure we don't run into race conditions with
+      // the order of function calls.
+      if (self._state !== 'loaded') {
         self._queue.push({
           event: 'play',
           action: function() {
-            self.play(self._soundById(sound._id) ? sound._id : undefined);
+            self.play(sprite, internal);
           }
         });
 
