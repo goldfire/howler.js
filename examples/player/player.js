@@ -22,6 +22,7 @@ elms.forEach(function(elm) {
 var Player = function(playlist) {
   this.playlist = playlist;
   this.index = 0;
+  this.step = this.step.bind(this);
 
   // Display the title of the first track.
   track.innerHTML = '1. ' + playlist[0].title;
@@ -62,7 +63,7 @@ Player.prototype = {
           duration.innerHTML = self.formatTime(Math.round(sound.duration()));
 
           // Start upating the progress of the track.
-          requestAnimationFrame(self.step.bind(self));
+          requestAnimationFrame(self.step);
 
           // Start the wave animation if we have already loaded
           wave.container.style.display = 'block';
@@ -222,7 +223,7 @@ Player.prototype = {
 
     // If the sound is still playing, continue stepping.
     if (sound.playing()) {
-      requestAnimationFrame(self.step.bind(self));
+      requestAnimationFrame(self.step);
     }
   },
 
