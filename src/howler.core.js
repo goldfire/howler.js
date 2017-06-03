@@ -765,6 +765,19 @@
           playHtml5();
         } else {
           var listener = function() {
+              
+              //It's possible stop or pause has been called in the meantime.
+              //Check this for looped sounds to avoid looping forever.
+               if (self._loop){
+                for(var i = 0, len = self._queue.length; i < len; i++){
+                    var eventType = self._queue[i].event;
+                    if(eventType === 'stop' || eventType === 'pause'){
+                        self.loop(false);
+                        break;
+                    }
+                }
+            }
+            
             // Begin playback.
             playHtml5();
 
