@@ -5,6 +5,8 @@
 
 Additional information, live demos and a user showcase are available at [howlerjs.com](https://howlerjs.com).
 
+Easily create compatible SoundSprites in multiple formats with matching json using **[realbluesky/soundsprite](https://github.com/realbluesky/soundsprite)**
+
 ### Features
 * Single API for all audio needs
 * Defaults to Web Audio API and falls back to HTML5 Audio
