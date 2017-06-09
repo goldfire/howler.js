@@ -662,18 +662,22 @@
       // We also need to wait to make sure we don't run into race conditions with
       // the order of function calls.
       if (self._state !== 'loaded') {
+        // Set the sprite value on this sound.
+        sound._sprite = sprite;
+
+        // Makr this sounded as not ended in case another sound is played before this one loads.
+        sound._ended = false;
+
+        // Add the sound to the queue to be played on load.
+        var soundId = sound._id;
         self._queue.push({
           event: 'play',
           action: function() {
-            if (sound) {
-              sound._sprite = sprite;
-            }
-
-            self.play(sound ? sound._id : sprite);
+            self.play(soundId);
           }
         });
 
-        return sound._id;
+        return soundId;
       }
 
       // Don't play the sound if an id was passed and it is already playing.
