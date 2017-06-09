@@ -828,7 +828,7 @@
           if (sound._node) {
             if (self._webAudio) {
               // Make sure the sound has been created.
-              if (sound._node.bufferSource) {
+              if (!sound._node.bufferSource) {
                 continue;
               }
 
