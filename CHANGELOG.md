@@ -1,3 +1,16 @@
+## 2.0.4 (June 9, 2017)
+- `CHANGED` Removed the `resuming` state, which wasn't actually being used and was leading to a bug on Android ([#679](https://github.com/goldfire/howler.js/pull/679)).
+- `CHANGED` Any playback initiated before the sound has loaded will now go into the queue to fix various race conditions ([#714](https://github.com/goldfire/howler.js/pull/714)).
+- `FIXED` Correctly initialize an AudioContext with the global mute status ([#714](https://github.com/goldfire/howler.js/pull/714)).
+- `FIXED` AudioContext unlocks on user interaction within a cross-domain iframe on Android Chrome ([#756](https://github.com/goldfire/howler.js/pull/756)).
+- `FIXED` Stopping/pausing a group of sounds now behaves as expected in edge cases ([#734](https://github.com/goldfire/howler.js/pull/734)).
+- `FIXED` Sound ID's now start at 1000 instead of 0 to avoid `rate` collisions ([#764](https://github.com/goldfire/howler.js/issues/764)).
+- `FIXED` Prevent unknown mime errors on Internet Explorer when unloading a sound ([#720](https://github.com/goldfire/howler.js/pull/720)).
+- `FIXED` Correctly clean up error event listeners ([#720](https://github.com/goldfire/howler.js/pull/720)).
+- `FIXED` Audio clipping in Internet Explorer when network latency is present with HTML5 Audio ([#720](https://github.com/goldfire/howler.js/pull/720)).
+- `FIXED` Allow passing just an event and ID to turn off listener ([#767](https://github.com/goldfire/howler.js/issues/767)).
+- `FIXED` `npm` warning caused by invalid license definition ([#763](https://github.com/goldfire/howler.js/pull/763)).
+
 ## 2.0.3 (March 11, 2017)
 - `CHANGED` Unloading a sound no longer fires the `end` event ([#675](https://github.com/goldfire/howler.js/pull/675)).
 - `FIXED` Remove `setTimeout` wrapper on HTML5 `play` call to fix issues on mobile browsers ([#694](https://github.com/goldfire/howler.js/pull/694)).
