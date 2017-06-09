@@ -40,6 +40,8 @@
       self._volume = 1;
       self._canPlayEvent = 'canplaythrough';
       self._navigator = (typeof window !== 'undefined' && window.navigator) ? window.navigator : null;
+      // Pool of activated HTML5 Audio objects for use on mobile.
+      self._mobileAudioPool = null;
 
       // Public properties.
       self.masterGain = null;
@@ -50,6 +52,10 @@
 
       // Set to false to disable the auto iOS enabler.
       self.mobileAutoEnable = true;
+
+      // The number of enabled HTML5 Audio objects to keep on mobile.
+      // The pool will not be used if mobileAutoEnable is false.
+      self.html5MobileAudioPoolDefaultSize = 10;
 
       // Setup the various state values for global tracking.
       self._setup();
@@ -303,6 +309,21 @@
       // then check if the audio actually played to determine if
       // audio has now been unlocked on iOS, Android, etc.
       var unlock = function() {
+        // Create a pool of activated HTML5 Audio objects that can
+        // be used for playing sounds without user interaction. HTML5
+        // Audio objects must be individually activated, as opposed
+        // to the WebAudio API which only needs a single activation.
+        // This must occur before WebAudio setup or the source.onended
+        // event will not fire.
+        Howler._mobileAudioPool = [];
+        for (var i = 0; i < Howler.html5MobileAudioPoolDefaultSize; i++) {
+          var mobileAudio = new Audio();
+          // "Play" the audio to activate it.
+          mobileAudio.play();
+          // Pool the newly-activated Audio object for later use.
+          Howler._releaseHtml5Audio(mobileAudio);
+        }
+
         // Fix Android can not play in suspend state.
         Howler._autoResume();
 
@@ -335,6 +356,36 @@
       document.addEventListener('touchend', unlock, true);
 
       return self;
+    },
+
+    /**
+     * Obtain an activated HTML5 Audio object from the pool. If there are no
+     * pooled objects left (or mobileAutoEnable is false), a new Audio
+     * object without activation will be returned.
+     * @return {Audio}
+     */
+    _obtainHtml5Audio: function() {
+      var self = this || Howler;
+      var audio;
+
+      if (self._mobileAudioPool && self._mobileAudioPool.length) {
+        audio = self._mobileAudioPool.pop();
+      }
+
+      return audio || new Audio();
+    },
+
+    /**
+     * Return an activated HTML5 Audio object to the pool.
+     * @return {Audio}
+     */
+    _releaseHtml5Audio: function(audio) {
+      var self = this || Howler;
+
+      // Only return the object if we are pooling Audio objects.
+      if (self._mobileAudioPool) {
+        self._mobileAudioPool.push(audio);
+      }
     },
 
     /**
@@ -653,7 +704,7 @@
         sprite = sound._sprite || '__default';
       }
 
-      // If If the sound hasn't loaded, we must wait to get the audio's duration.
+      // If the sound hasn't loaded, we must wait to get the audio's duration.
       // We also need to wait to make sure we don't run into race conditions with
       // the order of function calls.
       if (self._state !== 'loaded') {
@@ -1484,6 +1535,9 @@
           // Remove any event listeners.
           sounds[i]._node.removeEventListener('error', sounds[i]._errorFn, false);
           sounds[i]._node.removeEventListener(Howler._canPlayEvent, sounds[i]._loadFn, false);
+
+          // Release the Audio object back to the pool.
+          Howler._releaseHtml5Audio(sounds[i]._node);
         }
 
         // Empty out all of the nodes.
@@ -1936,7 +1990,8 @@
         self._node.paused = true;
         self._node.connect(Howler.masterGain);
       } else {
-        self._node = new Audio();
+        // Obtain an activated Audio object from the pool.
+        self._node = Howler._obtainHtml5Audio();
 
         // Listen for errors (http://dev.w3.org/html5/spec-author-view/spec.html#mediaerror).
         self._errorFn = self._errorListener.bind(self);
