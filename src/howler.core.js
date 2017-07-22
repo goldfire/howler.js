@@ -1355,7 +1355,9 @@
         if (index >= 0) {
           id = parseInt(args[0], 10);
         } else {
-          id = self._sounds[0]._id;
+          if (self._sounds.length > 0) {
+            id = self._sounds[0]._id;
+          }
           seek = parseFloat(args[0]);
         }
       } else if (args.length === 2) {
