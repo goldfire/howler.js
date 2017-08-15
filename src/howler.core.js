@@ -1077,16 +1077,6 @@
      */
     fade: function(from, to, len, id) {
       var self = this;
-      var diff = Math.abs(from - to);
-      var dir = from > to ? 'out' : 'in';
-      var steps = diff / 0.01;
-      var stepLen = (steps > 0) ? len / steps : len;
-
-      // Since browsers clamp timeouts to 4ms, we need to clamp our steps to that too.
-      if (stepLen < 4) {
-        steps = Math.ceil(steps / (4 / stepLen));
-        stepLen = 4;
-      }
 
       // If the sound hasn't loaded, add it to the load queue to fade when capable.
       if (self._state !== 'loaded') {
@@ -1125,43 +1115,66 @@
             sound._node.gain.linearRampToValueAtTime(to, end);
           }
 
-          var vol = from;
-          sound._interval = setInterval(function(soundId, sound) {
-            // Update the volume amount, but only if the volume should change.
-            if (steps > 0) {
-              vol += (dir === 'in' ? 0.01 : -0.01);
-            }
-
-            // Make sure the volume is in the right bounds.
-            vol = Math.max(0, vol);
-            vol = Math.min(1, vol);
-
-            // Round to within 2 decimal points.
-            vol = Math.round(vol * 100) / 100;
-
-            // Change the volume.
-            if (self._webAudio) {
-              if (typeof id === 'undefined') {
-                self._volume = vol;
-              }
-
-              sound._volume = vol;
-            } else {
-              self.volume(vol, soundId, true);
-            }
-
-            // When the fade is complete, stop it and fire event.
-            if ((to < from && vol <= to) || (to > from && vol >= to)) {
-              clearInterval(sound._interval);
-              sound._interval = null;
-              self.volume(to, soundId);
-              self._emit('fade', soundId);
-            }
-          }.bind(self, ids[i], sound), stepLen);
+          self._startFadeInterval(sound, from, to, len);
         }
       }
 
       return self;
+    },
+
+    /**
+     * Starts the internal interval to fade a sound.
+     * @param  {Object} sound Reference to sound to fade.
+     * @param  {Number} from The value to fade from (0.0 to 1.0).
+     * @param  {Number} to   The volume to fade to (0.0 to 1.0).
+     * @param  {Number} len  Time in milliseconds to fade.
+     */
+    _startFadeInterval: function(sound, from, to, len) {
+      var self = this;
+      var vol = from;
+      var dir = from > to ? 'out' : 'in';
+      var diff = Math.abs(from - to);
+      var steps = diff / 0.01;
+      var stepLen = (steps > 0) ? len / steps : len;
+
+      // Since browsers clamp timeouts to 4ms, we need to clamp our steps to that too.
+      if (stepLen < 4) {
+        steps = Math.ceil(steps / (4 / stepLen));
+        stepLen = 4;
+      }
+
+      sound._interval = setInterval(function() {
+        // Update the volume amount, but only if the volume should change.
+        if (steps > 0) {
+          vol += (dir === 'in' ? 0.01 : -0.01);
+        }
+
+        // Make sure the volume is in the right bounds.
+        vol = Math.max(0, vol);
+        vol = Math.min(1, vol);
+
+        // Round to within 2 decimal points.
+        vol = Math.round(vol * 100) / 100;
+
+        // Change the volume.
+        if (self._webAudio) {
+          if (typeof id === 'undefined') {
+            self._volume = vol;
+          }
+
+          sound._volume = vol;
+        } else {
+          self.volume(vol, sound._id, true);
+        }
+
+        // When the fade is complete, stop it and fire event.
+        if ((to < from && vol <= to) || (to > from && vol >= to)) {
+          clearInterval(sound._interval);
+          sound._interval = null;
+          self.volume(to, sound._id);
+          self._emit('fade', sound._id);
+        }
+      }, stepLen);
     },
 
     /**
