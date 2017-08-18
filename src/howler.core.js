@@ -743,13 +743,10 @@
           }
         };
 
-        var isRunning = (Howler.state === 'running');
-        if (self._state === 'loaded' && isRunning) {
+        if (Howler.state === 'running') {
           playWebAudio();
         } else {
-          // Wait for the audio to load and then begin playback.
-          var event = !isRunning && self._state === 'loaded' ? 'resume' : 'load';
-          self.once(event, playWebAudio, isRunning ? sound._id : null);
+          self.once('resume', playWebAudio, sound._id);
 
           // Cancel the end timer.
           self._clearTimer(sound._id);
@@ -774,7 +771,7 @@
         };
 
         // Play immediately if ready, or wait for the 'canplaythrough'e vent.
-        var loadedNoReadyState = (self._state === 'loaded' && (window && window.ejecta || !node.readyState && Howler._navigator.isCocoonJS));
+        var loadedNoReadyState = (window && window.ejecta) || (!node.readyState && Howler._navigator.isCocoonJS);
         if (node.readyState === 4 || loadedNoReadyState) {
           playHtml5();
         } else {
