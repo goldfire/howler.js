@@ -746,7 +746,7 @@
         if (Howler.state === 'running') {
           playWebAudio();
         } else {
-          self.once('resume', playWebAudio, sound._id);
+          self.once('resume', playWebAudio);
 
           // Cancel the end timer.
           self._clearTimer(sound._id);
