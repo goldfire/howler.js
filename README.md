@@ -187,6 +187,8 @@ Whether or not to enable the `withCredentials` flag on XHR requests used to fetc
 Fires when the sound is loaded.
 #### onloaderror `Function`
 Fires when the sound is unable to load. The first parameter is the ID of the sound (if it exists) and the second is the error message/code.
+#### onplayerror `Function`
+Fires when the sound is unable to play. The first parameter is the ID of the sound and the second is the error message/code.
 #### onplay `Function`
 Fires when the sound begins playing. The first parameter is the ID of the sound.
 #### onend `Function`
