@@ -183,10 +183,14 @@ The size of the inactive sounds pool. Once sounds are stopped or finish playing,
 howler.js automatically detects your file format from the extension, but you may also specify a format in situations where extraction won't work (such as with a SoundCloud stream).
 #### timeout `Number` `0`
 The number of milliseconds the download request can take before automatically being terminated. The default value is 0, which means there is no timeout.
+#### xhrWithCredentials `Boolean` `false`
+Whether or not to enable the `withCredentials` flag on XHR requests used to fetch audio files when using Web Audio API ([see reference](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/withCredentials)).
 #### onload `Function`
 Fires when the sound is loaded.
 #### onloaderror `Function`
 Fires when the sound is unable to load. The first parameter is the ID of the sound (if it exists) and the second is the error message/code.
+#### onplayerror `Function`
+Fires when the sound is unable to play. The first parameter is the ID of the sound and the second is the error message/code.
 #### onplay `Function`
 Fires when the sound begins playing. The first parameter is the ID of the sound.
 #### onend `Function`
@@ -265,19 +269,19 @@ Get the duration of the audio source. Will return 0 until after the `load` event
 
 #### on(event, function, [id])
 Listen for events. Multiple events can be added by calling this multiple times.
-* **event**: `String` Name of event to fire/set (`load`, `loaderror`, `play`, `end`, `pause`, `stop`, `mute`, `volume`, `rate`, `seek`, `fade`).
+* **event**: `String` Name of event to fire/set (`load`, `loaderror`, `playerror`, `play`, `end`, `pause`, `stop`, `mute`, `volume`, `rate`, `seek`, `fade`).
 * **function**: `Function` Define function to fire on event.
 * **id**: `Number` `optional` Only listen to events for this sound id.
 
 #### once(event, function, [id])
 Same as `on`, but it removes itself after the callback is fired.
-* **event**: `String` Name of event to fire/set (`load`, `loaderror`, `play`, `end`, `pause`, `stop`, `mute`, `volume`, `rate`, `seek`, `fade`).
+* **event**: `String` Name of event to fire/set (`load`, `loaderror`, `playerror`, `play`, `end`, `pause`, `stop`, `mute`, `volume`, `rate`, `seek`, `fade`).
 * **function**: `Function` Define function to fire on event.
 * **id**: `Number` `optional` Only listen to events for this sound id.
 
 #### off(event, [function], [id])
 Remove event listener that you've set. Call without parameters to remove all events.
-* **event**: `String` Name of event (`load`, `loaderror`, `play`, `end`, `pause`, `stop`, `mute`, `volume`, `rate`, `seek`, `fade`).
+* **event**: `String` Name of event (`load`, `loaderror`, `playerror`, `play`, `end`, `pause`, `stop`, `mute`, `volume`, `rate`, `seek`, `fade`).
 * **function**: `Function` `optional` The listener to remove. Omit this to remove all events of type.
 * **id**: `Number` `optional` Only remove events for this sound id.
 
@@ -325,11 +329,11 @@ Unload and destroy all currently loaded Howl objects. This will immediately stop
 
 ### Options
 #### orientation `Array` `[1, 0, 0]`
-Sets the direction the audio source is pointing in the 3D cartesian coordinate space. Depending on how direction the sound is, based on the `cone` attributes, a sound pointing away from the listener can be quiet or silent.
+Sets the direction the audio source is pointing in the 3D cartesian coordinate space. Depending on how directional the sound is, based on the `cone` attributes, a sound pointing away from the listener can be quiet or silent.
 #### stereo `Number` `null`
 Sets the stereo panning value of the audio source for this sound or group. This makes it easy to setup left/right panning with a value of `-1.0` being far left and a value of `1.0` being far right.
 #### pos `Array` `null`
-Sets the 3D spatial position of the audio source for this sound or group. Setting any value higher than `1.0` will begin to decrease the volume of the sound as it moves further away.
+Sets the 3D spatial position of the audio source for this sound or group relative to the global listener.
 #### pannerAttr `Object`
 Sets the panner node's attributes for a sound or group of sounds. See the `pannerAttr` method for all available options.
 #### onstereo `Function`
@@ -347,30 +351,30 @@ Get/set the stereo panning of the audio source for this sound or all in the grou
 * **id**: `Number` `optional` The sound ID. If none is passed, all in group will be updated.
 
 #### pos(x, y, z, [id])
-Get/set the 3D spatial position of the audio source for this sound or group. Setting any value higher than `1.0` will begin to decrease the volume of the sound as it moves further away.
-* **x**: `Number` The x-position of the audio from `-1000.0` to `1000.0`.
-* **y**: `Number` The y-position of the audio from `-1000.0` to `1000.0`.
-* **z**: `Number` The z-position of the audio from `-1000.0` to `1000.0`.
+Get/set the 3D spatial position of the audio source for this sound or group relative to the global listener.
+* **x**: `Number` The x-position of the audio source.
+* **y**: `Number` The y-position of the audio source.
+* **z**: `Number` The z-position of the audio source.
 * **id**: `Number` `optional` The sound ID. If none is passed, all in group will be updated.
 
 #### orientation(x, y, z, [id])
-Get/set the direction the audio source is pointing in the 3D cartesian coordinate space. Depending on the direction of the sound, based on the `cone` attributes, a sound pointing away from the listener can be quiet or silent.
+Get/set the direction the audio source is pointing in the 3D cartesian coordinate space. Depending on how directional the sound is, based on the `cone` attributes, a sound pointing away from the listener can be quiet or silent.
 * **x**: `Number` The x-orientation of the source.
 * **y**: `Number` The y-orientation of the source.
 * **z**: `Number` The z-orientation of the source.
 * **id**: `Number` `optional` The sound ID. If none is passed, all in group will be updated.
 
 #### pannerAttr(o, [id])
-Get/set the panner node's attributes for a sound or group of sounds. This method can optionall take 0, 1 or 2 arguments.
+Get/set the panner node's attributes for a sound or group of sounds.
 * **o**: `Object` All values to update.
-  * **coneInnerAngle** `360` There will be no volume reduction inside this angle.
-  * **coneOuterAngle** `360` The volume will be reduced to a constant value of `coneOuterGain` outside this angle.
-  * **coneOuterGain** `0` The amount of volume reduction outside of `coneOuterAngle`.
-  * **distanceModel** `inverse` Determines algorithm to use to reduce volume as audio moves away from listener. Can be `linear`, `inverse` or `exponential.
-  * **maxDistance** `10000` Volume won't reduce between source/listener beyond this distance.
+  * **coneInnerAngle** `360` A parameter for directional audio sources, this is an angle, in degrees, inside of which there will be no volume reduction.
+  * **coneOuterAngle** `360` A parameter for directional audio sources, this is an angle, in degrees, outside of which the volume will be reduced to a constant value of `coneOuterGain`.
+  * **coneOuterGain** `0` A parameter for directional audio sources, this is the gain outside of the `coneOuterAngle`. It is a linear value in the range `[0, 1]`.
+  * **distanceModel** `inverse` Determines algorithm used to reduce volume as audio moves away from listener. Can be `linear`, `inverse` or `exponential. You can find the implementations of each in the [spec](https://webaudio.github.io/web-audio-api/#idl-def-DistanceModelType).
+  * **maxDistance** `10000` The maximum distance between source and listener, after which the volume will not be reduced any further.
+  * **refDistance** `1` A reference distance for reducing volume as source moves further from the listener. This is simply a variable of the distance model and has a different effect depending on which model is used and the scale of your coordinates. Generally, volume will be equal to 1 at this distance.
+  * **rolloffFactor** `1` How quickly the volume reduces as source moves from listener. This is simply a variable of the distance model and can be in the range of `[0, 1]` with `linear` and `[0, ∞]` with `inverse` and `exponential`.
   * **panningModel** `HRTF` Determines which spatialization algorithm is used to position audio. Can be `HRTF` or `equalpower`.
-  * **refDistance** `1` A reference distance for reducing volume as the source moves away from the listener.
-  * **rolloffFactor** `1` How quickly the volume reduces as source moves from listener.
 * **id**: `Number` `optional` The sound ID. If none is passed, all in group will be updated.
 
 
