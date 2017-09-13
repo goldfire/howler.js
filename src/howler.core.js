@@ -474,6 +474,7 @@
       self._src = (typeof o.src !== 'string') ? o.src : [o.src];
       self._volume = o.volume !== undefined ? o.volume : 1;
       self._xhrWithCredentials = o.xhrWithCredentials || false;
+      self._xhronprogress = o.xhronprogress;
 
       // Setup all other default properties.
       self._duration = 0;
@@ -2118,6 +2119,7 @@
           self.load();
         }
       };
+      xhr.onprogress = self._xhronprogress;
       safeXhrSend(xhr);
     }
   };
