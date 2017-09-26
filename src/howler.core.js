@@ -473,9 +473,9 @@
       self._sprite = o.sprite || {};
       self._src = (typeof o.src !== 'string') ? o.src : [o.src];
       self._volume = o.volume !== undefined ? o.volume : 1;
-      self._timeout = o.timeout || 0;
       self._xhrWithCredentials = o.xhrWithCredentials || false;
-
+      self._timeout = o.timeout || 10000;
+      
       // Setup all other default properties.
       self._duration = 0;
       self._state = 'unloaded';
@@ -2103,7 +2103,7 @@
       xhr.responseType = 'arraybuffer';
       xhr.timeout = self._timeout;
       xhr.ontimeout = function(){
-        obj.on('loaderror', new Error('File load timed out.'));
+         self._emit('loaderror', new Error('File load timed out.'));
       }
       xhr.onload = function() {
         // Make sure we get a successful response back.
