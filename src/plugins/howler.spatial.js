@@ -446,8 +446,8 @@
             distanceModel: typeof o.pannerAttr.distanceModel !== 'undefined' ? o.pannerAttr.distanceModel : self._distanceModel,
             maxDistance: typeof o.pannerAttr.maxDistance !== 'undefined' ? o.pannerAttr.maxDistance : self._maxDistance,
             refDistance: typeof o.pannerAttr.refDistance !== 'undefined' ? o.pannerAttr.refDistance : self._refDistance,
-            rolloffFactor: typeof o.pannerAttr.rolloffFactor !== 'undefined' ? o.pannerAttr.rolloffFactor : self._rolloffFactor
-            panningModel: typeof o.pannerAttr.panningModel !== 'undefined' ? o.pannerAttr.panningModel : self._panningModel,
+            rolloffFactor: typeof o.pannerAttr.rolloffFactor !== 'undefined' ? o.pannerAttr.rolloffFactor : self._rolloffFactor,
+            panningModel: typeof o.pannerAttr.panningModel !== 'undefined' ? o.pannerAttr.panningModel : self._panningModel
           };
         }
       } else {
@@ -475,8 +475,8 @@
           distanceModel: typeof o.distanceModel !== 'undefined' ? o.distanceModel : pa.distanceModel,
           maxDistance: typeof o.maxDistance !== 'undefined' ? o.maxDistance : pa.maxDistance,
           refDistance: typeof o.refDistance !== 'undefined' ? o.refDistance : pa.refDistance,
-          rolloffFactor: typeof o.rolloffFactor !== 'undefined' ? o.rolloffFactor : pa.rolloffFactor
-          panningModel: typeof o.panningModel !== 'undefined' ? o.panningModel : pa.panningModel,
+          rolloffFactor: typeof o.rolloffFactor !== 'undefined' ? o.rolloffFactor : pa.rolloffFactor,
+          panningModel: typeof o.panningModel !== 'undefined' ? o.panningModel : pa.panningModel
         };
 
         // Update the panner values or create a new panner if none exists.
