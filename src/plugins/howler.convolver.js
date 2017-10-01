@@ -1,5 +1,14 @@
 /*
 
+attribute impulse response to: 
+www.openairlib.net
+Audiolab, University of York
+Marcin Gorzel
+Gavin Kearney
+Aglaia Foteinou
+Sorrel Hoare
+Simon Shelley
+
 TODO
 
 problem : how do we connect an external node to howler sounds 
@@ -78,19 +87,52 @@ todo -> add filters into the mix
       // removeConvolver
       // set global convolver send
       // get global convolver send
-
-      HowlerGlobal.prototype._convolvers = {};
     
-      HowlerGlobal.prototype.addConvolver = function(convolverName, impulseResponse) {
+      HowlerGlobal.prototype.addConvolver = function(convolverName, impulseResponse, callback) {
         var self = this;
     
         // Stop right here if not using Web Audio.
         if (!self.ctx || !self.ctx.listener) {
           return self;
         }
-
+        if(!self._convolvers) { self._convolvers = {}; }
         // search if convolver already exists by that name
-        // create convolver
+        if(self._convolvers[convolverName])
+        {
+            console.warn('A convolver already exists under this name.');
+            return self;
+        }
+
+
+        var xhr = new XMLHttpRequest();
+        if (!impulseResponse) {
+            console.log("Could not find IR at supplied path");
+            return;
+        }
+
+        xhr.open("GET", impulseResponse, true);
+        xhr.responseType = "arraybuffer";
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4) {
+                if (xhr.status < 300 && xhr.status > 199 || xhr.status === 302) {
+                    Howler.ctx.decodeAudioData(xhr.response, function(buffer) {
+                                // create convolver
+                        let convolver = Howler.ctx.createConvolver();
+                        convolver.connect(Howler.masterGain);
+                        convolver.buffer = buffer;
+                        self._convolvers[convolverName] = convolver;
+                        if(callback)
+                        {
+                            callback();
+                        }
+                    }, function(e) {
+                        if (e) console.log("Error decoding IR audio data" + e);
+                    });
+                }
+            }
+        };
+        xhr.send(null);
+
         // set default convolver attributes
         // connect convolver to ctx.masterGain
         // add convolver to map
@@ -178,9 +220,10 @@ todo -> add filters into the mix
         }
     
         // If the sound hasn't loaded, add it to the load queue to change stereo pan when capable.
-        if (self._state !== 'loaded') {
+        if (!(self._state === 'loaded' && Howler._convolvers[convolverName]))
+        {
           self._queue.push({
-            event: 'stereo',
+            event: 'sendToConvolver',
             action: function() {
               self.sendToConvolver(convolverName, sendLevel);
             }
@@ -199,10 +242,8 @@ todo -> add filters into the mix
               if(!sound._convolverSend){
                   setupConvolverSend(sound);
               }
-
               // connect convolverSend gain node to master convolverNode
               sound._convolverSend.connect(Howler._convolvers[convolverName]);
-
               // set the send level
               sound._convolverSend.gain.setValueAtTime(sendLevel, Howler.ctx.currentTime);
           }
@@ -244,7 +285,7 @@ todo -> add filters into the mix
         return self;
       };
 
-      Howl.prototype.setConvolverSend = function(sendLevel) {
+      Howl.prototype.setConvolverSendLevel = function(sendLevel) {
         var self = this;
     
         // Stop right here if not using Web Audio.
@@ -326,14 +367,12 @@ todo -> add filters into the mix
        * @param {String} type Type of panner to create: 'stereo' or 'spatial'.
        */
       var setupConvolverSend = function(sound) {
-        type = type || 'spatial';
-
         // Create the new convolver send gain node.
-
+        sound._convolverSend = Howler.ctx.createGain();
         // set default gain node values
-
+        sound._convolverSend.gain.value = 1.0;
         // connect sound's gain node to convolver send gain node
-
+        sound._node.connect(sound._convolverSend);
         // Update the connections.
         if (!sound._paused) {
           sound._parent.pause(sound._id, true).play(sound._id);
