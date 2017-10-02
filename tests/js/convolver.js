@@ -3,17 +3,17 @@ var label = document.getElementById('label');
 var start = document.getElementById('start');
 
 // Setup the sounds to be used.
-var sound1 = new Howl({
+var sound = new Howl({
   src: ['audio/sound1.webm', 'audio/sound1.mp3']
 });
 
-Howler.addConvolver("Cathedral", "audio/ir.wav", function()
+Howler.addConvolver("Cathedral", "audio/slinky_ir.wav", function()
 {
   // Enable the start button when the sounds have loaded.
-  sound1.once('load', function() {
+  sound.once('load', function() {
     start.removeAttribute('disabled');
     start.innerHTML = 'BEGIN CONVOLVER TESTS';
-    sound1.sendToConvolver("Cathedral", 2.0);
+    sound.sendToConvolver("Cathedral", 2.0);
   });
 }); 
 
@@ -23,40 +23,45 @@ Howler.addConvolver("Cathedral", "audio/ir.wav", function()
 var id;
 var tests = [
   function(fn) {
-    sound1.once('play', function() {
-      label.innerHTML = 'PLAYING';
-      setTimeout(fn, 2000);
+    sound.once('play', function() {
+      label.innerHTML = 'PLAYING WITH CATHEDRAL';
+      setTimeout(fn, 5000);
     });
     
-    id = sound1.play();
+    id = sound.play();
+  },
+
+  function(fn) {
+    sound.setConvolverSendLevel(0.0);
+    label.innerHTML = 'WET 0%';
+    setTimeout(fn, 5000);
+  },
+
+  function(fn) {
+    sound.setConvolverSendLevel(1.0);
+    label.innerHTML = 'WET 100%';
+    setTimeout(fn, 5000);
   },
 
   function(fn) {
 
-    label.innerHTML = 'ALL DRY';
-    setTimeout(fn, 2000);
-  },
-
-  function(fn) {
-
-    label.innerHTML = 'ALL WET';
+    label.innerHTML = 'DRY 0%';
     setTimeout(function() {
       fn();
-    }, 2000);
+    }, 5000);
   },
 
   function(fn) {
 
-    label.innerHTML = 'REMOVE FROM CONVOLVER';
-    setTimeout(fn, 2000);
+    label.innerHTML = 'REMOVE FROM CATHEDRAL';
+    setTimeout(fn, 5000);
   },
 
   function(fn) {
-
-    label.innerHTML = 'ADD TO CONVOLVER';
+    label.innerHTML = 'ADD TO SLINKY';
     setTimeout(function() {
       fn();
-    }, 2000);
+    }, 5000);
   },
 
   function(fn) {

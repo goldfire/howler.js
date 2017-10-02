@@ -296,7 +296,7 @@ todo -> add filters into the mix
         // If the sound hasn't loaded, add it to the load queue to change stereo pan when capable.
         if (self._state !== 'loaded') {
           self._queue.push({
-            event: 'stereo',
+            event: 'setConvolverSendLevel',
             action: function() {
               // setConvolverSend
             }
@@ -312,6 +312,7 @@ todo -> add filters into the mix
     
           if (sound) {
               // set sound's convolver send gain node to the gain value
+              sound._convolverSend.gain.setValueAtTime(sendLevel, Howler.ctx.currentTime);
           }
         }
     
