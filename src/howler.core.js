@@ -986,6 +986,7 @@
 
           if (self._webAudio && sound._node) {
             sound._node.gain.setValueAtTime(muted ? 0 : sound._volume, Howler.ctx.currentTime);
+            sound._fxSend.gain.setValueAtTime(muted ? 0 : sound._volume, Howler.ctx.currentTime);
           } else if (sound._node) {
             sound._node.muted = Howler._muted ? true : muted;
           }
@@ -1064,6 +1065,7 @@
 
             if (self._webAudio && sound._node && !sound._muted) {
               sound._node.gain.setValueAtTime(vol, Howler.ctx.currentTime);
+              sound._fxSend.gain.setValueAtTime(vol, Howler.ctx.currentTime);
             } else if (sound._node && !sound._muted) {
               sound._node.volume = vol * Howler.volume();
             }
@@ -1089,7 +1091,6 @@
      */
     fade: function(from, to, len, id) {
       var self = this;
-
       // If the sound hasn't loaded, add it to the load queue to fade when capable.
       if (self._state !== 'loaded') {
         self._queue.push({
@@ -1125,6 +1126,8 @@
             sound._volume = from;
             sound._node.gain.setValueAtTime(from, currentTime);
             sound._node.gain.linearRampToValueAtTime(to, end);
+            sound._fxSend.gain.setValueAtTime(from, currentTime);
+            sound._fxSend.gain.linearRampToValueAtTime(to, end);
           }
 
           self._startFadeInterval(sound, from, to, len);
@@ -1202,6 +1205,7 @@
       if (sound && sound._interval) {
         if (self._webAudio) {
           sound._node.gain.cancelScheduledValues(Howler.ctx.currentTime);
+          sound._fxSend.gain.cancelScheduledValues(Howler.ctx.currentTime);
         }
 
         clearInterval(sound._interval);
@@ -1886,6 +1890,8 @@
         sound._node.bufferSource.connect(sound._node);
       }
 
+      sound._node.bufferSource.connect(sound._fxSend);
+
       // Setup looping and playback rate.
       sound._node.bufferSource.loop = sound._loop;
       if (sound._loop) {
@@ -1973,6 +1979,10 @@
         self._node.gain.setValueAtTime(volume, Howler.ctx.currentTime);
         self._node.paused = true;
         self._node.connect(Howler.masterGain);
+
+        self._fxSend = (typeof Howler.ctx.createGain === 'undefined') ? Howler.ctx.createGainNode() : Howler.ctx.createGain();
+        self._fxSend.gain.setValueAtTime(volume, Howler.ctx.currentTime);
+        self._fxSend.paused = true;
       } else {
         self._node = new Audio();
 

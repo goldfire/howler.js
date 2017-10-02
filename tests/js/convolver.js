@@ -7,15 +7,16 @@ var sound = new Howl({
   src: ['audio/sound1.webm', 'audio/sound1.mp3']
 });
 
-Howler.addConvolver("Cathedral", "audio/slinky_ir.wav", function()
+Howler.addConvolver("Cathedral", "audio/ir.wav", function()
 {
   // Enable the start button when the sounds have loaded.
   sound.once('load', function() {
     start.removeAttribute('disabled');
     start.innerHTML = 'BEGIN CONVOLVER TESTS';
-    sound.sendToConvolver("Cathedral", 2.0);
   });
 }); 
+
+Howler.addConvolver("Slinky", "audio/slinky_ir.wav"); 
 
 
 
@@ -24,49 +25,56 @@ var id;
 var tests = [
   function(fn) {
     sound.once('play', function() {
-      label.innerHTML = 'PLAYING WITH CATHEDRAL';
-      setTimeout(fn, 5000);
+      label.innerHTML = 'PLAYING';
+      setTimeout(fn, 2000);
     });
     
     id = sound.play();
   },
 
   function(fn) {
+    sound.sendToConvolver("Cathedral", 3.0);
+    label.innerHTML = 'SEND TO CATHEDRAL';
+    setTimeout(fn, 2000);
+  },
+
+  function(fn) {
     sound.setConvolverSendLevel(0.0);
     label.innerHTML = 'WET 0%';
-    setTimeout(fn, 5000);
+    setTimeout(fn, 2000);
   },
 
   function(fn) {
-    sound.setConvolverSendLevel(1.0);
+    sound.setConvolverSendLevel(3.0);
     label.innerHTML = 'WET 100%';
-    setTimeout(fn, 5000);
+    setTimeout(fn, 2000);
   },
 
   function(fn) {
-
+    sound.volume(0.0);
     label.innerHTML = 'DRY 0%';
     setTimeout(function() {
       fn();
-    }, 5000);
+    }, 2000);
   },
 
   function(fn) {
-
+    sound.removeFromConvolver("Cathedral");
     label.innerHTML = 'REMOVE FROM CATHEDRAL';
-    setTimeout(fn, 5000);
+    setTimeout(fn, 2000);
   },
 
   function(fn) {
     label.innerHTML = 'ADD TO SLINKY';
+    sound.sendToConvolver("Slinky", 1.0);
     setTimeout(function() {
       fn();
-    }, 5000);
+    }, 2000);
   },
 
   function(fn) {
-
-    label.innerHTML = '3D SURROUND';
+    sound.fade(0, 1, 10000);
+    label.innerHTML = 'FADE IN DRY SIGNAL';
   }
 ];
 
