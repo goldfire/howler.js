@@ -279,6 +279,7 @@ todo -> add filters into the mix
     
           if (sound) {
               // remove from convolver
+              removeConvolverSend(sound);
           }
         }
     
@@ -312,7 +313,9 @@ todo -> add filters into the mix
     
           if (sound) {
               // set sound's convolver send gain node to the gain value
-              sound._convolverSend.gain.setValueAtTime(sendLevel, Howler.ctx.currentTime);
+              if (sound._convolverSend && !sound._muted) {
+                sound._convolverSend.gain.setValueAtTime(sendLevel, Howler.ctx.currentTime);
+              }
           }
         }
     
@@ -325,11 +328,6 @@ todo -> add filters into the mix
       // send to convolver
       // remove from convolver
     
-      /**
-       * Add new properties to the core Sound init.
-       * @param  {Function} _super Core Sound init method.
-       * @return {Sound}
-       */
       Sound.prototype.init = (function(_super) {
         return function() {
           var self = this;
@@ -342,11 +340,6 @@ todo -> add filters into the mix
         };
       })(Sound.prototype.init);
     
-      /**
-       * Override the Sound.reset method to clean up properties from the spatial plugin.
-       * @param  {Function} _super Sound reset method.
-       * @return {Sound}
-       */
       Sound.prototype.reset = (function(_super) {
         return function() {
           var self = this;
@@ -362,33 +355,22 @@ todo -> add filters into the mix
       /** Helper Methods **/
       /***************************************************************************/
 
-      /**
-       * Create a new panner node and save it on the sound.
-       * @param  {Sound} sound Specific sound to setup panning on.
-       * @param {String} type Type of panner to create: 'stereo' or 'spatial'.
-       */
       var setupConvolverSend = function(sound) {
         // Create the new convolver send gain node.
         sound._convolverSend = Howler.ctx.createGain();
         // set default gain node values
         sound._convolverSend.gain.value = 1.0;
         // connect sound's gain node to convolver send gain node
-        sound._node.connect(sound._convolverSend);
+        sound._fxSend.connect(sound._convolverSend);
         // Update the connections.
         if (!sound._paused) {
           sound._parent.pause(sound._id, true).play(sound._id);
         }
       };
 
-            /**
-       * Create a new panner node and save it on the sound.
-       * @param  {Sound} sound Specific sound to setup panning on.
-       * @param {String} type Type of panner to create: 'stereo' or 'spatial'.
-       */
       var removeConvolverSend = function(sound) {
-        type = type || 'spatial';
-
         // Disconnect convolver send node
+        sound._convolverSend.disconnect(0);
 
         // Update the connections.
         if (!sound._paused) {
