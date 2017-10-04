@@ -1,3 +1,20 @@
+/*
+
+ir.wav attributed to: 
+www.openairlib.net
+Audiolab, University of York
+Marcin Gorzel
+Gavin Kearney
+Aglaia Foteinou
+Sorrel Hoare
+Simon Shelley
+
+slinky_ir.wav attributed to:
+www.openairlib.net
+
+*/
+
+
 // Cache the label for later use.
 var label = document.getElementById('label');
 var start = document.getElementById('start');
@@ -7,24 +24,21 @@ var sound = new Howl({
   src: ['audio/sound1.webm', 'audio/sound1.mp3']
 });
 
-Howler.addConvolver("Cathedral", "audio/ir.wav", function()
-{
-  // Enable the start button when the sounds have loaded.
-  sound.once('load', function() {
-    start.removeAttribute('disabled');
-    start.innerHTML = 'BEGIN CONVOLVER TESTS';
-  });
-}); 
-
+Howler.addConvolver("Cathedral", "audio/ir.wav"); 
 Howler.addConvolver("Slinky", "audio/slinky_ir.wav"); 
 
-
+// Enable the start button when the sounds have loaded.
+sound.once('load', function() {
+  start.removeAttribute('disabled');
+  start.innerHTML = 'BEGIN CONVOLVER TESTS';
+});
 
 // Define the tests to run.
 var id;
 var tests = [
   function(fn) {
     sound.once('play', function() {
+      sound.volume(0.3);
       label.innerHTML = 'PLAYING';
       setTimeout(fn, 2000);
     });
@@ -33,19 +47,20 @@ var tests = [
   },
 
   function(fn) {
-    sound.sendToConvolver("Cathedral", 3.0);
+    
+    sound.sendToConvolver("Cathedral", 1.0);
     label.innerHTML = 'SEND TO CATHEDRAL';
     setTimeout(fn, 2000);
   },
 
   function(fn) {
-    sound.setConvolverSendLevel(0.0);
+    sound.convolverVolume(0.0);
     label.innerHTML = 'WET 0%';
     setTimeout(fn, 2000);
   },
 
   function(fn) {
-    sound.setConvolverSendLevel(3.0);
+    sound.convolverVolume(1.0);
     label.innerHTML = 'WET 100%';
     setTimeout(fn, 2000);
   },
@@ -73,7 +88,7 @@ var tests = [
   },
 
   function(fn) {
-    sound.fade(0, 1, 10000);
+    sound.fade(0, 1.0, 2000);
     label.innerHTML = 'FADE IN DRY SIGNAL';
   }
 ];

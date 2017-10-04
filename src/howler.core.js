@@ -986,7 +986,6 @@
 
           if (self._webAudio && sound._node) {
             sound._node.gain.setValueAtTime(muted ? 0 : sound._volume, Howler.ctx.currentTime);
-            sound._fxSend.gain.setValueAtTime(muted ? 0 : sound._volume, Howler.ctx.currentTime);
           } else if (sound._node) {
             sound._node.muted = Howler._muted ? true : muted;
           }
@@ -1065,7 +1064,6 @@
 
             if (self._webAudio && sound._node && !sound._muted) {
               sound._node.gain.setValueAtTime(vol, Howler.ctx.currentTime);
-              sound._fxSend.gain.setValueAtTime(vol, Howler.ctx.currentTime);
             } else if (sound._node && !sound._muted) {
               sound._node.volume = vol * Howler.volume();
             }
@@ -1126,8 +1124,6 @@
             sound._volume = from;
             sound._node.gain.setValueAtTime(from, currentTime);
             sound._node.gain.linearRampToValueAtTime(to, end);
-            sound._fxSend.gain.setValueAtTime(from, currentTime);
-            sound._fxSend.gain.linearRampToValueAtTime(to, end);
           }
 
           self._startFadeInterval(sound, from, to, len);
@@ -1205,7 +1201,6 @@
       if (sound && sound._interval) {
         if (self._webAudio) {
           sound._node.gain.cancelScheduledValues(Howler.ctx.currentTime);
-          sound._fxSend.gain.cancelScheduledValues(Howler.ctx.currentTime);
         }
 
         clearInterval(sound._interval);
@@ -1981,8 +1976,6 @@
         self._node.connect(Howler.masterGain);
 
         self._fxSend = (typeof Howler.ctx.createGain === 'undefined') ? Howler.ctx.createGainNode() : Howler.ctx.createGain();
-        self._fxSend.gain.setValueAtTime(volume, Howler.ctx.currentTime);
-        self._fxSend.paused = true;
       } else {
         self._node = new Audio();
 

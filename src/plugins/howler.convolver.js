@@ -1,57 +1,32 @@
 /*
 
-attribute impulse response to: 
-www.openairlib.net
-Audiolab, University of York
-Marcin Gorzel
-Gavin Kearney
-Aglaia Foteinou
-Sorrel Hoare
-Simon Shelley
-
-TODO
-
-problem : how do we connect an external node to howler sounds 
-          without messing up the audio configuration currently in place?
-
-1) only allow parallel processing: on sound creation, make a 
-"_convolverSend" gain node. Howl convolver methods control this send, which is just a gain node
-Global method control properties of global convolvers by name
-
-
-Local Properties/Functionality
-- wet send (normal volume is dry send)
-- name of convolution impulse response (custom or built-in)
-
-Global
-- add convolver -> takes in name of impulse response, loads it, and allows individual sounds to connect to it
-- remove convolver
-- set master wet level
-
-todo -> add filters into the mix
+Example of parallel processing, used for time based effects such as reverb and delay
 
 ------------------------
 |                       |
-| Howler Global Context |
+| Howler Audio Context  |
 |                       |
 ------------------------
           |
-          v global
+          v global (0 to many)
       ------------          --------------------    
       | convolver | ------> | master gain node | -----> out
       ------------          --------------------
-          ^                        ^   
-          |                        |         
-          |  per sound             |       
-       -----------------           |      
-       | convolverSend |           |         
-       -----------------           |       
-                     ^             |          
-                     |             |       
-                     |             |       
----------          ---------       |       
-| sound |  ----->  | _node | -------              
----------          ---------            
+          ^                           ^   
+          |                           |         
+          |  per sound                |       
+       -----------------              |      
+       | convolverSend |              |         
+       -----------------              |       
+                     ^                |          
+                     |                |       
+                     |                |       
+---------------    -----------        |       
+|              |-->| _fxSend |        |
+|              |   -----------        |
+| bufferSource |         _________    |
+|              | ----->  | _node | ----              
+---------------          ---------            
 
         */  
 
@@ -77,17 +52,17 @@ todo -> add filters into the mix
 (function() {
     
       'use strict';
-    
-      // Setup default properties.
       
       /** Global Methods **/
       /***************************************************************************/
-
-      // createConvolver (takes in impulse response and optional key and loads it)
-      // removeConvolver
-      // set global convolver send
-      // get global convolver send
     
+      /**
+       * Load an impulse response and register its name to be used as a convolver
+       * @param  {String} convolverName Name of convolver to connect to
+       * @param  {String} impulseResponse URL of impulse response audio file to load
+       * @param  {Function} callback Callback called when impulse response is loaded
+       * @return {HowlerGlobal}
+       */
       HowlerGlobal.prototype.addConvolver = function(convolverName, impulseResponse, callback) {
         var self = this;
     
@@ -116,7 +91,7 @@ todo -> add filters into the mix
             if (xhr.readyState === 4) {
                 if (xhr.status < 300 && xhr.status > 199 || xhr.status === 302) {
                     Howler.ctx.decodeAudioData(xhr.response, function(buffer) {
-                                // create convolver
+                        // create convolver
                         let convolver = Howler.ctx.createConvolver();
                         convolver.connect(Howler.masterGain);
                         convolver.buffer = buffer;
@@ -131,66 +106,13 @@ todo -> add filters into the mix
                 }
             }
         };
-        xhr.send(null);
-
-        // set default convolver attributes
-        // connect convolver to ctx.masterGain
-        // add convolver to map
-
+        xhr.send();
         return self;
       };
-
-    
-      HowlerGlobal.prototype.removeConvolver = function(convolverName) {
-        var self = this;
-    
-        // Stop right here if not using Web Audio.
-        if (!self.ctx || !self.ctx.listener) {
-          return self;
-        }
-
-        // search if convolver already exists by that name
-    
-        return self;
-      };
-
-      HowlerGlobal.prototype.setConvolverMasterSend = function(convolverName, sendLevel) {
-        var self = this;
-    
-        // Stop right here if not using Web Audio.
-        if (!self.ctx || !self.ctx.listener) {
-          return self;
-        }
-
-        // search if convolver already exists by that name
-    
-        return 0.0; // return send level or self
-      };
-
-      HowlerGlobal.prototype.getConvolverMasterSend = function(convolverName) {
-        var self = this;
-    
-        // Stop right here if not using Web Audio.
-        if (!self.ctx || !self.ctx.listener) {
-          return self;
-        }
-
-        // search if convolver already exists by that name
-    
-        return 0.0; // return send level or self
-      };
-
-
 
       /** Group Methods **/
       /***************************************************************************/
 
-      // init howl with convolver settings 
-      // send to convolver
-      // remove from convolver
-      // set convolverSend
-      // get convolverSend
-    
       /**
        * Add new properties to the core init.
        * @param  {Function} _super Core init method.
@@ -199,18 +121,22 @@ todo -> add filters into the mix
       Howl.prototype.init = (function(_super) {
         return function(o) {
           var self = this;
-    
+        
           // Setup user-defined default properties.
-    
-          // Setup event listeners.
-    
+          self._convolverVolume = o.convolverVolume || 1.0;
+        
           // Complete initilization with howler.js core's init function.
           return _super.call(this, o);
         };
       })(Howl.prototype.init);
-    
 
 
+      /**
+       * Connect Howl's FX send to a convolver (created globally)
+       * @param  {String} convolverName Name of convolver to connect to
+       * @param  {Number} sendLevel Amount of gain to send 
+       * @return {Howl}
+       */
       Howl.prototype.sendToConvolver = function(convolverName, sendLevel) {
         var self = this;
     
@@ -230,7 +156,6 @@ todo -> add filters into the mix
           });
           return self;
         }
-    
         // send all sounds in group to the convolver
         var ids = self._getSoundIds(id);
         for (var i=0; i<ids.length; i++) {
@@ -252,7 +177,11 @@ todo -> add filters into the mix
         return self;
       };
     
-      Howl.prototype.removeFromConvolver = function(convolverName) {
+      /**
+       * Remove Howl from convolver
+       * @return {Howl}
+       */
+      Howl.prototype.removeFromConvolver = function() {
         var self = this;
     
         // Stop right here if not using Web Audio.
@@ -266,6 +195,7 @@ todo -> add filters into the mix
             event: 'stereo',
             action: function() {
               // remove from convolver
+              self.removeFromConvolver();
             }
           });
           return self;
@@ -279,82 +209,71 @@ todo -> add filters into the mix
     
           if (sound) {
               // remove from convolver
-              removeConvolverSend(sound);
-          }
-        }
-    
-        return self;
-      };
-
-      Howl.prototype.setConvolverSendLevel = function(sendLevel) {
-        var self = this;
-    
-        // Stop right here if not using Web Audio.
-        if (!self._webAudio) {
-          return self;
-        }
-    
-        // If the sound hasn't loaded, add it to the load queue to change stereo pan when capable.
-        if (self._state !== 'loaded') {
-          self._queue.push({
-            event: 'setConvolverSendLevel',
-            action: function() {
-              // setConvolverSend
-            }
-          });
-          return self;
-        }
-    
-        // send all sounds in group to the convolver
-        var ids = self._getSoundIds(id);
-        for (var i=0; i<ids.length; i++) {
-          // Get the sound.
-          var sound = self._soundById(ids[i]);
-    
-          if (sound) {
-              // set sound's convolver send gain node to the gain value
-              if (sound._convolverSend && !sound._muted) {
-                sound._convolverSend.gain.setValueAtTime(sendLevel, Howler.ctx.currentTime);
+              if(sound._convolverSend)
+              {
+                removeConvolverSend(sound);
               }
           }
         }
     
         return self;
       };
+      
+      /**
+       * Get/set the send level for this Howl.
+       * @param  {Float} sendLevel Send level from 0.0 to 1.0.
+       * @return {Howler/Float}     Returns self or current send level.
+       */
+      Howl.prototype.convolverVolume = function() {
+        var self = this;
+        var args = arguments;
+        var sendLevel;
+    
+        // Stop right here if not using Web Audio.
+        if (!self._webAudio) {
+          return self;
+        }
 
-      /** Single Sound Methods **/ 
-      /***************************************************************************/
-
-      // send to convolver
-      // remove from convolver
-    
-      Sound.prototype.init = (function(_super) {
-        return function() {
-          var self = this;
-          var parent = self._parent;
-    
-          // Setup user-defined default properties.
-    
-          // Complete initilization with howler.js core Sound's init function.
-          _super.call(this);
-        };
-      })(Sound.prototype.init);
-    
-      Sound.prototype.reset = (function(_super) {
-        return function() {
-          var self = this;
-          var parent = self._parent;
-    
-          // Reset all spatial plugin properties on this sound.
-    
-          // Complete resetting of the sound.
-          return _super.call(this);
-        };
-      })(Sound.prototype.reset);
+        if(args.length === 0) 
+        { return self._convolverVolume; }
+        sendLevel = args[0];
+        self._convolverVolume = sendLevel;
+        if (typeof sendLevel !== 'undefined' && sendLevel >= 0 && sendLevel <= 1) {
+          // If the sound hasn't loaded, add it to the load queue to change stereo pan when capable.
+          if (self._state !== 'loaded') {
+            self._queue.push({
+              event: 'setConvolverSendLevel',
+              action: function() {
+                self.convolverVolume(sendLevel);
+              }
+            });
+            return self;
+          }
+        
+          // send all sounds in group to the convolver
+          var ids = self._getSoundIds(id);
+          for (var i=0; i<ids.length; i++) {
+            // Get the sound.
+            var sound = self._soundById(ids[i]);
+          
+            if (sound) {
+                // set sound's convolver send gain node to the gain value
+                if (sound._convolverSend && !sound._muted) {
+                  sound._convolverSend.gain.setValueAtTime(sendLevel, Howler.ctx.currentTime);
+                }
+            }
+          }
+        }
+        return self;
+      };
     
       /** Helper Methods **/
       /***************************************************************************/
 
+      /**
+      * Create a new gain node that attaches to the fx send and can be connected to a convolver
+      * @param  {Sound} sound Specific sound to setup convolver send on.
+      */
       var setupConvolverSend = function(sound) {
         // Create the new convolver send gain node.
         sound._convolverSend = Howler.ctx.createGain();
@@ -368,6 +287,10 @@ todo -> add filters into the mix
         }
       };
 
+      /**
+      * Disconnect the sound's convolver send from a convolver
+      * @param  {Sound} sound Specific sound to remove convolver connection on.
+      */
       var removeConvolverSend = function(sound) {
         // Disconnect convolver send node
         sound._convolverSend.disconnect(0);
