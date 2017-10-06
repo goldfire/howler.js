@@ -1129,7 +1129,7 @@
             sound._node.gain.linearRampToValueAtTime(to, end);
           }
 
-          self._startFadeInterval(sound, from, to, len);
+          self._startFadeInterval(sound, from, to, len, ids[i]);
         }
       }
 
@@ -1142,8 +1142,9 @@
      * @param  {Number} from The value to fade from (0.0 to 1.0).
      * @param  {Number} to   The volume to fade to (0.0 to 1.0).
      * @param  {Number} len  Time in milliseconds to fade.
+     * @param  {Number} id   The sound id to fade.
      */
-    _startFadeInterval: function(sound, from, to, len) {
+    _startFadeInterval: function(sound, from, to, len, id) {
       var self = this;
       var vol = from;
       var dir = from > to ? 'out' : 'in';
