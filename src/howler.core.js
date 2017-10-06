@@ -332,14 +332,14 @@
           self.mobileAutoEnable = false;
 
           // Remove the touch start listener.
-          document.removeEventListener('touchend', unlock, true);
           document.removeEventListener('touchstart', unlock, true);
+          document.removeEventListener('touchend', unlock, true);
         };
       };
 
       // Setup a touch start listener to attempt an unlock in.
-      document.addEventListener('touchend', unlock, true);
       document.addEventListener('touchstart', unlock, true);
+      document.addEventListener('touchend', unlock, true);
 
       return self;
     },
