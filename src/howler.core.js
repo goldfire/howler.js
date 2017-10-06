@@ -476,7 +476,8 @@
       self._src = (typeof o.src !== 'string') ? o.src : [o.src];
       self._volume = o.volume !== undefined ? o.volume : 1;
       self._xhrWithCredentials = o.xhrWithCredentials || false;
-
+      self._timeout = o.timeout || 10000;
+      
       // Setup all other default properties.
       self._duration = 0;
       self._state = 'unloaded';
@@ -512,6 +513,8 @@
 
       // If they selected autoplay, add a play event to the load queue.
       if (self._autoplay) {
+        
+     
         self._queue.push({
           event: 'play',
           action: function() {
@@ -2101,6 +2104,10 @@
       xhr.open('GET', url, true);
       xhr.withCredentials = self._xhrWithCredentials;
       xhr.responseType = 'arraybuffer';
+      xhr.timeout = self._timeout;
+      xhr.ontimeout = function(){
+         self._emit('loaderror', new Error('File load timed out.'));
+      }
       xhr.onload = function() {
         // Make sure we get a successful response back.
         var code = (xhr.status + '')[0];
