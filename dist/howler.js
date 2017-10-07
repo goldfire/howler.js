@@ -1,5 +1,5 @@
 /*!
- *  howler.js v2.0.4
+ *  howler.js v2.0.5
  *  howlerjs.com
  *
  *  (c) 2013-2017, James Simpson of GoldFire Studios
@@ -332,11 +332,13 @@
           self.mobileAutoEnable = false;
 
           // Remove the touch start listener.
+          document.removeEventListener('touchstart', unlock, true);
           document.removeEventListener('touchend', unlock, true);
         };
       };
 
       // Setup a touch start listener to attempt an unlock in.
+      document.addEventListener('touchstart', unlock, true);
       document.addEventListener('touchend', unlock, true);
 
       return self;
@@ -473,6 +475,7 @@
       self._sprite = o.sprite || {};
       self._src = (typeof o.src !== 'string') ? o.src : [o.src];
       self._volume = o.volume !== undefined ? o.volume : 1;
+      self._xhrWithCredentials = o.xhrWithCredentials || false;
 
       // Setup all other default properties.
       self._duration = 0;
@@ -486,6 +489,7 @@
       self._onfade = o.onfade ? [{fn: o.onfade}] : [];
       self._onload = o.onload ? [{fn: o.onload}] : [];
       self._onloaderror = o.onloaderror ? [{fn: o.onloaderror}] : [];
+      self._onplayerror = o.onplayerror ? [{fn: o.onplayerror}] : [];
       self._onpause = o.onpause ? [{fn: o.onpause}] : [];
       self._onplay = o.onplay ? [{fn: o.onplay}] : [];
       self._onstop = o.onstop ? [{fn: o.onstop}] : [];
@@ -742,13 +746,10 @@
           }
         };
 
-        var isRunning = (Howler.state === 'running');
-        if (self._state === 'loaded' && isRunning) {
+        if (Howler.state === 'running') {
           playWebAudio();
         } else {
-          // Wait for the audio to load and then begin playback.
-          var event = !isRunning && self._state === 'loaded' ? 'resume' : 'load';
-          self.once(event, playWebAudio, isRunning ? sound._id : null);
+          self.once('resume', playWebAudio);
 
           // Cancel the end timer.
           self._clearTimer(sound._id);
@@ -760,20 +761,33 @@
           node.muted = sound._muted || self._muted || Howler._muted || node.muted;
           node.volume = sound._volume * Howler.volume();
           node.playbackRate = sound._rate;
-          node.play();
 
-          // Setup the new end timer.
-          if (timeout !== Infinity) {
-            self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
-          }
+          // Mobile browsers will throw an error if this is called without user interaction.
+          try {
+            node.play();
 
-          if (!internal) {
-            self._emit('play', sound._id);
+            // If the node is still paused, then we can assume there was a playback issue.
+            if (node.paused) {
+              self._emit('playerror', sound._id, 'Playback was unable to start. This is most commonly an issue ' +
+                'on mobile devices where playback was not within a user interaction.');
+              return;
+            }
+
+            // Setup the new end timer.
+            if (timeout !== Infinity) {
+              self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
+            }
+
+            if (!internal) {
+              self._emit('play', sound._id);
+            }
+          } catch (err) {
+            self._emit('playerror', sound._id, err);
           }
         };
 
         // Play immediately if ready, or wait for the 'canplaythrough'e vent.
-        var loadedNoReadyState = (self._state === 'loaded' && (window && window.ejecta || !node.readyState && Howler._navigator.isCocoonJS));
+        var loadedNoReadyState = (window && window.ejecta) || (!node.readyState && Howler._navigator.isCocoonJS);
         if (node.readyState === 4 || loadedNoReadyState) {
           playHtml5();
         } else {
@@ -1077,16 +1091,6 @@
      */
     fade: function(from, to, len, id) {
       var self = this;
-      var diff = Math.abs(from - to);
-      var dir = from > to ? 'out' : 'in';
-      var steps = diff / 0.01;
-      var stepLen = (steps > 0) ? len / steps : len;
-
-      // Since browsers clamp timeouts to 4ms, we need to clamp our steps to that too.
-      if (stepLen < 4) {
-        steps = Math.ceil(steps / (4 / stepLen));
-        stepLen = 4;
-      }
 
       // If the sound hasn't loaded, add it to the load queue to fade when capable.
       if (self._state !== 'loaded') {
@@ -1125,43 +1129,67 @@
             sound._node.gain.linearRampToValueAtTime(to, end);
           }
 
-          var vol = from;
-          sound._interval = setInterval(function(soundId, sound) {
-            // Update the volume amount, but only if the volume should change.
-            if (steps > 0) {
-              vol += (dir === 'in' ? 0.01 : -0.01);
-            }
-
-            // Make sure the volume is in the right bounds.
-            vol = Math.max(0, vol);
-            vol = Math.min(1, vol);
-
-            // Round to within 2 decimal points.
-            vol = Math.round(vol * 100) / 100;
-
-            // Change the volume.
-            if (self._webAudio) {
-              if (typeof id === 'undefined') {
-                self._volume = vol;
-              }
-
-              sound._volume = vol;
-            } else {
-              self.volume(vol, soundId, true);
-            }
-
-            // When the fade is complete, stop it and fire event.
-            if ((to < from && vol <= to) || (to > from && vol >= to)) {
-              clearInterval(sound._interval);
-              sound._interval = null;
-              self.volume(to, soundId);
-              self._emit('fade', soundId);
-            }
-          }.bind(self, ids[i], sound), stepLen);
+          self._startFadeInterval(sound, from, to, len, ids[i]);
         }
       }
 
       return self;
+    },
+
+    /**
+     * Starts the internal interval to fade a sound.
+     * @param  {Object} sound Reference to sound to fade.
+     * @param  {Number} from The value to fade from (0.0 to 1.0).
+     * @param  {Number} to   The volume to fade to (0.0 to 1.0).
+     * @param  {Number} len  Time in milliseconds to fade.
+     * @param  {Number} id   The sound id to fade.
+     */
+    _startFadeInterval: function(sound, from, to, len, id) {
+      var self = this;
+      var vol = from;
+      var dir = from > to ? 'out' : 'in';
+      var diff = Math.abs(from - to);
+      var steps = diff / 0.01;
+      var stepLen = (steps > 0) ? len / steps : len;
+
+      // Since browsers clamp timeouts to 4ms, we need to clamp our steps to that too.
+      if (stepLen < 4) {
+        steps = Math.ceil(steps / (4 / stepLen));
+        stepLen = 4;
+      }
+
+      sound._interval = setInterval(function() {
+        // Update the volume amount, but only if the volume should change.
+        if (steps > 0) {
+          vol += (dir === 'in' ? 0.01 : -0.01);
+        }
+
+        // Make sure the volume is in the right bounds.
+        vol = Math.max(0, vol);
+        vol = Math.min(1, vol);
+
+        // Round to within 2 decimal points.
+        vol = Math.round(vol * 100) / 100;
+
+        // Change the volume.
+        if (self._webAudio) {
+          if (typeof id === 'undefined') {
+            self._volume = vol;
+          }
+
+          sound._volume = vol;
+        } else {
+          self.volume(vol, sound._id, true);
+        }
+
+        // When the fade is complete, stop it and fire event.
+        if ((to < from && vol <= to) || (to > from && vol >= to)) {
+          clearInterval(sound._interval);
+          sound._interval = null;
+          self.volume(to, sound._id);
+          self._emit('fade', sound._id);
+        }
+      }, stepLen);
     },
 
     /**
@@ -1354,7 +1382,7 @@
         var index = ids.indexOf(args[0]);
         if (index >= 0) {
           id = parseInt(args[0], 10);
-        } else {
+        } else if (self._sounds.length) {
           id = self._sounds[0]._id;
           seek = parseFloat(args[0]);
         }
@@ -1678,7 +1706,7 @@
       // If we are using IE and there was network latency we may be clipping
       // audio before it completes playing. Lets check the node to make sure it
       // believes it has completed, before ending the playback.
-      if (!self._webAudio && self._node && !self._node.ended) {
+      if (!self._webAudio && sound._node && !sound._node.paused) {
         setTimeout(self._ended.bind(self, sound), 100);
         return self;
       }
@@ -2071,6 +2099,7 @@
       // Load the buffer from the URL.
       var xhr = new XMLHttpRequest();
       xhr.open('GET', url, true);
+      xhr.withCredentials = self._xhrWithCredentials;
       xhr.responseType = 'arraybuffer';
       xhr.onload = function() {
         // Make sure we get a successful response back.
@@ -2223,7 +2252,7 @@
 /*!
  *  Spatial Plugin - Adds support for stereo and 3D audio where Web Audio is supported.
  *  
- *  howler.js v2.0.4
+ *  howler.js v2.0.5
  *  howlerjs.com
  *
  *  (c) 2013-2017, James Simpson of GoldFire Studios
@@ -2450,13 +2479,10 @@
   };
 
   /**
-   * Get/set the 3D spatial position of the audio source for this sound or
-   * all in the group. The most common usage is to set the 'x' position for
-   * left/right panning. Setting any value higher than 1.0 will begin to
-   * decrease the volume of the sound as it moves further away.
-   * @param  {Number} x  The x-position of the audio from -1000.0 to 1000.0.
-   * @param  {Number} y  The y-position of the audio from -1000.0 to 1000.0.
-   * @param  {Number} z  The z-position of the audio from -1000.0 to 1000.0.
+   * Get/set the 3D spatial position of the audio source for this sound or group relative to the global listener.
+   * @param  {Number} x  The x-position of the audio source.
+   * @param  {Number} y  The y-position of the audio source.
+   * @param  {Number} z  The z-position of the audio source.
    * @param  {Number} id (optional) The sound ID. If none is passed, all in group will be updated.
    * @return {Howl/Array}    Returns self or the current 3D spatial position: [x, y, z].
    */
@@ -2610,18 +2636,24 @@
    *   pannerAttr(o, id) -> Set's the values of passed sound id.
    *
    *   Attributes:
-   *     coneInnerAngle - (360 by default) There will be no volume reduction inside this angle.
-   *     coneOuterAngle - (360 by default) The volume will be reduced to a constant value of
-   *                      `coneOuterGain` outside this angle.
-   *     coneOuterGain - (0 by default) The amount of volume reduction outside of `coneOuterAngle`.
-   *     distanceModel - ('inverse' by default) Determines algorithm to use to reduce volume as audio moves
-   *                      away from listener. Can be `linear`, `inverse` or `exponential`.
-   *     maxDistance - (10000 by default) Volume won't reduce between source/listener beyond this distance.
+   *     coneInnerAngle - (360 by default) A parameter for directional audio sources, this is an angle, in degrees,
+   *                      inside of which there will be no volume reduction.
+   *     coneOuterAngle - (360 by default) A parameter for directional audio sources, this is an angle, in degrees,
+   *                      outside of which the volume will be reduced to a constant value of `coneOuterGain`.
+   *     coneOuterGain - (0 by default) A parameter for directional audio sources, this is the gain outside of the
+   *                     `coneOuterAngle`. It is a linear value in the range `[0, 1]`.
+   *     distanceModel - ('inverse' by default) Determines algorithm used to reduce volume as audio moves away from
+   *                     listener. Can be `linear`, `inverse` or `exponential.
+   *     maxDistance - (10000 by default) The maximum distance between source and listener, after which the volume
+   *                   will not be reduced any further.
+   *     refDistance - (1 by default) A reference distance for reducing volume as source moves further from the listener.
+   *                   This is simply a variable of the distance model and has a different effect depending on which model
+   *                   is used and the scale of your coordinates. Generally, volume will be equal to 1 at this distance.
+   *     rolloffFactor - (1 by default) How quickly the volume reduces as source moves from listener. This is simply a
+   *                     variable of the distance model and can be in the range of `[0, 1]` with `linear` and `[0, ∞]`
+   *                     with `inverse` and `exponential`.
    *     panningModel - ('HRTF' by default) Determines which spatialization algorithm is used to position audio.
    *                     Can be `HRTF` or `equalpower`.
-   *     refDistance - (1 by default) A reference distance for reducing volume as the source
-   *                    moves away from the listener.
-   *     rolloffFactor - (1 by default) How quickly the volume reduces as source moves from listener.
    * 
    * @return {Howl/Object} Returns self or current panner attributes.
    */
@@ -2645,15 +2677,28 @@
 
         // Set the grou's panner attribute values.
         if (typeof id === 'undefined') {
+          if (!o.pannerAttr) {
+            o.pannerAttr = {
+              coneInnerAngle: o.coneInnerAngle,
+              coneOuterAngle: o.coneOuterAngle,
+              coneOuterGain: o.coneOuterGain,
+              distanceModel: o.distanceModel,
+              maxDistance: o.maxDistance,
+              refDistance: o.refDistance,
+              rolloffFactor: o.rolloffFactor,
+              panningModel: o.panningModel
+            };
+          }
+
           self._pannerAttr = {
-            coneInnerAngle: typeof o.coneInnerAngle !== 'undefined' ? o.coneInnerAngle : self._coneInnerAngle,
-            coneOuterAngle: typeof o.coneOuterAngle !== 'undefined' ? o.coneOuterAngle : self._coneOuterAngle,
-            coneOuterGain: typeof o.coneOuterGain !== 'undefined' ? o.coneOuterGain : self._coneOuterGain,
-            distanceModel: typeof o.distanceModel !== 'undefined' ? o.distanceModel : self._distanceModel,
-            maxDistance: typeof o.maxDistance !== 'undefined' ? o.maxDistance : self._maxDistance,
-            panningModel: typeof o.panningModel !== 'undefined' ? o.panningModel : self._panningModel,
-            refDistance: typeof o.refDistance !== 'undefined' ? o.refDistance : self._refDistance,
-            rolloffFactor: typeof o.rolloffFactor !== 'undefined' ? o.rolloffFactor : self._rolloffFactor
+            coneInnerAngle: typeof o.pannerAttr.coneInnerAngle !== 'undefined' ? o.pannerAttr.coneInnerAngle : self._coneInnerAngle,
+            coneOuterAngle: typeof o.pannerAttr.coneOuterAngle !== 'undefined' ? o.pannerAttr.coneOuterAngle : self._coneOuterAngle,
+            coneOuterGain: typeof o.pannerAttr.coneOuterGain !== 'undefined' ? o.pannerAttr.coneOuterGain : self._coneOuterGain,
+            distanceModel: typeof o.pannerAttr.distanceModel !== 'undefined' ? o.pannerAttr.distanceModel : self._distanceModel,
+            maxDistance: typeof o.pannerAttr.maxDistance !== 'undefined' ? o.pannerAttr.maxDistance : self._maxDistance,
+            refDistance: typeof o.pannerAttr.refDistance !== 'undefined' ? o.pannerAttr.refDistance : self._refDistance,
+            rolloffFactor: typeof o.pannerAttr.rolloffFactor !== 'undefined' ? o.pannerAttr.rolloffFactor : self._rolloffFactor,
+            panningModel: typeof o.pannerAttr.panningModel !== 'undefined' ? o.pannerAttr.panningModel : self._panningModel
           };
         }
       } else {
@@ -2680,9 +2725,9 @@
           coneOuterGain: typeof o.coneOuterGain !== 'undefined' ? o.coneOuterGain : pa.coneOuterGain,
           distanceModel: typeof o.distanceModel !== 'undefined' ? o.distanceModel : pa.distanceModel,
           maxDistance: typeof o.maxDistance !== 'undefined' ? o.maxDistance : pa.maxDistance,
-          panningModel: typeof o.panningModel !== 'undefined' ? o.panningModel : pa.panningModel,
           refDistance: typeof o.refDistance !== 'undefined' ? o.refDistance : pa.refDistance,
-          rolloffFactor: typeof o.rolloffFactor !== 'undefined' ? o.rolloffFactor : pa.rolloffFactor
+          rolloffFactor: typeof o.rolloffFactor !== 'undefined' ? o.rolloffFactor : pa.rolloffFactor,
+          panningModel: typeof o.panningModel !== 'undefined' ? o.panningModel : pa.panningModel
         };
 
         // Update the panner values or create a new panner if none exists.
@@ -2693,9 +2738,9 @@
           panner.coneOuterGain = pa.coneOuterGain;
           panner.distanceModel = pa.distanceModel;
           panner.maxDistance = pa.maxDistance;
-          panner.panningModel = pa.panningModel;
           panner.refDistance = pa.refDistance;
           panner.rolloffFactor = pa.rolloffFactor;
+          panner.panningModel = pa.panningModel;
         } else {
           // Make sure we have a position to setup the node with.
           if (!sound._pos) {
@@ -2781,9 +2826,9 @@
       sound._panner.coneOuterGain = sound._pannerAttr.coneOuterGain;
       sound._panner.distanceModel = sound._pannerAttr.distanceModel;
       sound._panner.maxDistance = sound._pannerAttr.maxDistance;
-      sound._panner.panningModel = sound._pannerAttr.panningModel;
       sound._panner.refDistance = sound._pannerAttr.refDistance;
       sound._panner.rolloffFactor = sound._pannerAttr.rolloffFactor;
+      sound._panner.panningModel = sound._pannerAttr.panningModel;
       sound._panner.setPosition(sound._pos[0], sound._pos[1], sound._pos[2]);
       sound._panner.setOrientation(sound._orientation[0], sound._orientation[1], sound._orientation[2]);
     } else {

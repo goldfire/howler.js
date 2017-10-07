@@ -1,3 +1,13 @@
+## 2.0.5 (October 6, 2017)
+- `ADDED` Add support for `withCredentials` to Web Audio XHR requests ([#610](https://github.com/goldfire/howler.js/pull/610)).
+- `ADDED` Add `playerror` event for when mobile HTML5 audio is unable to play ([#774](https://github.com/goldfire/howler.js/issues/774)).
+- `FIXED` Refactor fade method to eliminate bind memory allocations (no change to API).
+- `FIXED` Prevent seeking after sound has been unloaded ([#797](https://github.com/goldfire/howler.js/pull/797)).
+- `FIXED` Check for `paused` instead of `ended` on HTML5 end check to correctly handle data URI's ([#775](https://github.com/goldfire/howler.js/pull/775)).
+- `FIXED` Fix unlocking of mobile audio on iOS when user swipes instead of taps ([#808](https://github.com/goldfire/howler.js/pull/808)).
+- `FIXED` `pannerAttr` values can now be set via object as the documentation originally specified.
+- `FIXED` Various corrections and improvements to the spatial audio documentation.
+
 ## 2.0.4 (June 9, 2017)
 - `CHANGED` Removed the `resuming` state, which wasn't actually being used and was leading to a bug on Android ([#679](https://github.com/goldfire/howler.js/pull/679)).
 - `CHANGED` Any playback initiated before the sound has loaded will now go into the queue to fix various race conditions ([#714](https://github.com/goldfire/howler.js/pull/714)).
