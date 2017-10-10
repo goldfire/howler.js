@@ -124,6 +124,11 @@ Example of parallel processing, used for time based effects such as reverb and d
         
           // Setup user-defined default properties.
           self._convolverVolume = o.convolverVolume || 1.0;
+
+          // Setup event listeners.
+          self._onsendToConvolver = o.onsendToConvolver ? [{fn: o.onsendToConvolver}] : [];
+          self._onremoveFromConvolver = o.onremoveFromConvolver ? [{fn: o.onremoveFromConvolver}] : [];
+          self._onconvolverVolume = o.onconvolverVolume ? [{fn: o.onconvolverVolume}] : [];
         
           // Complete initilization with howler.js core's init function.
           return _super.call(this, o);
