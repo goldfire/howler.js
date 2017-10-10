@@ -145,7 +145,6 @@ Example of parallel processing, used for time based effects such as reverb and d
           return self;
         }
     
-        // If the sound hasn't loaded, add it to the load queue to change stereo pan when capable.
         if (!(self._state === 'loaded' && Howler._convolvers[convolverName]))
         {
           self._queue.push({
@@ -189,10 +188,9 @@ Example of parallel processing, used for time based effects such as reverb and d
           return self;
         }
     
-        // If the sound hasn't loaded, add it to the load queue to change stereo pan when capable.
         if (self._state !== 'loaded') {
           self._queue.push({
-            event: 'stereo',
+            event: 'removeFromConvolver',
             action: function() {
               // remove from convolver
               self.removeFromConvolver();
@@ -239,7 +237,6 @@ Example of parallel processing, used for time based effects such as reverb and d
         sendLevel = args[0];
         self._convolverVolume = sendLevel;
         if (typeof sendLevel !== 'undefined' && sendLevel >= 0 && sendLevel <= 1) {
-          // If the sound hasn't loaded, add it to the load queue to change stereo pan when capable.
           if (self._state !== 'loaded') {
             self._queue.push({
               event: 'setConvolverSendLevel',
@@ -266,6 +263,42 @@ Example of parallel processing, used for time based effects such as reverb and d
         }
         return self;
       };
+
+      /**
+       * Add new properties to the core Sound init.
+       * @param  {Function} _super Core Sound init method.
+       * @return {Sound}
+       */
+      Sound.prototype.init = (function(_super) {
+        return function() {
+          var self = this;
+          var parent = self._parent;
+    
+          // Setup user-defined default properties.
+          self._convolverVolume = parent._convolverVolume;
+    
+          // Complete initilization with howler.js core Sound's init function.
+          _super.call(this);
+        };
+      })(Sound.prototype.init);
+    
+      /**
+       * Override the Sound.reset method to clean up properties from the spatial plugin.
+       * @param  {Function} _super Sound reset method.
+       * @return {Sound}
+       */
+      Sound.prototype.reset = (function(_super) {
+        return function() {
+          var self = this;
+          var parent = self._parent;
+    
+          // Setup user-defined default properties.
+          self._convolverVolume = parent._convolverVolume;
+    
+          // Complete resetting of the sound.
+          return _super.call(this);
+        };
+      })(Sound.prototype.reset);
     
       /** Helper Methods **/
       /***************************************************************************/
