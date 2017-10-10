@@ -1878,13 +1878,7 @@
       sound._node.bufferSource = Howler.ctx.createBufferSource();
       sound._node.bufferSource.buffer = cache[self._src];
 
-      // Connect to the correct node.
-      if (sound._panner) {
-        sound._node.bufferSource.connect(sound._panner);
-      } else {
-        sound._node.bufferSource.connect(sound._node);
-      }
-
+      sound._node.bufferSource.connect(sound._fxInsertIn);
       sound._node.bufferSource.connect(sound._fxSend);
 
       // Setup looping and playback rate.
@@ -1975,7 +1969,18 @@
         self._node.paused = true;
         self._node.connect(Howler.masterGain);
 
+        // create hooks for FX inserts and send
         self._fxSend = (typeof Howler.ctx.createGain === 'undefined') ? Howler.ctx.createGainNode() : Howler.ctx.createGain();
+        self._fxInsertIn = (typeof Howler.ctx.createGain === 'undefined') ? Howler.ctx.createGainNode() : Howler.ctx.createGain();
+        self._fxInsertOut = (typeof Howler.ctx.createGain === 'undefined') ? Howler.ctx.createGainNode() : Howler.ctx.createGain();
+        // Connect to the correct node.
+        if (self._panner) {
+          self._fxInsertOut.connect(self._panner);
+        } else {
+          self._fxInsertOut.connect(self._node);
+        }
+        // on initialization, connect input to output
+        self._fxInsertIn.connect(self._fxInsertOut);
       } else {
         self._node = new Audio();
 
