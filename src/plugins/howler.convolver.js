@@ -135,9 +135,10 @@ Example of parallel processing, used for time based effects such as reverb and d
        * Connect Howl's FX send to a convolver (created globally)
        * @param  {String} convolverName Name of convolver to connect to
        * @param  {Number} sendLevel Amount of gain to send 
+       * @param  {Number} id (optional) The sound ID. If none is passed, all in group will be updated.
        * @return {Howl}
        */
-      Howl.prototype.sendToConvolver = function(convolverName, sendLevel) {
+      Howl.prototype.sendToConvolver = function(convolverName, sendLevel, id) {
         var self = this;
     
         // Stop right here if not using Web Audio.
@@ -145,7 +146,6 @@ Example of parallel processing, used for time based effects such as reverb and d
           return self;
         }
     
-        // If the sound hasn't loaded, add it to the load queue to change stereo pan when capable.
         if (!(self._state === 'loaded' && Howler._convolvers[convolverName]))
         {
           self._queue.push({
@@ -179,9 +179,10 @@ Example of parallel processing, used for time based effects such as reverb and d
     
       /**
        * Remove Howl from convolver
+       * @param  {Number} id (optional) The sound ID. If none is passed, all in group will be updated.
        * @return {Howl}
        */
-      Howl.prototype.removeFromConvolver = function() {
+      Howl.prototype.removeFromConvolver = function(id) {
         var self = this;
     
         // Stop right here if not using Web Audio.
@@ -189,10 +190,9 @@ Example of parallel processing, used for time based effects such as reverb and d
           return self;
         }
     
-        // If the sound hasn't loaded, add it to the load queue to change stereo pan when capable.
         if (self._state !== 'loaded') {
           self._queue.push({
-            event: 'stereo',
+            event: 'removeFromConvolver',
             action: function() {
               // remove from convolver
               self.removeFromConvolver();
@@ -222,24 +222,31 @@ Example of parallel processing, used for time based effects such as reverb and d
       /**
        * Get/set the send level for this Howl.
        * @param  {Float} sendLevel Send level from 0.0 to 1.0.
-       * @return {Howler/Float}     Returns self or current send level.
+       * @param  {Number} id (optional) The sound ID. If none is passed, all in group will be updated.
+       * @return {Howl/Float}     Returns self or current send level.
        */
-      Howl.prototype.convolverVolume = function() {
+      Howl.prototype.convolverVolume = function(sendLevel, id) {
         var self = this;
-        var args = arguments;
-        var sendLevel;
-    
+        var args = arguments;  
         // Stop right here if not using Web Audio.
         if (!self._webAudio) {
           return self;
         }
 
-        if(args.length === 0) 
-        { return self._convolverVolume; }
-        sendLevel = args[0];
-        self._convolverVolume = sendLevel;
-        if (typeof sendLevel !== 'undefined' && sendLevel >= 0 && sendLevel <= 1) {
-          // If the sound hasn't loaded, add it to the load queue to change stereo pan when capable.
+
+
+        if (typeof id === 'undefined') {
+          if (typeof sendLevel === 'number') {
+            self._convolverVolume = sendLevel;
+          }
+        }
+
+        if(sendLevel === undefined) 
+        { 
+          return self._convolverVolume; 
+        }
+        
+        if (sendLevel >= 0 && sendLevel <= 1) {
           if (self._state !== 'loaded') {
             self._queue.push({
               event: 'setConvolverSendLevel',
@@ -249,7 +256,6 @@ Example of parallel processing, used for time based effects such as reverb and d
             });
             return self;
           }
-        
           // send all sounds in group to the convolver
           var ids = self._getSoundIds(id);
           for (var i=0; i<ids.length; i++) {
@@ -266,6 +272,42 @@ Example of parallel processing, used for time based effects such as reverb and d
         }
         return self;
       };
+
+      /**
+       * Add new properties to the core Sound init.
+       * @param  {Function} _super Core Sound init method.
+       * @return {Sound}
+       */
+      Sound.prototype.init = (function(_super) {
+        return function() {
+          var self = this;
+          var parent = self._parent;
+    
+          // Setup user-defined default properties.
+          self._convolverVolume = parent._convolverVolume;
+    
+          // Complete initilization with howler.js core Sound's init function.
+          _super.call(this);
+        };
+      })(Sound.prototype.init);
+    
+      /**
+       * Override the Sound.reset method to clean up properties from the spatial plugin.
+       * @param  {Function} _super Sound reset method.
+       * @return {Sound}
+       */
+      Sound.prototype.reset = (function(_super) {
+        return function() {
+          var self = this;
+          var parent = self._parent;
+    
+          // Setup user-defined default properties.
+          self._convolverVolume = parent._convolverVolume;
+    
+          // Complete resetting of the sound.
+          return _super.call(this);
+        };
+      })(Sound.prototype.reset);
     
       /** Helper Methods **/
       /***************************************************************************/
