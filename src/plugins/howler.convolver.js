@@ -135,9 +135,10 @@ Example of parallel processing, used for time based effects such as reverb and d
        * Connect Howl's FX send to a convolver (created globally)
        * @param  {String} convolverName Name of convolver to connect to
        * @param  {Number} sendLevel Amount of gain to send 
+       * @param  {Number} id (optional) The sound ID. If none is passed, all in group will be updated.
        * @return {Howl}
        */
-      Howl.prototype.sendToConvolver = function(convolverName, sendLevel) {
+      Howl.prototype.sendToConvolver = function(convolverName, sendLevel, id) {
         var self = this;
     
         // Stop right here if not using Web Audio.
@@ -178,9 +179,10 @@ Example of parallel processing, used for time based effects such as reverb and d
     
       /**
        * Remove Howl from convolver
+       * @param  {Number} id (optional) The sound ID. If none is passed, all in group will be updated.
        * @return {Howl}
        */
-      Howl.prototype.removeFromConvolver = function() {
+      Howl.prototype.removeFromConvolver = function(id) {
         var self = this;
     
         // Stop right here if not using Web Audio.
@@ -220,23 +222,31 @@ Example of parallel processing, used for time based effects such as reverb and d
       /**
        * Get/set the send level for this Howl.
        * @param  {Float} sendLevel Send level from 0.0 to 1.0.
-       * @return {Howler/Float}     Returns self or current send level.
+       * @param  {Number} id (optional) The sound ID. If none is passed, all in group will be updated.
+       * @return {Howl/Float}     Returns self or current send level.
        */
-      Howl.prototype.convolverVolume = function() {
+      Howl.prototype.convolverVolume = function(sendLevel, id) {
         var self = this;
-        var args = arguments;
-        var sendLevel;
-    
+        var args = arguments;  
         // Stop right here if not using Web Audio.
         if (!self._webAudio) {
           return self;
         }
 
-        if(args.length === 0) 
-        { return self._convolverVolume; }
-        sendLevel = args[0];
-        self._convolverVolume = sendLevel;
-        if (typeof sendLevel !== 'undefined' && sendLevel >= 0 && sendLevel <= 1) {
+
+
+        if (typeof id === 'undefined') {
+          if (typeof sendLevel === 'number') {
+            self._convolverVolume = sendLevel;
+          }
+        }
+
+        if(sendLevel === undefined) 
+        { 
+          return self._convolverVolume; 
+        }
+        
+        if (sendLevel >= 0 && sendLevel <= 1) {
           if (self._state !== 'loaded') {
             self._queue.push({
               event: 'setConvolverSendLevel',
@@ -246,7 +256,6 @@ Example of parallel processing, used for time based effects such as reverb and d
             });
             return self;
           }
-        
           // send all sounds in group to the convolver
           var ids = self._getSoundIds(id);
           for (var i=0; i<ids.length; i++) {
