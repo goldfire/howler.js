@@ -29,6 +29,12 @@
           self._q = o.qFactor || 1.0;
           self._filterType = o.filterType || 'lowpass';
           self._frequency = o.frequency || 1000.0;
+
+          // Setup event listeners.
+          self._onqFactor = o.onqFactor ? [{fn: o.onqFactor}] : [];
+          self._onfrequency = o.onfrequency ? [{fn: o.onfrequency}] : [];
+          self._onaddFilter = o.onaddFilter ? [{fn: o.onaddFilter}] : [];
+          self._onfilterType = o.onfilterType ? [{fn: o.onfilterType}] : [];
     
           // Complete initilization with howler.js core's init function.
           return _super.call(this, o);

@@ -55,7 +55,7 @@ var tests = [
   function(fn) {
     sound.filterType('notch');
     sound.frequency(5000);
-    sound.qFactor(7.0);
+    sound.qFactor(0.2);
     setTimeout(fn, 3000);
     label.innerHTML = 'NOTCH';
   }
