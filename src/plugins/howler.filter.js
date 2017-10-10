@@ -1,5 +1,6 @@
 /*!
- *  Filters Plugin - Adds support for stereo and 3D audio where Web Audio is supported.
+ *  Filters Plugin - Adds support for filters (lowpass, high pass, band pass, or notch) on individual sounds when using WebAudio.
+ *                 - Jack Campbell jackcampbell@acm.org
  *  
  *  howler.js v2.0.4
  *  howlerjs.com
@@ -12,57 +13,6 @@
 (function() {
     
       'use strict';
-      
-      /** Global Methods **/
-      /***************************************************************************/
-    
-      HowlerGlobal.prototype.qFactor = function(q) {
-        var self = this;
-    
-        // Stop right here if not using Web Audio.
-        if (!self.ctx || !self.ctx.listener) {
-          return self;
-        }
-    
-        // Loop through all Howls and update their q.
-        for (var i=self._howls.length-1; i>=0; i--) {
-          self._howls[i].qFactor(q);
-        }
-    
-        return self;
-      };
-    
-      HowlerGlobal.prototype.frequency = function(f) {
-        var self = this;
-    
-        // Stop right here if not using Web Audio.
-        if (!self.ctx || !self.ctx.listener) {
-          return self;
-        }
-    
-        // Loop through all Howls and update their q.
-        for (var i=self._howls.length-1; i>=0; i--) {
-          self._howls[i].frequency(f);
-        }
-    
-        return self;
-      };
-    
-      HowlerGlobal.prototype.filterType = function(type) {
-        var self = this;
-    
-        // Stop right here if not using Web Audio.
-        if (!self.ctx || !self.ctx.listener) {
-          return self;
-        }
-    
-        // Loop through all Howls and update their q.
-        for (var i=self._howls.length-1; i>=0; i--) {
-          self._howls[i].filterType(type);
-        }
-    
-        return self;
-      };
     
       /** Group Methods **/
       /***************************************************************************/
@@ -85,6 +35,13 @@
         };
       })(Howl.prototype.init);
     
+      /**
+      * Sets or gets Q factor for the Howl's filter.
+      * Future Howls will not use this value unless explicitly set.
+      * @param  {Number} q Q Factor, a value between 0.001 - 1000.0; determines resonance peak at cutoff for LPF and HPF or bandwidth for notch and BPF.
+      * @param  {Number} id (optional) The sound ID. If none is passed, all in group will be updated.
+      * @return {Howl/Number}     Self or current Q value.
+      */
       Howl.prototype.qFactor = function(q, id) {
         var self = this;
     
@@ -127,6 +84,7 @@
                 }
 
                 sound._filterNode.Q.value = q;
+                self._emit('qFactor', sound._id);
               }
             } else {
               return sound._q;
@@ -136,6 +94,15 @@
     
         return self;
       };
+
+      /**
+      * Helper method to update the frequency of all current Howl filters. Depending on the filter type, this will either be the cutoff (for HPF and LPF)
+      * or center frequency (for notch and BPF).
+      * Future Howls will not use this value unless explicitly set.
+      * @param  {String} f Frequency between 10 and Nyquist.
+      * @param  {Number} id (optional) The sound ID. If none is passed, all in group will be updated.
+      * @return {Howl/String}     Self or current filter type.
+      */
       Howl.prototype.filterType = function(type, id) {
         var self = this;
     
@@ -186,9 +153,10 @@
                 }
 
                 sound._filterNode.type = type;
+                self._emit('filterType', sound._id);
               }
             } else {
-              return sound._q;
+              return sound._filterType;
             }
           }
         }
@@ -196,6 +164,14 @@
         return self;
       };
 
+      /**
+      * Helper method to update the frequency of current Howl filter. Depending on the filter type, this will either be the cutoff (for HPF and LPF)
+      * or center frequency (for notch and BPF).
+      * Future Howls will not use this value unless explicitly set.
+      * @param  {Number} f Frequency between 10 and Nyquist.
+      * @param  {Number} id (optional) The sound ID. If none is passed, all in group will be updated.
+      * @return {Howl/Number}     Self or current frequency value.
+      */
       Howl.prototype.frequency = function(f, id) {
         var self = this;
     
@@ -240,9 +216,10 @@
                 }
 
                 sound._filterNode.frequency.value = f;
+                self._emit('frequency', sound._id);
               }
             } else {
-              return sound._q;
+              return sound._frequency;
             }
           }
         }
@@ -250,6 +227,15 @@
         return self;
       };
 
+      /**
+      * Helper method to update multiple filter parameters at once
+      * filterType is a string describing the type of filter; 'highpass', 'lowpass', 'bandpass', or 'notch'
+      * Q is the quality factor of the filter. Depending on the type, it affects resonance peak at the cutoff or bandwidth
+      * frequency is either the cutoff or center frequency, depending on filter type
+      * @param  {Object} filterParams Object of parameters to set for filter. {filterType: string, Q: number, frequency: number}
+      * @param  {Number} id (optional) The sound ID. If none is passed, all in group will be updated.
+      * @return {Howl}     Self.
+      */
       Howl.prototype.addFilter = function(filterParams, id) {
         var self = this;
     
@@ -284,6 +270,7 @@
                 sound._filterNode.frequency.value = filterParams.frequency || sound._frequency;
                 sound._filterNode.Q.value = filterParams.Q || sound._q;
                 sound._filterNode.type = filterParams.filterType || sound._filterType;
+                self._emit('addFilter', sound._id);
               }
           }
         }
@@ -315,7 +302,7 @@
       })(Sound.prototype.init);
     
       /**
-       * Override the Sound.reset method to clean up properties from the spatial plugin.
+       * Override the Sound.reset method to clean up properties from the filters plugin.
        * @param  {Function} _super Sound reset method.
        * @return {Sound}
        */
@@ -324,7 +311,7 @@
           var self = this;
           var parent = self._parent;
     
-          // Reset all spatial plugin properties on this sound.
+          // Reset all filters plugin properties on this sound.
           self._q = parent._q;
           self._filterType = parent._filterType;
           self._frequency = parent._frequency;
