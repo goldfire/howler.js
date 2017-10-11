@@ -758,11 +758,16 @@
         }
       } else {
         // Fire this when the sound is ready to play to begin HTML5 Audio playback.
-        var playHtml5 = function() {
+        var playHtml5 = function(timeout) {
           node.currentTime = seek;
           node.muted = sound._muted || self._muted || Howler._muted || node.muted;
           node.volume = sound._volume * Howler.volume();
           node.playbackRate = sound._rate;
+
+          // Setup the new end timer.
+          if (timeout && timeout !== Infinity) {
+            self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
+          }
 
           // Mobile browsers will throw an error if this is called without user interaction.
           try {
@@ -773,11 +778,6 @@
               self._emit('playerror', sound._id, 'Playback was unable to start. This is most commonly an issue ' +
                 'on mobile devices where playback was not within a user interaction.');
               return;
-            }
-
-            // Setup the new end timer.
-            if (timeout !== Infinity) {
-              self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
             }
 
             if (!internal) {
@@ -791,11 +791,11 @@
         // Play immediately if ready, or wait for the 'canplaythrough'e vent.
         var loadedNoReadyState = (window && window.ejecta) || (!node.readyState && Howler._navigator.isCocoonJS);
         if (node.readyState === 4 || loadedNoReadyState) {
-          playHtml5();
+          playHtml5(timeout);
         } else {
           var listener = function() {
             // Begin playback.
-            playHtml5();
+            playHtml5(timeout);
 
             // Clear this listener.
             node.removeEventListener(Howler._canPlayEvent, listener, false);
@@ -1703,14 +1703,6 @@
     _ended: function(sound) {
       var self = this;
       var sprite = sound._sprite;
-
-      // If we are using IE and there was network latency we may be clipping
-      // audio before it completes playing. Lets check the node to make sure it
-      // believes it has completed, before ending the playback.
-      if (!self._webAudio && sound._node && !sound._node.paused) {
-        setTimeout(self._ended.bind(self, sound), 100);
-        return self;
-      }
 
       // Should this sound loop?
       var loop = !!(sound._loop || self._sprite[sprite][2]);
