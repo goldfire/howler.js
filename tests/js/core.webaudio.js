@@ -19,6 +19,13 @@ var sound2 = new Howl({
   }
 });
 
+var sound3 = new Howl({
+  src: ['audio/sound2.webm', 'audio/sound2.mp3'],
+  sprite: {
+    beat: [11000, 5000]
+  }
+});
+
 // Enable the start button when the sounds have loaded.
 sound1.once('load', function() {
   start.removeAttribute('disabled');
@@ -33,7 +40,7 @@ var tests = [
       label.innerHTML = 'PLAYING';
       setTimeout(fn, 2000);
     });
-    
+
     id = sound1.play();
   },
 
@@ -240,6 +247,73 @@ var tests = [
     sound2.once('fade', function() {
       fn();
     });
+  },
+
+  function (fn) {
+    sound1.stop();
+    sound2.stop();
+    sound3.loop(true);
+
+    sound3.once("play", function () {
+      label.innerHTML = "PLAY EVENT";
+    });
+    sound3.once("end", function () {
+      label.innerHTML = "END EVENT";
+      setTimeout(function () {
+        sound3.pause();
+      }, 1000);
+    });
+    sound3.once("pause", function () {
+      label.innerHTML = "PAUSE EVENT";
+      setTimeout(function () {
+        sound3.play("beat");
+        setTimeout(function () {
+          sound3.mute(true);
+        }, 500);
+      }, 1000);
+    });
+    sound3.once("mute", function () {
+      label.innerHTML = "MUTE EVENT";
+      setTimeout(function () {
+        sound3.mute(false);
+        setTimeout(function() {
+          sound3.volume(0.8);
+        }, 500);
+      }, 1000);
+    });
+    sound3.once("volume", function () {
+      label.innerHTML = "VOLUME EVENT";
+      setTimeout(function () {
+        sound3.rate(1.5);
+      }, 1000);
+    });
+    sound3.once("rate", function () {
+      label.innerHTML = "RATE EVENT";
+      setTimeout(function () {
+        sound3.rate(1);
+        sound3.seek(0);
+      }, 1000);
+    });
+    sound3.once("seek", function () {
+      label.innerHTML = "SEEK EVENT";
+      setTimeout(function () {
+        sound3.fade(1, 0.2, 1000);
+      }, 1000);
+    });
+    sound3.once("fade", function () {
+      label.innerHTML = "FADE EVENT";
+      setTimeout(function () {
+        sound3.stop();
+      }, 1500);
+    });
+    sound3.once("stop", function () {
+      label.innerHTML = "STOP EVENT";
+      setTimeout(function() {
+        fn();
+      }, 1000);
+    });
+
+    sound3.play("beat");
   }
 ];
 
