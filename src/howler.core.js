@@ -2209,9 +2209,12 @@
 
     // Create and expose the master GainNode when using Web Audio (useful for plugins or advanced usage).
     if (Howler.usingWebAudio) {
+      Howler.dynamicsCompressorNode = Howler.ctx.createDynamicsCompressor();
+      Howler.dynamicsCompressorNode.connect(Howler.ctx.destination);
+
       Howler.masterGain = (typeof Howler.ctx.createGain === 'undefined') ? Howler.ctx.createGainNode() : Howler.ctx.createGain();
       Howler.masterGain.gain.value = Howler._muted ? 0 : 1;
-      Howler.masterGain.connect(Howler.ctx.destination);
+      Howler.masterGain.connect(Howler.dynamicsCompressorNode);
     }
 
     // Re-run the setup on Howler.
