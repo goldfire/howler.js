@@ -636,9 +636,10 @@
         // If there is, play that sound. If not, continue as usual.
         var num = 0;
         for (var i=0; i<self._sounds.length; i++) {
-          if (self._sounds[i]._paused && !self._sounds[i]._ended) {
+          var soundAtI = self._sounds[i];
+          if (soundAtI._paused && !soundAtI._ended) {
             num++;
-            id = self._sounds[i]._id;
+            id = soundAtI._id;
           }
         }
 
@@ -702,8 +703,9 @@
       }
 
       // Determine how long to play for and where to start playing.
-      var seek = Math.max(0, sound._seek > 0 ? sound._seek : self._sprite[sprite][0] / 1000);
-      var duration = Math.max(0, ((self._sprite[sprite][0] + self._sprite[sprite][1]) / 1000) - seek);
+      var soundSprite = self._sprite[sprite];
+      var seek = Math.max(0, sound._seek > 0 ? sound._seek : soundSprite[0] / 1000);
+      var duration = Math.max(0, ((soundSprite[0] + soundSprite[1]) / 1000) - seek);
       var timeout = (duration * 1000) / Math.abs(sound._rate);
 
       // Update the parameters of the sound
@@ -711,9 +713,9 @@
       sound._ended = false;
       sound._sprite = sprite;
       sound._seek = seek;
-      sound._start = self._sprite[sprite][0] / 1000;
-      sound._stop = (self._sprite[sprite][0] + self._sprite[sprite][1]) / 1000;
-      sound._loop = !!(sound._loop || self._sprite[sprite][2]);
+      sound._start = soundSprite[0] / 1000;
+      sound._stop = (soundSprite[0] + soundSprite[1]) / 1000;
+      sound._loop = !!(sound._loop || soundSprite[2]);
 
       // Begin the actual playback.
       var node = sound._node;
@@ -1655,15 +1657,14 @@
 
       // Loop through event store and fire all functions.
       for (var i=events.length-1; i>=0; i--) {
-        if (!events[i].id || events[i].id === id || event === 'load') {
-          setTimeout(function(fn) {
-            fn.call(this, id, msg);
-          }.bind(self, events[i].fn), 0);
-
+        var eventAtId = events[i];
+        if (!eventAtId.id || eventAtId.id === id || event === 'load') {
           // If this event was setup with `once`, remove it.
-          if (events[i].once) {
-            self.off(event, events[i].fn, events[i].id);
+          if (eventAtId.once) {
+            self.off(event, eventAtId.fn, eventAtId.id);
           }
+
+          eventAtId.fn.call(this, id, msg);
         }
       }
 
@@ -1782,8 +1783,9 @@
 
       // Loop through all sounds and find the one with this ID.
       for (var i=0; i<self._sounds.length; i++) {
-        if (id === self._sounds[i]._id) {
-          return self._sounds[i];
+        var soundAtI = self._sounds[i];
+        if (id === soundAtI._id) {
+          return soundAtI;
         }
       }
 
