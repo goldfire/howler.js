@@ -1129,7 +1129,7 @@
             sound._node.gain.linearRampToValueAtTime(to, end);
           }
 
-          self._startFadeInterval(sound, from, to, len, ids[i]);
+          self._startFadeInterval(sound, from, to, len, ids[i], typeof id === 'undefined');
         }
       }
 
@@ -1143,8 +1143,9 @@
      * @param  {Number} to   The volume to fade to (0.0 to 1.0).
      * @param  {Number} len  Time in milliseconds to fade.
      * @param  {Number} id   The sound id to fade.
+     * @param  {Boolean} isGroup   If true, set the volume on the group.
      */
-    _startFadeInterval: function(sound, from, to, len, id) {
+    _startFadeInterval: function(sound, from, to, len, id, isGroup) {
       var self = this;
       var vol = from;
       var dir = from > to ? 'out' : 'in';
@@ -1173,13 +1174,14 @@
 
         // Change the volume.
         if (self._webAudio) {
-          if (typeof id === 'undefined') {
-            self._volume = vol;
-          }
-
           sound._volume = vol;
         } else {
           self.volume(vol, sound._id, true);
+        }
+
+        // Set the group's volume.
+        if (isGroup) {
+          self._volume = vol;
         }
 
         // When the fade is complete, stop it and fire event.
