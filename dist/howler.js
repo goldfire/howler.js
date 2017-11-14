@@ -1908,10 +1908,10 @@
     _cleanBuffer: function(node) {
       var self = this;
 
-      if (Howler._scratchBuffer) {
+      if (self._scratchBuffer) {
         node.bufferSource.onended = null;
         node.bufferSource.disconnect(0);
-        try { node.bufferSource.buffer = Howler._scratchBuffer; } catch(e) {}
+        try { node.bufferSource.buffer = self._scratchBuffer; } catch(e) {}
       }
       node.bufferSource = null;
 
