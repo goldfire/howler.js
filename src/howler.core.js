@@ -183,8 +183,12 @@
     _setup: function() {
       var self = this || Howler;
 
+      if (self._initSuspended && self.ctx && self.ctx != 'suspended') {
+        self._initSuspended = false;
+      }
+      
       // Keeps track of the suspend/resume state of the AudioContext.
-      self.state = self.ctx ? self.ctx.state || 'running' : 'running';
+      self.state = (self.ctx && !self._initSuspended) ? self.ctx.state || 'running' : 'running';
 
       // Automatically begin the 30-second suspend process
       self._autoSuspend();
@@ -2196,6 +2200,8 @@
     } catch(e) {
       Howler.usingWebAudio = false;
     }
+    
+    Howler._initSuspended = (Howler.ctx.state != null && Howler.ctx.state === 'suspended');
 
     // Check if a webview is being used on iOS8 or earlier (rather than the browser).
     // If it is, disable Web Audio as it causes crashing.
