@@ -2201,7 +2201,7 @@
       Howler.usingWebAudio = false;
     }
     
-    Howler._initSuspended = (Howler.ctx.state != null && Howler.ctx.state === 'suspended');
+    Howler._initSuspended = (typeof Howler.ctx !== 'undefined' && Howler.ctx && Howler.ctx.state != null && Howler.ctx.state === 'suspended');
 
     // Check if a webview is being used on iOS8 or earlier (rather than the browser).
     // If it is, disable Web Audio as it causes crashing.
