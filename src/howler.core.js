@@ -183,7 +183,7 @@
     _setup: function() {
       var self = this || Howler;
 
-      if (self._initSuspended && self.ctx && self.ctx != 'suspended') {
+      if (self._initSuspended && self.ctx && self.ctx.state != 'suspended') {
         self._initSuspended = false;
       }
       
