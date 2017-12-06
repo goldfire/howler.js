@@ -123,7 +123,7 @@
 
       // With Web Audio, we just need to mute the master gain.
       if (self.usingWebAudio) {
-        self.masterGain.gain.setValueAtTime(muted ? 0 : self._volume, tHowler.ctx.currentTime);
+        self.masterGain.gain.setValueAtTime(muted ? 0 : self._volume, Howler.ctx.currentTime);
       }
 
       // Loop through and mute all HTML5 Audio nodes.
