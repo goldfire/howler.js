@@ -81,7 +81,7 @@
 
         // When using Web Audio, we just need to adjust the master gain.
         if (self.usingWebAudio) {
-          self.masterGain.gain.setValueAtTime(vol, Howler.ctx.currentTime);
+          self.masterGain.gain.value = vol;
         }
 
         // Loop through and change volume for all HTML5 audio nodes.
@@ -123,7 +123,7 @@
 
       // With Web Audio, we just need to mute the master gain.
       if (self.usingWebAudio) {
-        self.masterGain.gain.setValueAtTime(muted ? 0 : self._volume, Howler.ctx.currentTime);
+        self.masterGain.gain.value = muted ? 0 : self._volume;
       }
 
       // Loop through and mute all HTML5 Audio nodes.
@@ -636,9 +636,10 @@
         // If there is, play that sound. If not, continue as usual.
         var num = 0;
         for (var i=0; i<self._sounds.length; i++) {
-          if (self._sounds[i]._paused && !self._sounds[i]._ended) {
+          var soundAtI = self._sounds[i];
+          if (soundAtI._paused && !soundAtI._ended) {
             num++;
-            id = self._sounds[i]._id;
+            id = soundAtI._id;
           }
         }
 
@@ -702,8 +703,9 @@
       }
 
       // Determine how long to play for and where to start playing.
-      var seek = Math.max(0, sound._seek > 0 ? sound._seek : self._sprite[sprite][0] / 1000);
-      var duration = Math.max(0, ((self._sprite[sprite][0] + self._sprite[sprite][1]) / 1000) - seek);
+      var soundSprite = self._sprite[sprite];
+      var seek = Math.max(0, sound._seek > 0 ? sound._seek : soundSprite[0] / 1000);
+      var duration = Math.max(0, ((soundSprite[0] + soundSprite[1]) / 1000) - seek);
       var timeout = (duration * 1000) / Math.abs(sound._rate);
 
       // Update the parameters of the sound
@@ -711,9 +713,9 @@
       sound._ended = false;
       sound._sprite = sprite;
       sound._seek = seek;
-      sound._start = self._sprite[sprite][0] / 1000;
-      sound._stop = (self._sprite[sprite][0] + self._sprite[sprite][1]) / 1000;
-      sound._loop = !!(sound._loop || self._sprite[sprite][2]);
+      sound._start = soundSprite[0] / 1000;
+      sound._stop = (soundSprite[0] + soundSprite[1]) / 1000;
+      sound._loop = !!(sound._loop || soundSprite[2]);
 
       // Begin the actual playback.
       var node = sound._node;
@@ -756,11 +758,16 @@
         }
       } else {
         // Fire this when the sound is ready to play to begin HTML5 Audio playback.
-        var playHtml5 = function() {
+        var playHtml5 = function(timeout) {
           node.currentTime = seek;
           node.muted = sound._muted || self._muted || Howler._muted || node.muted;
           node.volume = sound._volume * Howler.volume();
           node.playbackRate = sound._rate;
+
+          // Setup the new end timer.
+          if (timeout && timeout !== Infinity) {
+            self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
+          }
 
           // Mobile browsers will throw an error if this is called without user interaction.
           try {
@@ -771,11 +778,6 @@
               self._emit('playerror', sound._id, 'Playback was unable to start. This is most commonly an issue ' +
                 'on mobile devices where playback was not within a user interaction.');
               return;
-            }
-
-            // Setup the new end timer.
-            if (timeout !== Infinity) {
-              self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
             }
 
             if (!internal) {
@@ -789,11 +791,11 @@
         // Play immediately if ready, or wait for the 'canplaythrough'e vent.
         var loadedNoReadyState = (window && window.ejecta) || (!node.readyState && Howler._navigator.isCocoonJS);
         if (node.readyState === 4 || loadedNoReadyState) {
-          playHtml5();
+          playHtml5(timeout);
         } else {
           var listener = function() {
             // Begin playback.
-            playHtml5();
+            playHtml5(timeout);
 
             // Clear this listener.
             node.removeEventListener(Howler._canPlayEvent, listener, false);
@@ -1129,7 +1131,7 @@
             sound._node.gain.linearRampToValueAtTime(to, end);
           }
 
-          self._startFadeInterval(sound, from, to, len, ids[i], typeof id === 'undefined');
+          self._startFadeInterval(sound, from, to, len, ids[i]);
         }
       }
 
@@ -1143,9 +1145,8 @@
      * @param  {Number} to   The volume to fade to (0.0 to 1.0).
      * @param  {Number} len  Time in milliseconds to fade.
      * @param  {Number} id   The sound id to fade.
-     * @param  {Boolean} isGroup   If true, set the volume on the group.
      */
-    _startFadeInterval: function(sound, from, to, len, id, isGroup) {
+    _startFadeInterval: function(sound, from, to, len, id) {
       var self = this;
       var vol = from;
       var dir = from > to ? 'out' : 'in';
@@ -1174,14 +1175,13 @@
 
         // Change the volume.
         if (self._webAudio) {
+          if (typeof id === 'undefined') {
+            self._volume = vol;
+          }
+
           sound._volume = vol;
         } else {
           self.volume(vol, sound._id, true);
-        }
-
-        // Set the group's volume.
-        if (isGroup) {
-          self._volume = vol;
         }
 
         // When the fade is complete, stop it and fire event.
@@ -1657,15 +1657,14 @@
 
       // Loop through event store and fire all functions.
       for (var i=events.length-1; i>=0; i--) {
-        if (!events[i].id || events[i].id === id || event === 'load') {
-          setTimeout(function(fn) {
-            fn.call(this, id, msg);
-          }.bind(self, events[i].fn), 0);
-
+        var eventAtId = events[i];
+        if (!eventAtId.id || eventAtId.id === id || event === 'load') {
           // If this event was setup with `once`, remove it.
-          if (events[i].once) {
-            self.off(event, events[i].fn, events[i].id);
+          if (eventAtId.once) {
+            self.off(event, eventAtId.fn, eventAtId.id);
           }
+
+          eventAtId.fn.call(this, id, msg);
         }
       }
 
@@ -1704,14 +1703,6 @@
     _ended: function(sound) {
       var self = this;
       var sprite = sound._sprite;
-
-      // If we are using IE and there was network latency we may be clipping
-      // audio before it completes playing. Lets check the node to make sure it
-      // believes it has completed, before ending the playback.
-      if (!self._webAudio && sound._node && !sound._node.paused && !sound._node.ended) {
-        setTimeout(self._ended.bind(self, sound), 100);
-        return self;
-      }
 
       // Should this sound loop?
       var loop = !!(sound._loop || self._sprite[sprite][2]);
@@ -1784,8 +1775,9 @@
 
       // Loop through all sounds and find the one with this ID.
       for (var i=0; i<self._sounds.length; i++) {
-        if (id === self._sounds[i]._id) {
-          return self._sounds[i];
+        var soundAtI = self._sounds[i];
+        if (id === soundAtI._id) {
+          return soundAtI;
         }
       }
 
@@ -1910,10 +1902,10 @@
     _cleanBuffer: function(node) {
       var self = this;
 
-      if (Howler._scratchBuffer) {
+      if (self._scratchBuffer) {
         node.bufferSource.onended = null;
         node.bufferSource.disconnect(0);
-        try { node.bufferSource.buffer = Howler._scratchBuffer; } catch(e) {}
+        try { node.bufferSource.buffer = self._scratchBuffer; } catch(e) {}
       }
       node.bufferSource = null;
 
@@ -2211,9 +2203,12 @@
 
     // Create and expose the master GainNode when using Web Audio (useful for plugins or advanced usage).
     if (Howler.usingWebAudio) {
+      Howler.dynamicsCompressorNode = Howler.ctx.createDynamicsCompressor();
+      Howler.dynamicsCompressorNode.connect(Howler.ctx.destination);
+
       Howler.masterGain = (typeof Howler.ctx.createGain === 'undefined') ? Howler.ctx.createGainNode() : Howler.ctx.createGain();
-      Howler.masterGain.gain.setValueAtTime(Howler._muted ? 0 : 1, Howler.ctx.currentTime);
-      Howler.masterGain.connect(Howler.ctx.destination);
+      Howler.masterGain.gain.value = Howler._muted ? 0 : 1;
+      Howler.masterGain.connect(Howler.dynamicsCompressorNode);
     }
 
     // Re-run the setup on Howler.
