@@ -765,18 +765,18 @@
 
           // Mobile browsers will throw an error if this is called without user interaction.
           try {
-            var playPromise = node.play();
+            var play = node.play();
 
-            // Checks if the play() method has returned a Promise for IE/Edge compatibility
-            if (playPromise instanceof Promise) {
+            // Support older browsers that don't support promises, and thus don't have this issue.
+            if (play instanceof Promise) {
               // Implements a lock to prevent DOMException: The play() request was interrupted by a call to pause().
               self._playLock = true;
 
-              playPromise.then(function () {
-                // Releases the lock and executes queued actions
+              // Releases the lock and executes queued actions.
+              play.then(function () {
                 self._playLock = false;
                 self._loadQueue();
-              })
+              });
             }
 
             // If the node is still paused, then we can assume there was a playback issue.

@@ -81,7 +81,7 @@
 
         // When using Web Audio, we just need to adjust the master gain.
         if (self.usingWebAudio) {
-          self.masterGain.gain.setValueAtTime(vol, Howler.ctx.currentTime);
+          self.masterGain.gain.value = vol;
         }
 
         // Loop through and change volume for all HTML5 audio nodes.
@@ -123,7 +123,7 @@
 
       // With Web Audio, we just need to mute the master gain.
       if (self.usingWebAudio) {
-        self.masterGain.gain.setValueAtTime(muted ? 0 : self._volume, Howler.ctx.currentTime);
+        self.masterGain.gain.value = muted ? 0 : self._volume;
       }
 
       // Loop through and mute all HTML5 Audio nodes.
@@ -483,7 +483,6 @@
       self._sounds = [];
       self._endTimers = {};
       self._queue = [];
-      self._playLock = false;
 
       // Setup event listeners.
       self._onend = o.onend ? [{fn: o.onend}] : [];
@@ -765,19 +764,7 @@
 
           // Mobile browsers will throw an error if this is called without user interaction.
           try {
-            var playPromise = node.play();
-
-            // Checks if the play() method has returned a Promise for IE/Edge compatibility
-            if (playPromise instanceof Promise) {
-              // Implements a lock to prevent DOMException: The play() request was interrupted by a call to pause().
-              self._playLock = true;
-
-              playPromise.then(function () {
-                // Releases the lock and executes queued actions
-                self._playLock = false;
-                self._loadQueue();
-              })
-            }
+            node.play();
 
             // If the node is still paused, then we can assume there was a playback issue.
             if (node.paused) {
@@ -829,8 +816,8 @@
     pause: function(id) {
       var self = this;
 
-      // If the sound hasn't loaded or a play() promise is pending, add it to the load queue to pause when capable.
-      if (self._state !== 'loaded' || self._playLock) {
+      // If the sound hasn't loaded, add it to the load queue to pause when capable.
+      if (self._state !== 'loaded') {
         self._queue.push({
           event: 'pause',
           action: function() {
@@ -1142,7 +1129,7 @@
             sound._node.gain.linearRampToValueAtTime(to, end);
           }
 
-          self._startFadeInterval(sound, from, to, len, ids[i], typeof id === 'undefined');
+          self._startFadeInterval(sound, from, to, len, ids[i]);
         }
       }
 
@@ -1156,9 +1143,8 @@
      * @param  {Number} to   The volume to fade to (0.0 to 1.0).
      * @param  {Number} len  Time in milliseconds to fade.
      * @param  {Number} id   The sound id to fade.
-     * @param  {Boolean} isGroup   If true, set the volume on the group.
      */
-    _startFadeInterval: function(sound, from, to, len, id, isGroup) {
+    _startFadeInterval: function(sound, from, to, len, id) {
       var self = this;
       var vol = from;
       var dir = from > to ? 'out' : 'in';
@@ -1187,14 +1173,13 @@
 
         // Change the volume.
         if (self._webAudio) {
+          if (typeof id === 'undefined') {
+            self._volume = vol;
+          }
+
           sound._volume = vol;
         } else {
           self.volume(vol, sound._id, true);
-        }
-
-        // Set the group's volume.
-        if (isGroup) {
-          self._volume = vol;
         }
 
         // When the fade is complete, stop it and fire event.
@@ -1721,7 +1706,7 @@
       // If we are using IE and there was network latency we may be clipping
       // audio before it completes playing. Lets check the node to make sure it
       // believes it has completed, before ending the playback.
-      if (!self._webAudio && sound._node && !sound._node.paused && !sound._node.ended) {
+      if (!self._webAudio && sound._node && !sound._node.paused) {
         setTimeout(self._ended.bind(self, sound), 100);
         return self;
       }
@@ -1923,10 +1908,10 @@
     _cleanBuffer: function(node) {
       var self = this;
 
-      if (Howler._scratchBuffer) {
+      if (self._scratchBuffer) {
         node.bufferSource.onended = null;
         node.bufferSource.disconnect(0);
-        try { node.bufferSource.buffer = Howler._scratchBuffer; } catch(e) {}
+        try { node.bufferSource.buffer = self._scratchBuffer; } catch(e) {}
       }
       node.bufferSource = null;
 
@@ -2225,7 +2210,7 @@
     // Create and expose the master GainNode when using Web Audio (useful for plugins or advanced usage).
     if (Howler.usingWebAudio) {
       Howler.masterGain = (typeof Howler.ctx.createGain === 'undefined') ? Howler.ctx.createGainNode() : Howler.ctx.createGain();
-      Howler.masterGain.gain.setValueAtTime(Howler._muted ? 0 : 1, Howler.ctx.currentTime);
+      Howler.masterGain.gain.value = Howler._muted ? 0 : 1;
       Howler.masterGain.connect(Howler.ctx.destination);
     }
 
