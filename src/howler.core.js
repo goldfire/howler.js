@@ -986,6 +986,11 @@
         if (sound) {
           sound._muted = muted;
 
+          // Cancel active fade and set the volume to the end value.
+          if (sound._interval) {
+            self._stopFade(sound._id);
+          }
+
           if (self._webAudio && sound._node) {
             sound._node.gain.setValueAtTime(muted ? 0 : sound._volume, Howler.ctx.currentTime);
           } else if (sound._node) {
@@ -1159,6 +1164,10 @@
         stepLen = 4;
       }
 
+      // Store the value being faded to.
+      sound._fadeTo = to;
+
+      // Update the volume value on each interval tick.
       sound._interval = setInterval(function() {
         // Update the volume amount, but only if the volume should change.
         if (steps > 0) {
@@ -1188,6 +1197,7 @@
         if ((to < from && vol <= to) || (to > from && vol >= to)) {
           clearInterval(sound._interval);
           sound._interval = null;
+          sound._fadeTo = null;
           self.volume(to, sound._id);
           self._emit('fade', sound._id);
         }
@@ -1211,6 +1221,8 @@
 
         clearInterval(sound._interval);
         sound._interval = null;
+        self.volume(sound._fadeTo, id);
+        sound._fadeTo = null;
         self._emit('fade', id);
       }
 
