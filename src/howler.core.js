@@ -483,6 +483,7 @@
       self._sounds = [];
       self._endTimers = {};
       self._queue = [];
+      self._playLock = false;
 
       // Setup event listeners.
       self._onend = o.onend ? [{fn: o.onend}] : [];
@@ -764,7 +765,19 @@
 
           // Mobile browsers will throw an error if this is called without user interaction.
           try {
-            node.play();
+            var playPromise = node.play();
+
+            // Checks if the play() method has returned a Promise for IE/Edge compatibility
+            if (playPromise instanceof Promise) {
+              // Implements a lock to prevent DOMException: The play() request was interrupted by a call to pause().
+              self._playLock = true;
+
+              playPromise.then(function () {
+                // Releases the lock and executes queued actions
+                self._playLock = false;
+                self._loadQueue();
+              })
+            }
 
             // If the node is still paused, then we can assume there was a playback issue.
             if (node.paused) {
@@ -816,8 +829,8 @@
     pause: function(id) {
       var self = this;
 
-      // If the sound hasn't loaded, add it to the load queue to pause when capable.
-      if (self._state !== 'loaded') {
+      // If the sound hasn't loaded or a play() promise is pending, add it to the load queue to pause when capable.
+      if (self._state !== 'loaded' || self._playLock) {
         self._queue.push({
           event: 'pause',
           action: function() {
