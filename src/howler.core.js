@@ -768,7 +768,7 @@
             var play = node.play();
 
             // Support older browsers that don't support promises, and thus don't have this issue.
-            if (play instanceof Promise) {
+            if (typeof Promise !== 'undefined' && play instanceof Promise) {
               // Implements a lock to prevent DOMException: The play() request was interrupted by a call to pause().
               self._playLock = true;
 
