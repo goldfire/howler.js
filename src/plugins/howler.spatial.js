@@ -213,7 +213,7 @@
             if (pannerType === 'spatial') {
               sound._panner.setPosition(pan, 0, 0);
             } else {
-              sound._panner.pan.value = pan;
+              sound._panner.pan.setValueAtTime(pan, Howler.ctx.currentTime);
             }
           }
 
@@ -582,7 +582,7 @@
       sound._panner.setOrientation(sound._orientation[0], sound._orientation[1], sound._orientation[2]);
     } else {
       sound._panner = Howler.ctx.createStereoPanner();
-      sound._panner.pan.value = sound._stereo;
+      sound._panner.pan.setValueAtTime(sound._stereo, Howler.ctx.currentTime);
     }
 
     sound._panner.connect(sound._node);
