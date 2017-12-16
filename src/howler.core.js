@@ -1733,8 +1733,7 @@
       // If we are using IE and there was network latency we may be clipping
       // audio before it completes playing. Lets check the node to make sure it
       // believes it has completed, before ending the playback.
-      const ended = sound._node.currentTime >= sound._stop;
-      if (!self._webAudio && sound._node && !sound._node.paused && !sound._node.ended && !ended) {
+      if (!self._webAudio && sound._node && !sound._node.paused && !sound._node.ended && sound._node.currentTime < sound._stop) {
         setTimeout(self._ended.bind(self, sound), 100);
         return self;
       }
