@@ -1,3 +1,6 @@
+## 2.0.7 (December 18, 2017)
+- `FIXED` Accidental `const` was included in the previous version.
+
 ## 2.0.6 (December 15, 2017)
 - `FIXED` Replaced deprecated `gain.value` and `gain.pan.value` with `setValueAtTime` ([#856](https://github.com/goldfire/howler.js/issues/856)).
 - `FIXED` Audio sprites weren't ending correctly in Internet Explorer 11 ([#841](https://github.com/goldfire/howler.js/issues/841)).

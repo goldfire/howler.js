@@ -1,5 +1,5 @@
 /*!
- *  howler.js v2.0.6
+ *  howler.js v2.0.7
  *  howlerjs.com
  *
  *  (c) 2013-2017, James Simpson of GoldFire Studios
@@ -1733,8 +1733,7 @@
       // If we are using IE and there was network latency we may be clipping
       // audio before it completes playing. Lets check the node to make sure it
       // believes it has completed, before ending the playback.
-      const ended = sound._node.currentTime >= sound._stop;
-      if (!self._webAudio && sound._node && !sound._node.paused && !sound._node.ended && !ended) {
+      if (!self._webAudio && sound._node && !sound._node.paused && !sound._node.ended && sound._node.currentTime < sound._stop) {
         setTimeout(self._ended.bind(self, sound), 100);
         return self;
       }
@@ -2280,7 +2279,7 @@
 /*!
  *  Spatial Plugin - Adds support for stereo and 3D audio where Web Audio is supported.
  *  
- *  howler.js v2.0.6
+ *  howler.js v2.0.7
  *  howlerjs.com
  *
  *  (c) 2013-2017, James Simpson of GoldFire Studios
