@@ -1359,7 +1359,7 @@
 
             // Change the playback rate.
             if (self._webAudio && sound._node && sound._node.bufferSource) {
-              sound._node.bufferSource.playbackRate.value = rate;
+              sound._node.bufferSource.playbackRate.setValueAtTime(rate, Howler.ctx.currentTime);;
             } else if (sound._node) {
               sound._node.playbackRate = rate;
             }
@@ -1922,7 +1922,7 @@
         sound._node.bufferSource.loopStart = sound._start || 0;
         sound._node.bufferSource.loopEnd = sound._stop;
       }
-      sound._node.bufferSource.playbackRate.value = sound._rate;
+      sound._node.bufferSource.playbackRate.setValueAtTime(sound._rate, Howler.ctx.currentTime);
 
       return self;
     },
