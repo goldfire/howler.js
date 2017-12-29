@@ -1170,11 +1170,13 @@
       var diff = Math.abs(from - to);
       var steps = diff / 0.01;
       var stepLen = (steps > 0) ? len / steps : len;
+      var stepVol = diff / steps;
 
       // Since browsers clamp timeouts to 4ms, we need to clamp our steps to that too.
       if (stepLen < 4) {
-        steps = Math.ceil(steps / (4 / stepLen));
+        steps = Math.ceil(steps * stepLen * 0.25);
         stepLen = 4;
+        stepVol = diff / steps;
       }
 
       // Store the value being faded to.
@@ -1184,7 +1186,7 @@
       sound._interval = setInterval(function() {
         // Update the volume amount, but only if the volume should change.
         if (steps > 0) {
-          vol += (dir === 'in' ? 0.01 : -0.01);
+          vol += (dir === 'in' ? stepVol : -stepVol);
         }
 
         // Make sure the volume is in the right bounds.
