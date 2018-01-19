@@ -147,18 +147,21 @@ var id2 = sound.play();
 sound.fade(1, 0, 1000, id1);
 sound.rate(1.5, id2);
 ```
-##### ES6:
-```js
-//import
-import { Howl } from 'howler';
 
-//assuming you have the file in the relative path
-const warnSound = new Howl({
-  src: ['assets/tink.wav']
+##### ES6:
+```javascript
+import {Howl, Howler} from 'howler';
+
+// Setup the new Howl.
+const sound = new Howl({
+  src: ['sound.webm', 'sound.mp3']
 });
 
-//play
-warnSound.play();
+// Play the sound.
+sound.play();
+
+// Change global volume.
+Howler.volume(0.5);
 ```
 
 
