@@ -589,7 +589,7 @@
 
     // Update the connections.
     if (!sound._paused) {
-      sound._parent.pause(sound._id, true).play(sound._id);
+      sound._parent.pause(sound._id, true).play(sound._id, true);
     }
   };
 })();
