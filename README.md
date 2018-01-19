@@ -147,6 +147,20 @@ var id2 = sound.play();
 sound.fade(1, 0, 1000, id1);
 sound.rate(1.5, id2);
 ```
+##### ES6:
+```js
+//import
+import { Howl } from 'howler';
+
+//assuming you have the file in the relative path
+const warnSound = new Howl({
+  src: ['assets/tink.wav']
+});
+
+//play
+warnSound.play();
+```
+
 
 More in-depth examples (with accompanying live demos) can be found in the [examples directory](https://github.com/goldfire/howler.js/tree/master/examples).
 
