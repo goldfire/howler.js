@@ -1,3 +1,9 @@
+## 2.0.8 (January 19, 2018)
+- `CHANGED` Fades now use elapsed time to be more accurate when intervals are inconsistent ([#885](https://github.com/goldfire/howler.js/issues/885)).
+- `CHANGED` Improve timing of short fades ([#884](https://github.com/goldfire/howler.js/issues/884)).
+- `FIXED` Fixed another Chrome deprecation when setting playback rate.
+- `FIXED` Prevent `onplay` from firing when first setting `stereo` value ([#843](https://github.com/goldfire/howler.js/issues/843)).
+
 ## 2.0.7 (December 18, 2017)
 - `FIXED` Accidental `const` was included in the previous version.
 
