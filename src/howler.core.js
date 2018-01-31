@@ -776,6 +776,9 @@
               play.then(function () {
                 self._playLock = false;
                 self._loadQueue();
+              }, function () {
+                self._playLock = false;
+                self._loadQueue();
               });
             }
 
