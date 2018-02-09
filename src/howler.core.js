@@ -690,7 +690,7 @@
         // Trigger the play event, in order to keep iterating through queue.
         if (!internal) {
           setTimeout(function() {
-            self._emit('play', sound._id);
+            self._emit('play', 'queue');
           }, 0);
         }
 
@@ -773,13 +773,11 @@
               self._playLock = true;
 
               // Releases the lock and executes queued actions.
-              play.then(function () {
+              var runLoadQueue = function() {
                 self._playLock = false;
                 self._loadQueue();
-              }, function () {
-                self._playLock = false;
-                self._loadQueue();
-              });
+              };
+              play.then(runLoadQueue);
             }
 
             // If the node is still paused, then we can assume there was a playback issue.
@@ -1679,6 +1677,12 @@
 
       // Loop through event store and fire all functions.
       for (var i=events.length-1; i>=0; i--) {
+        // Don't fire listener on non-queue events if this is a queued event.
+        if (id === 'queue' && events[i].id === id) {
+          continue;
+        }
+        
+        // Only fire the listener if the correct ID is used.
         if (!events[i].id || events[i].id === id || event === 'load') {
           setTimeout(function(fn) {
             fn.call(this, id, msg);
@@ -1710,7 +1714,7 @@
         self.once(task.event, function() {
           self._queue.shift();
           self._loadQueue();
-        });
+        }, 'queue');
 
         task.action();
       }
