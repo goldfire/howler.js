@@ -787,9 +787,18 @@
               return;
             }
 
-            // Setup the new end timer.
-            if (timeout !== Infinity) {
+            // Setup the end timer on sprites or listen for the ended event.
+            if (sprite !== '__default') {
               self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
+            } else {
+              self._endTimers[sound._id] = function() {
+                // Fire ended on this audio node.
+                self._ended(sound);
+
+                // Clear this listener.
+                node.removeEventListener('ended', self._endTimers[sound._id], false);
+              };
+              node.addEventListener('ended', self._endTimers[sound._id], false);
             }
 
             if (!internal) {
@@ -1793,7 +1802,16 @@
       var self = this;
 
       if (self._endTimers[id]) {
-        clearTimeout(self._endTimers[id]);
+        // Clear the timeout or remove the ended listener.
+        if (typeof self._endTimers[id] !== 'function') {
+          clearTimeout(self._endTimers[id]);
+        } else {
+          var sound = self._soundById(id);
+          if (sound && sound._node) {
+            sound._node.removeEventListener('ended', self._endTimers[id], false);
+          }
+        }
+
         delete self._endTimers[id];
       }
 
