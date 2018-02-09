@@ -777,7 +777,7 @@
                 self._playLock = false;
                 self._loadQueue();
               };
-              play.then(runLoadQueue);
+              play.then(runLoadQueue, runLoadQueue);
             }
 
             // If the node is still paused, then we can assume there was a playback issue.
