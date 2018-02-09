@@ -1678,7 +1678,7 @@
       // Loop through event store and fire all functions.
       for (var i=events.length-1; i>=0; i--) {
         // Don't fire listener on non-queue events if this is a queued event.
-        if (id === 'queue' && events[i].id === id) {
+        if (id === 'queue' && events[i].id !== id) {
           continue;
         }
         
