@@ -689,9 +689,7 @@
       if (id && !sound._paused) {
         // Trigger the play event, in order to keep iterating through queue.
         if (!internal) {
-          setTimeout(function() {
-            self._emit('play', 'queue');
-          }, 0);
+          self._loadQueue('play');
         }
 
         return sound._id;
@@ -775,9 +773,13 @@
               // Releases the lock and executes queued actions.
               var runLoadQueue = function() {
                 self._playLock = false;
-                self._loadQueue();
+                if (!internal) {
+                  self._emit('play', sound._id);
+                }
               };
               play.then(runLoadQueue, runLoadQueue);
+            } else if (!internal) {
+              self._emit('play', sound._id);
             }
 
             // If the node is still paused, then we can assume there was a playback issue.
@@ -799,10 +801,6 @@
                 node.removeEventListener('ended', self._endTimers[sound._id], false);
               };
               node.addEventListener('ended', self._endTimers[sound._id], false);
-            }
-
-            if (!internal) {
-              self._emit('play', sound._id);
             }
           } catch (err) {
             self._emit('playerror', sound._id, err);
@@ -1465,7 +1463,19 @@
             sound._node.currentTime = seek;
           }
 
-          self._emit('seek', id);
+          // Wait for the play lock to be unset before emitting (HTML5 Audio).
+          if (playing && !self._webAudio) {
+            var emitSeek = function() {
+              if (!self._playLock) {
+                self._emit('seek', id);
+              } else {
+                setTimeout(emitSeek, 0);
+              }
+            };
+            setTimeout(emitSeek, 0);
+          } else {
+            self._emit('seek', id);
+          }
         } else {
           if (self._webAudio) {
             var realTime = self.playing(id) ? Howler.ctx.currentTime - sound._playStart : 0;
@@ -1686,11 +1696,6 @@
 
       // Loop through event store and fire all functions.
       for (var i=events.length-1; i>=0; i--) {
-        // Don't fire listener on non-queue events if this is a queued event.
-        if (id === 'queue' && events[i].id !== id) {
-          continue;
-        }
-        
         // Only fire the listener if the correct ID is used.
         if (!events[i].id || events[i].id === id || event === 'load') {
           setTimeout(function(fn) {
@@ -1704,6 +1709,9 @@
         }
       }
 
+      // Pass the event type into load queue so that it can continue stepping.
+      self._loadQueue(event);
+
       return self;
     },
 
@@ -1713,19 +1721,22 @@
      * after the previous has finished executing (even if async like play).
      * @return {Howl}
      */
-    _loadQueue: function() {
+    _loadQueue: function(event) {
       var self = this;
 
       if (self._queue.length > 0) {
         var task = self._queue[0];
 
-        // don't move onto the next task until this one is done
-        self.once(task.event, function() {
+        // Remove this task if a matching event was passed.
+        if (task.event === event) {
           self._queue.shift();
           self._loadQueue();
-        }, 'queue');
+        }
 
-        task.action();
+        // Run the task if no event type is passed.
+        if (!event) {
+          task.action();
+        }
       }
 
       return self;
