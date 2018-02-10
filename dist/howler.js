@@ -1,5 +1,5 @@
 /*!
- *  howler.js v2.0.8
+ *  howler.js v2.0.9
  *  howlerjs.com
  *
  *  (c) 2013-2018, James Simpson of GoldFire Studios
@@ -689,9 +689,7 @@
       if (id && !sound._paused) {
         // Trigger the play event, in order to keep iterating through queue.
         if (!internal) {
-          setTimeout(function() {
-            self._emit('play', sound._id);
-          }, 0);
+          self._loadQueue('play');
         }
 
         return sound._id;
@@ -773,10 +771,15 @@
               self._playLock = true;
 
               // Releases the lock and executes queued actions.
-              play.then(function () {
+              var runLoadQueue = function() {
                 self._playLock = false;
-                self._loadQueue();
-              });
+                if (!internal) {
+                  self._emit('play', sound._id);
+                }
+              };
+              play.then(runLoadQueue, runLoadQueue);
+            } else if (!internal) {
+              self._emit('play', sound._id);
             }
 
             // If the node is still paused, then we can assume there was a playback issue.
@@ -786,13 +789,18 @@
               return;
             }
 
-            // Setup the new end timer.
-            if (timeout !== Infinity) {
+            // Setup the end timer on sprites or listen for the ended event.
+            if (sprite !== '__default') {
               self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
-            }
+            } else {
+              self._endTimers[sound._id] = function() {
+                // Fire ended on this audio node.
+                self._ended(sound);
 
-            if (!internal) {
-              self._emit('play', sound._id);
+                // Clear this listener.
+                node.removeEventListener('ended', self._endTimers[sound._id], false);
+              };
+              node.addEventListener('ended', self._endTimers[sound._id], false);
             }
           } catch (err) {
             self._emit('playerror', sound._id, err);
@@ -801,7 +809,7 @@
 
         // Play immediately if ready, or wait for the 'canplaythrough'e vent.
         var loadedNoReadyState = (window && window.ejecta) || (!node.readyState && Howler._navigator.isCocoonJS);
-        if (node.readyState === 4 || loadedNoReadyState) {
+        if (node.readyState >= 3 || loadedNoReadyState) {
           playHtml5();
         } else {
           var listener = function() {
@@ -1353,7 +1361,7 @@
 
             // Change the playback rate.
             if (self._webAudio && sound._node && sound._node.bufferSource) {
-              sound._node.bufferSource.playbackRate.setValueAtTime(rate, Howler.ctx.currentTime);;
+              sound._node.bufferSource.playbackRate.setValueAtTime(rate, Howler.ctx.currentTime);
             } else if (sound._node) {
               sound._node.playbackRate = rate;
             }
@@ -1455,7 +1463,19 @@
             sound._node.currentTime = seek;
           }
 
-          self._emit('seek', id);
+          // Wait for the play lock to be unset before emitting (HTML5 Audio).
+          if (playing && !self._webAudio) {
+            var emitSeek = function() {
+              if (!self._playLock) {
+                self._emit('seek', id);
+              } else {
+                setTimeout(emitSeek, 0);
+              }
+            };
+            setTimeout(emitSeek, 0);
+          } else {
+            self._emit('seek', id);
+          }
         } else {
           if (self._webAudio) {
             var realTime = self.playing(id) ? Howler.ctx.currentTime - sound._playStart : 0;
@@ -1676,6 +1696,7 @@
 
       // Loop through event store and fire all functions.
       for (var i=events.length-1; i>=0; i--) {
+        // Only fire the listener if the correct ID is used.
         if (!events[i].id || events[i].id === id || event === 'load') {
           setTimeout(function(fn) {
             fn.call(this, id, msg);
@@ -1688,6 +1709,9 @@
         }
       }
 
+      // Pass the event type into load queue so that it can continue stepping.
+      self._loadQueue(event);
+
       return self;
     },
 
@@ -1697,19 +1721,22 @@
      * after the previous has finished executing (even if async like play).
      * @return {Howl}
      */
-    _loadQueue: function() {
+    _loadQueue: function(event) {
       var self = this;
 
       if (self._queue.length > 0) {
         var task = self._queue[0];
 
-        // don't move onto the next task until this one is done
-        self.once(task.event, function() {
+        // Remove this task if a matching event was passed.
+        if (task.event === event) {
           self._queue.shift();
           self._loadQueue();
-        });
+        }
 
-        task.action();
+        // Run the task if no event type is passed.
+        if (!event) {
+          task.action();
+        }
       }
 
       return self;
@@ -1786,7 +1813,16 @@
       var self = this;
 
       if (self._endTimers[id]) {
-        clearTimeout(self._endTimers[id]);
+        // Clear the timeout or remove the ended listener.
+        if (typeof self._endTimers[id] !== 'function') {
+          clearTimeout(self._endTimers[id]);
+        } else {
+          var sound = self._soundById(id);
+          if (sound && sound._node) {
+            sound._node.removeEventListener('ended', self._endTimers[id], false);
+          }
+        }
+
         delete self._endTimers[id];
       }
 
@@ -2273,7 +2309,7 @@
 /*!
  *  Spatial Plugin - Adds support for stereo and 3D audio where Web Audio is supported.
  *  
- *  howler.js v2.0.8
+ *  howler.js v2.0.9
  *  howlerjs.com
  *
  *  (c) 2013-2018, James Simpson of GoldFire Studios
