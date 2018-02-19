@@ -442,7 +442,7 @@
     var self = this;
 
     // Throw an error if no source is provided.
-    if (!o.src || o.src.length === 0) {
+    if (!o.src || o.src.length === 0 || !(o.src instanceof Array)) {
       console.error('An array of source files must be passed with any new Howl.');
       return;
     }
