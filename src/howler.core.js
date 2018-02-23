@@ -1258,7 +1258,7 @@
       // Determine the values for detune and id.
       if (args.length === 0) {
         // Return the group's detune value.
-        return self._loop;
+        return self._detune;
       } else if (args.length === 1) {
         if (typeof args[0] === 'number') {
           detuneAmt = args[0];
