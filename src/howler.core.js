@@ -469,7 +469,7 @@
       self._html5 = o.html5 || false;
       self._muted = o.mute || false;
       self._loop = o.loop || false;
-      self._detune = parent._detune;
+      self._detune = o.detune || 0;
       self._pool = o.pool || 5;
       self._preload = (typeof o.preload === 'boolean') ? o.preload : true;
       self._rate = o.rate || 1;
