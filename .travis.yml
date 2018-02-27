@@ -1,0 +1,16 @@
+language: node_js
+
+# Use latest stable version of node.
+node_js:
+  - "node"
+
+# User container based travis infrastructure which enables caching
+# features for open source projects.
+sudo: false
+cache:
+  directories:
+    - node_modules
+
+# Ensure chrome is available as headless test runner.
+addons:
+  chrome: stable

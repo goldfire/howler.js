@@ -442,6 +442,17 @@ If you want your `webm` files to be seekable in Firefox, be sure to encode them 
 ffmpeg -i sound1.wav -dash 1 sound1.webm
 ```
 
+### Development
+
+After cloning the project run:
+
+```
+$ npm install
+$ npm test
+```
+
+to install development dependencies and run the unit test suite.
+
 ### License
 
 Copyright (c) 2013-2018 [James Simpson](https://twitter.com/GoldFireStudios) and [GoldFire Studios, Inc.](http://goldfirestudios.com)

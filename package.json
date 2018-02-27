@@ -22,10 +22,18 @@
     "url": "git://github.com/goldfire/howler.js.git"
   },
   "scripts": {
+    "test": "karma start --single-run",
     "build": "VERSION=`printf 'v' && node -e 'console.log(require(\"./package.json\").version)'` && sed -i '' '2s/.*/ *  howler.js '\"$VERSION\"'/' src/howler.core.js && sed -i '' '4s/.*/ *  howler.js '\"$VERSION\"'/' src/plugins/howler.spatial.js && uglifyjs --preamble \"/*! howler.js $VERSION | (c) 2013-2018, James Simpson of GoldFire Studios | MIT License | howlerjs.com */\" src/howler.core.js -c -m --screw-ie8 -o dist/howler.core.min.js && uglifyjs --preamble \"/*! howler.js $VERSION | Spatial Plugin | (c) 2013-2018, James Simpson of GoldFire Studios | MIT License | howlerjs.com */\" src/plugins/howler.spatial.js -c -m --screw-ie8 -o dist/howler.spatial.min.js && awk 'FNR==1{echo \"\"}1' dist/howler.core.min.js dist/howler.spatial.min.js | sed '3s~.*~/*! Spatial Plugin */~' | perl -pe 'chomp if eof' > dist/howler.min.js && awk '(NR>1 && FNR==1){printf (\"\\n\\n\")};1' src/howler.core.js src/plugins/howler.spatial.js > dist/howler.js",
     "release": "VERSION=`printf 'v' && node -e 'console.log(require(\"./package.json\").version)'` && git tag $VERSION && git push && git push origin $VERSION && npm publish"
   },
   "devDependencies": {
+    "chai": "^4.1.2",
+    "karma": "^2.0.0",
+    "karma-chai": "^0.1.0",
+    "karma-chrome-launcher": "^2.2.0",
+    "karma-mocha": "^1.3.0",
+    "karma-spec-reporter": "0.0.32",
+    "mocha": "^5.0.1",
     "uglify-js": "2.x"
   },
   "main": "dist/howler.js",
