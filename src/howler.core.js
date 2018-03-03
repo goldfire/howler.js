@@ -734,6 +734,8 @@
             sound._loop ? node.bufferSource.start(0, seek, 86400) : node.bufferSource.start(0, seek, duration);
           }
 
+          node.bufferSource.detune.value = self._detune;
+
           // Start a new timer if none is present.
           if (timeout !== Infinity) {
             self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
