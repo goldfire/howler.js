@@ -52,6 +52,7 @@ Tested in the following browsers/versions:
   * [Global Methods](#global-methods-1)
 * [Mobile Playback](#mobile-playback)
 * [Dolby Audio Playback](#dolby-audio-playback)
+* [Facebook Instant Games](#facebook-instant-games)
 * [Format Recommendations](#format-recommendations)
 * [License](#license)
 
@@ -430,6 +431,9 @@ var dolbySound = new Howl({
   format: ['dolby', 'webm', 'mp3']
 });
 ```
+
+### Facebook Instant Games
+We have worked directly with Facebook to fully support [Facebook Instant Games](https://developers.facebook.com/docs/games/instant-games), and howler.js is the recommended audio library for this platform. If you encounter any issues while developing for Instant Games, open an issue with the tag `[IG]`.
 
 ### Format Recommendations
 Howler.js supports a wide array of audio codecs that have varying browser support ("mp3", "opus", "ogg", "wav", "aac", "m4a", "mp4", "webm", ...), but if you want full browser coverage you still need to use at least two of them. If your goal is to have the best balance of small filesize and high quality, based on extensive production testing, your best bet is to default to `webm` and fallback to `mp3`. `webm` has nearly full browser coverage with a great combination of compression and quality. You'll need the `mp3` fallback for Internet Explorer.
