@@ -406,7 +406,7 @@
       if (self.state === 'running' && self._suspendTimer) {
         clearTimeout(self._suspendTimer);
         self._suspendTimer = null;
-      } else if (self.state === 'suspended') {
+      } else if (self.state === 'suspended' || self.state === 'interrupted') {
         self.ctx.resume().then(function() {
           self.state = 'running';
 
