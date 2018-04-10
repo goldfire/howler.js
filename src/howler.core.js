@@ -469,6 +469,7 @@
       self._html5 = o.html5 || false;
       self._muted = o.mute || false;
       self._loop = o.loop || false;
+      self._detune = o.detune || 0;
       self._pool = o.pool || 5;
       self._preload = (typeof o.preload === 'boolean') ? o.preload : true;
       self._rate = o.rate || 1;
@@ -732,6 +733,8 @@
           } else {
             sound._loop ? node.bufferSource.start(0, seek, 86400) : node.bufferSource.start(0, seek, duration);
           }
+
+          node.bufferSource.detune.value = self._detune;
 
           // Start a new timer if none is present.
           if (timeout !== Infinity) {
@@ -1242,6 +1245,49 @@
       }
 
       return self;
+    },
+
+    /**
+     * Get/set the detune parameter on a sound in cents.
+     * @return {Number} Returns detune value.
+     */
+    detune: function(detuneAmt) {
+      var self = this;
+      var args = arguments;
+      var id, sound;
+      detuneAmt = parseFloat(detuneAmt);
+
+      // Determine the values for detune and id.
+      if (args.length === 0) {
+        // Return the group's detune value.
+        return self._detune;
+      } else if (args.length === 1) {
+        if (typeof args[0] === 'number') {
+          detuneAmt = args[0];
+          self._detune = detuneAmt;
+        } else {
+          // Return this sound's detune value.
+          sound = self._soundById(parseInt(args[0], 10));
+          return sound ? sound._detune : false;
+        }
+      } else if (args.length === 2) {
+        detuneAmt = args[0];
+        id = parseInt(args[1], 10);
+      }
+
+      // If no id is passed, get all ID's to be detuned.
+      var ids = self._getSoundIds(id);
+      for (var i=0; i<ids.length; i++) {
+        sound = self._soundById(ids[i]);
+        if (sound) {
+          sound._detune = detuneAmt;
+          if (self._webAudio && sound._node && sound._node.bufferSource) {
+            sound._node.bufferSource.detune.value = detuneAmt;
+          }
+        }
+      }
+
+      return self._detune;
     },
 
     /**
@@ -2070,6 +2116,7 @@
       self._volume = parent._volume;
       self._rate = parent._rate;
       self._seek = 0;
+      self._detune = parent._detune;
       self._rateSeek = 0;
       self._paused = true;
       self._ended = true;

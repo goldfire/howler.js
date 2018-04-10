@@ -33,7 +33,7 @@ var tests = [
       label.innerHTML = 'PLAYING';
       setTimeout(fn, 2000);
     });
-    
+
     id = sound1.play();
   },
 
@@ -63,6 +63,20 @@ var tests = [
 
     label.innerHTML = 'PLAY FROM START';
     setTimeout(fn, 2000);
+  },
+
+  function(fn) {
+    sound1.detune(-400);
+
+    label.innerHTML = 'DETUNE DOWN';
+    setTimeout(fn, 1500);
+  },
+
+  function(fn) {
+    sound1.detune(400);
+
+    label.innerHTML = 'DETUNE UP';
+    setTimeout(fn, 1500);
   },
 
   function(fn) {
