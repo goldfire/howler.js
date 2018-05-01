@@ -2243,8 +2243,8 @@
     try {
       if (typeof AudioContext !== 'undefined') {
         Howler.ctx = new AudioContext();
-      } else if (typeof webkitAudioContext !== 'undefined') {
-        Howler.ctx = new webkitAudioContext();
+      } else if (typeof window.webkitAudioContext !== 'undefined') {
+        Howler.ctx = new window.webkitAudioContext();
       } else {
         Howler.usingWebAudio = false;
       }
@@ -2276,8 +2276,8 @@
   };
 
   // Add support for AMD (Asynchronous Module Definition) libraries such as require.js.
-  if (typeof define === 'function' && define.amd) {
-    define([], function() {
+  if (window.define && typeof window.define === 'function' && window.define.amd) {
+    window.define([], function() {
       return {
         Howler: Howler,
         Howl: Howl
