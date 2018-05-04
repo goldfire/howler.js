@@ -790,7 +790,7 @@
             }
 
             // Setup the end timer on sprites or listen for the ended event.
-            if (sprite !== '__default') {
+            if (sprite !== '__default' || sound._loop) {
               self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
             } else {
               self._endTimers[sound._id] = function() {
