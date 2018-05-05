@@ -1,5 +1,5 @@
 /*!
- *  howler.js v2.0.9
+ *  howler.js v2.0.10
  *  howlerjs.com
  *
  *  (c) 2013-2018, James Simpson of GoldFire Studios
@@ -782,6 +782,9 @@
               self._emit('play', sound._id);
             }
 
+            // Setting rate before playing won't work in IE, so we set it again here.
+            node.playbackRate = sound._rate;
+
             // If the node is still paused, then we can assume there was a playback issue.
             if (node.paused) {
               self._emit('playerror', sound._id, 'Playback was unable to start. This is most commonly an issue ' +
@@ -790,7 +793,7 @@
             }
 
             // Setup the end timer on sprites or listen for the ended event.
-            if (sprite !== '__default') {
+            if (sprite !== '__default' || sound._loop) {
               self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
             } else {
               self._endTimers[sound._id] = function() {
@@ -2309,7 +2312,7 @@
 /*!
  *  Spatial Plugin - Adds support for stereo and 3D audio where Web Audio is supported.
  *  
- *  howler.js v2.0.9
+ *  howler.js v2.0.10
  *  howlerjs.com
  *
  *  (c) 2013-2018, James Simpson of GoldFire Studios
@@ -2325,7 +2328,7 @@
   // Setup default properties.
   HowlerGlobal.prototype._pos = [0, 0, 0];
   HowlerGlobal.prototype._orientation = [0, 0, -1, 0, 1, 0];
-  
+
   /** Global Methods **/
   /***************************************************************************/
 
@@ -2373,7 +2376,14 @@
 
     if (typeof x === 'number') {
       self._pos = [x, y, z];
-      self.ctx.listener.setPosition(self._pos[0], self._pos[1], self._pos[2]);
+
+      if (typeof self.ctx.listener.positionX !== 'undefined') {
+        self.ctx.listener.positionX.setTargetAtTime(self._pos[0], Howler.ctx.currentTime, 0.1);
+        self.ctx.listener.positionY.setTargetAtTime(self._pos[1], Howler.ctx.currentTime, 0.1);
+        self.ctx.listener.positionZ.setTargetAtTime(self._pos[2], Howler.ctx.currentTime, 0.1);
+      } else {
+        self.ctx.listener.setPosition(self._pos[0], self._pos[1], self._pos[2]);
+      }
     } else {
       return self._pos;
     }
@@ -2413,7 +2423,17 @@
 
     if (typeof x === 'number') {
       self._orientation = [x, y, z, xUp, yUp, zUp];
-      self.ctx.listener.setOrientation(x, y, z, xUp, yUp, zUp);
+
+      if (typeof self.ctx.listener.forwardX !== 'undefined') {
+        self.ctx.listener.forwardX.setTargetAtTime(x, Howler.ctx.currentTime, 0.1);
+        self.ctx.listener.forwardY.setTargetAtTime(y, Howler.ctx.currentTime, 0.1);
+        self.ctx.listener.forwardZ.setTargetAtTime(z, Howler.ctx.currentTime, 0.1);
+        self.ctx.listener.upX.setTargetAtTime(x, Howler.ctx.currentTime, 0.1);
+        self.ctx.listener.upY.setTargetAtTime(y, Howler.ctx.currentTime, 0.1);
+        self.ctx.listener.upZ.setTargetAtTime(z, Howler.ctx.currentTime, 0.1);
+      } else {
+        self.ctx.listener.setOrientation(x, y, z, xUp, yUp, zUp);
+      }
     } else {
       return or;
     }
@@ -2519,7 +2539,9 @@
             }
 
             if (pannerType === 'spatial') {
-              sound._panner.setPosition(pan, 0, 0);
+              sound._panner.positionX.setValueAtTime(pan, Howler.ctx.currentTime);
+              sound._panner.positionY.setValueAtTime(0, Howler.ctx.currentTime);
+              sound._panner.positionZ.setValueAtTime(0, Howler.ctx.currentTime);
             } else {
               sound._panner.pan.setValueAtTime(pan, Howler.ctx.currentTime);
             }
@@ -2593,7 +2615,9 @@
               setupPanner(sound, 'spatial');
             }
 
-            sound._panner.setPosition(x, y, z);
+            sound._panner.positionX.setValueAtTime(x, Howler.ctx.currentTime);
+            sound._panner.positionY.setValueAtTime(y, Howler.ctx.currentTime);
+            sound._panner.positionZ.setValueAtTime(z, Howler.ctx.currentTime);
           }
 
           self._emit('pos', sound._id);
@@ -2671,7 +2695,9 @@
               setupPanner(sound, 'spatial');
             }
 
-            sound._panner.setOrientation(x, y, z);
+            sound._panner.orientationX.setValueAtTime(x, Howler.ctx.currentTime);
+            sound._panner.orientationY.setValueAtTime(y, Howler.ctx.currentTime);
+            sound._panner.orientationZ.setValueAtTime(z, Howler.ctx.currentTime);
           }
 
           self._emit('orientation', sound._id);
@@ -2711,7 +2737,7 @@
    *                     with `inverse` and `exponential`.
    *     panningModel - ('HRTF' by default) Determines which spatialization algorithm is used to position audio.
    *                     Can be `HRTF` or `equalpower`.
-   * 
+   *
    * @return {Howl/Object} Returns self or current panner attributes.
    */
   Howl.prototype.pannerAttr = function() {
@@ -2886,8 +2912,12 @@
       sound._panner.refDistance = sound._pannerAttr.refDistance;
       sound._panner.rolloffFactor = sound._pannerAttr.rolloffFactor;
       sound._panner.panningModel = sound._pannerAttr.panningModel;
-      sound._panner.setPosition(sound._pos[0], sound._pos[1], sound._pos[2]);
-      sound._panner.setOrientation(sound._orientation[0], sound._orientation[1], sound._orientation[2]);
+      sound._panner.positionX.setValueAtTime(sound._pos[0], Howler.ctx.currentTime);
+      sound._panner.positionY.setValueAtTime(sound._pos[1], Howler.ctx.currentTime);
+      sound._panner.positionZ.setValueAtTime(sound._pos[2], Howler.ctx.currentTime);
+      sound._panner.orientationX.setValueAtTime(sound._orientation[0], Howler.ctx.currentTime);
+      sound._panner.orientationY.setValueAtTime(sound._orientation[1], Howler.ctx.currentTime);
+      sound._panner.orientationZ.setValueAtTime(sound._orientation[2], Howler.ctx.currentTime);
     } else {
       sound._panner = Howler.ctx.createStereoPanner();
       sound._panner.pan.setValueAtTime(sound._stereo, Howler.ctx.currentTime);
