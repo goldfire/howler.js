@@ -2241,7 +2241,7 @@
   var setupAudioContext = function() {
     // Check if we are using Web Audio and setup the AudioContext if we are.
     try {
-      if (typeof AudioContext !== 'undefined') {
+      if (typeof window.AudioContext !== 'undefined') {
         Howler.ctx = new AudioContext();
       } else if (typeof window.webkitAudioContext !== 'undefined') {
         Howler.ctx = new window.webkitAudioContext();
