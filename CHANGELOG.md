@@ -1,3 +1,6 @@
+## 2.0.12 (May 9, 2018)
+- `FIXED` The previous Chrome deprecation fixes broke spatial positioning in Safari.
+
 ## 2.0.10 (May 5, 2018)
 - `FIXED` Fixed another Chrome deprecation warning when using panning methods ([#923](https://github.com/goldfire/howler.js/issues/923)).
 - `FIXED` Playback rate wasn't working correctly in Internet Explorer when defined in the `Howl` constructor ([#936](https://github.com/goldfire/howler.js/issues/936)).

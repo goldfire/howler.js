@@ -1,5 +1,5 @@
 /*!
- *  howler.js v2.0.10
+ *  howler.js v2.0.12
  *  howlerjs.com
  *
  *  (c) 2013-2018, James Simpson of GoldFire Studios
@@ -2312,7 +2312,7 @@
 /*!
  *  Spatial Plugin - Adds support for stereo and 3D audio where Web Audio is supported.
  *  
- *  howler.js v2.0.10
+ *  howler.js v2.0.12
  *  howlerjs.com
  *
  *  (c) 2013-2018, James Simpson of GoldFire Studios
@@ -2539,9 +2539,13 @@
             }
 
             if (pannerType === 'spatial') {
-              sound._panner.positionX.setValueAtTime(pan, Howler.ctx.currentTime);
-              sound._panner.positionY.setValueAtTime(0, Howler.ctx.currentTime);
-              sound._panner.positionZ.setValueAtTime(0, Howler.ctx.currentTime);
+              if (typeof sound._panner.positionX !== 'undefined') {
+                sound._panner.positionX.setValueAtTime(pan, Howler.ctx.currentTime);
+                sound._panner.positionY.setValueAtTime(0, Howler.ctx.currentTime);
+                sound._panner.positionZ.setValueAtTime(0, Howler.ctx.currentTime);
+              } else {
+                sound._panner.setPosition(pan, 0, 0);
+              }
             } else {
               sound._panner.pan.setValueAtTime(pan, Howler.ctx.currentTime);
             }
@@ -2615,9 +2619,13 @@
               setupPanner(sound, 'spatial');
             }
 
-            sound._panner.positionX.setValueAtTime(x, Howler.ctx.currentTime);
-            sound._panner.positionY.setValueAtTime(y, Howler.ctx.currentTime);
-            sound._panner.positionZ.setValueAtTime(z, Howler.ctx.currentTime);
+            if (typeof sound._panner.positionX !== 'undefined') {
+              sound._panner.positionX.setValueAtTime(x, Howler.ctx.currentTime);
+              sound._panner.positionY.setValueAtTime(y, Howler.ctx.currentTime);
+              sound._panner.positionZ.setValueAtTime(z, Howler.ctx.currentTime);
+            } else {
+              sound._panner.setOrientation(x, y, z);
+            }
           }
 
           self._emit('pos', sound._id);
@@ -2912,12 +2920,22 @@
       sound._panner.refDistance = sound._pannerAttr.refDistance;
       sound._panner.rolloffFactor = sound._pannerAttr.rolloffFactor;
       sound._panner.panningModel = sound._pannerAttr.panningModel;
-      sound._panner.positionX.setValueAtTime(sound._pos[0], Howler.ctx.currentTime);
-      sound._panner.positionY.setValueAtTime(sound._pos[1], Howler.ctx.currentTime);
-      sound._panner.positionZ.setValueAtTime(sound._pos[2], Howler.ctx.currentTime);
-      sound._panner.orientationX.setValueAtTime(sound._orientation[0], Howler.ctx.currentTime);
-      sound._panner.orientationY.setValueAtTime(sound._orientation[1], Howler.ctx.currentTime);
-      sound._panner.orientationZ.setValueAtTime(sound._orientation[2], Howler.ctx.currentTime);
+
+      if (typeof sound._panner.positionX !== 'undefined') {
+        sound._panner.positionX.setValueAtTime(sound._pos[0], Howler.ctx.currentTime);
+        sound._panner.positionY.setValueAtTime(sound._pos[1], Howler.ctx.currentTime);
+        sound._panner.positionZ.setValueAtTime(sound._pos[2], Howler.ctx.currentTime);
+      } else {
+        sound._panner.setPosition(sound._pos[0], sound._pos[1], sound._pos[2]);
+      }
+
+      if (typeof sound._panner.orientationX !== 'undefined') {
+        sound._panner.orientationX.setValueAtTime(sound._orientation[0], Howler.ctx.currentTime);
+        sound._panner.orientationY.setValueAtTime(sound._orientation[1], Howler.ctx.currentTime);
+        sound._panner.orientationZ.setValueAtTime(sound._orientation[2], Howler.ctx.currentTime);
+      } else {
+        sound._panner.setOrientation(sound._orientation[0], sound._orientation[1], sound._orientation[2]);
+      }
     } else {
       sound._panner = Howler.ctx.createStereoPanner();
       sound._panner.pan.setValueAtTime(sound._stereo, Howler.ctx.currentTime);
