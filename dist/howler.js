@@ -1,5 +1,5 @@
 /*!
- *  howler.js v2.0.12
+ *  howler.js v2.0.13
  *  howlerjs.com
  *
  *  (c) 2013-2018, James Simpson of GoldFire Studios
@@ -37,6 +37,7 @@
       self._codecs = {};
       self._howls = [];
       self._muted = false;
+      self._mutedAfterHide = false;
       self._volume = 1;
       self._canPlayEvent = 'canplaythrough';
       self._navigator = (typeof window !== 'undefined' && window.navigator) ? window.navigator : null;
@@ -105,6 +106,33 @@
       }
 
       return self._volume;
+    },
+
+    _onBlur: function() {
+      Howler.mute(true);
+    },
+
+    _onFocus: function() {
+      Howler.mute(false);
+    },
+
+    /**
+     * Handle muting and unmuting globally after hide browser page.
+     * @param  {Boolean} muted Is muted or not.
+     */
+    muteAfterHide: function(muted) {
+      var self = this || Howler;
+
+      if (self._mutedAfterHide === muted) return;
+      self._mutedAfterHide = muted;
+
+      if (muted) {
+        window.addEventListener('blur', self._onBlur);
+        window.addEventListener('focus', self._onFocus);
+      } else {
+        window.removeEventListener('blur', self._onBlur);
+        window.removeEventListener('focus', self._onFocus);
+      }
     },
 
     /**
@@ -1968,7 +1996,7 @@
     _cleanBuffer: function(node) {
       var self = this;
 
-      if (Howler._scratchBuffer) {
+      if (Howler._scratchBuffer && node.bufferSource) {
         node.bufferSource.onended = null;
         node.bufferSource.disconnect(0);
         try { node.bufferSource.buffer = Howler._scratchBuffer; } catch(e) {}
@@ -2312,7 +2340,7 @@
 /*!
  *  Spatial Plugin - Adds support for stereo and 3D audio where Web Audio is supported.
  *  
- *  howler.js v2.0.12
+ *  howler.js v2.0.13
  *  howlerjs.com
  *
  *  (c) 2013-2018, James Simpson of GoldFire Studios
