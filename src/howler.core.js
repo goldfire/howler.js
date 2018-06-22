@@ -1801,7 +1801,7 @@
 
       // When using a sprite, end the track.
       if (!self._webAudio && !loop) {
-        self.stop(sound._id);
+        self.stop(sound._id, true);
       }
 
       return self;
