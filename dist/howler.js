@@ -1,5 +1,5 @@
 /*!
- *  howler.js v2.0.12
+ *  howler.js v2.0.13
  *  howlerjs.com
  *
  *  (c) 2013-2018, James Simpson of GoldFire Studios
@@ -1576,12 +1576,12 @@
 
         // Make sure all timers are cleared out.
         self._clearTimer(sounds[i]._id);
+      }
 
-        // Remove the references in the global Howler object.
-        var index = Howler._howls.indexOf(self);
-        if (index >= 0) {
-          Howler._howls.splice(index, 1);
-        }
+      // Remove the references in the global Howler object.
+      var index = Howler._howls.indexOf(self);
+      if (index >= 0) {
+        Howler._howls.splice(index, 1);
       }
 
       // Delete this sound from the cache (if no other Howl is using it).
@@ -1801,7 +1801,7 @@
 
       // When using a sprite, end the track.
       if (!self._webAudio && !loop) {
-        self.stop(sound._id);
+        self.stop(sound._id, true);
       }
 
       return self;
@@ -1968,7 +1968,7 @@
     _cleanBuffer: function(node) {
       var self = this;
 
-      if (Howler._scratchBuffer) {
+      if (Howler._scratchBuffer && node.bufferSource) {
         node.bufferSource.onended = null;
         node.bufferSource.disconnect(0);
         try { node.bufferSource.buffer = Howler._scratchBuffer; } catch(e) {}
@@ -2312,7 +2312,7 @@
 /*!
  *  Spatial Plugin - Adds support for stereo and 3D audio where Web Audio is supported.
  *  
- *  howler.js v2.0.12
+ *  howler.js v2.0.13
  *  howlerjs.com
  *
  *  (c) 2013-2018, James Simpson of GoldFire Studios
@@ -2890,8 +2890,21 @@
 
       // Reset all spatial plugin properties on this sound.
       self._orientation = parent._orientation;
+      self._stereo = parent._stereo;
       self._pos = parent._pos;
       self._pannerAttr = parent._pannerAttr;
+
+      // If a stereo or position was specified, set it up.
+      if (self._stereo) {
+        parent.stereo(self._stereo);
+      } else if (self._pos) {
+        parent.pos(self._pos[0], self._pos[1], self._pos[2], self._id);
+      } else if (self._panner) {
+        // Disconnect the panner.
+        self._panner.disconnect(0);
+        self._panner = undefined;
+        parent._refreshBuffer(self);
+      }
 
       // Complete resetting of the sound.
       return _super.call(this);

@@ -1,3 +1,9 @@
+## 2.0.13 (Juen 22, 2018)
+- `FIXED` Prevent `stop` event from firing alongside `end` when using HTML5 Audio ([#974](https://github.com/goldfire/howler.js/issues/074)).
+- `FIXED` Correctly reset a `Sound` after using spatial audio ([#962](https://github.com/goldfire/howler.js/issues/962)).
+- `FIXED` Remove a `Howl` from cache when unloaded after failing to load ([#978](https://github.com/goldfire/howler.js/issues/978)).
+- `FIXED` Race condition could lead to error when cleaning the buffer.
+
 ## 2.0.12 (May 9, 2018)
 - `FIXED` The previous Chrome deprecation fixes broke spatial positioning in Safari.
 
