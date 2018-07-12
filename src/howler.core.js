@@ -723,6 +723,12 @@
       sound._stop = (self._sprite[sprite][0] + self._sprite[sprite][1]) / 1000;
       sound._loop = !!(sound._loop || self._sprite[sprite][2]);
 
+      // End the sound instantly if seek is at the end.
+      if (sound._seek >= sound._stop) {
+        self._ended(sound);
+        return;
+      }
+
       // Begin the actual playback.
       var node = sound._node;
       if (self._webAudio) {
@@ -1470,28 +1476,33 @@
           sound._ended = false;
           self._clearTimer(id);
 
-          // Restart the playback if the sound was playing.
-          if (playing) {
-            self.play(id, true);
-          }
-
           // Update the seek position for HTML5 Audio.
           if (!self._webAudio && sound._node) {
             sound._node.currentTime = seek;
           }
 
+          // Seek and emit when ready.
+          var seekAndEmit = function() {
+            self._emit('seek', id);
+
+            // Restart the playback if the sound was playing.
+            if (playing) {
+              self.play(id, true);
+            }
+          };
+
           // Wait for the play lock to be unset before emitting (HTML5 Audio).
           if (playing && !self._webAudio) {
             var emitSeek = function() {
               if (!self._playLock) {
-                self._emit('seek', id);
+                seekAndEmit();
               } else {
                 setTimeout(emitSeek, 0);
               }
             };
             setTimeout(emitSeek, 0);
           } else {
-            self._emit('seek', id);
+            seekAndEmit();
           }
         } else {
           if (self._webAudio) {
