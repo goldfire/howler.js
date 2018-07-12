@@ -2217,16 +2217,24 @@
    * @param  {Howl}        self
    */
   var decodeAudioData = function(arraybuffer, self) {
-    // Decode the buffer into an audio source.
-    Howler.ctx.decodeAudioData(arraybuffer, function(buffer) {
+    var handle = function(buffer) {
       if (buffer && self._sounds.length > 0) {
         cache[self._src] = buffer;
         loadSound(self, buffer);
+      } else {
+        onError();
       }
-    }, function() {
+    };
+    var onError = function() {
       self._emit('loaderror', null, 'Decoding audio data failed.');
-    });
-  };
+    };
+    // Decode the buffer into an audio source.
+    if(Howler.ctx.decodeAudioData.length === 1) {
+      Howler.ctx.decodeAudioData(arraybuffer).then(handle).catch(onError);
+    } else {
+      Howler.ctx.decodeAudioData(arraybuffer, handle, onError);
+    }
+  }
 
   /**
    * Sound is now loaded, so finish setting everything up and fire the loaded event.
