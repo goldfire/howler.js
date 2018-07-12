@@ -1,3 +1,13 @@
+## 2.0.14 (July 12, 2018)
+- `CHANGED` Auto unlocking of audio now runs on Chrome to fix issue with HTML5 Audio needing user interaction.
+- `CHANGED` Added a new `unlock` event that is fired when the auto unlock happens.
+- `CHANGED` A `playerror` now gets fired when HTML5 Audio fails to play due to lack of user interaction.
+- `FIXED` Improved HTML5 Audio play lock checks to prevent race conditions ([#995](https://github.com/goldfire/howler.js/pull/995)).
+- `FIXED` Intermittent error in Chrome when decoding audio data ([#988](https://github.com/goldfire/howler.js/pull/988)).
+- `FIXED` Error when trying to loop spatial audio without a sprite ([#985](https://github.com/goldfire/howler.js/issues/985)).
+- `FIXED` Instantly fire the `end` event when a sound is seeked past its duration ([#963](https://github.com/goldfire/howler.js/issues/963)).
+- `FIXED` Another issue in Safari where spatial orientation was throwing an error.
+
 ## 2.0.13 (Juen 22, 2018)
 - `FIXED` Prevent `stop` event from firing alongside `end` when using HTML5 Audio ([#974](https://github.com/goldfire/howler.js/issues/074)).
 - `FIXED` Correctly reset a `Sound` after using spatial audio ([#962](https://github.com/goldfire/howler.js/issues/962)).

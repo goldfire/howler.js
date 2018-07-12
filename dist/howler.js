@@ -1,5 +1,5 @@
 /*!
- *  howler.js v2.0.13
+ *  howler.js v2.0.14
  *  howlerjs.com
  *
  *  (c) 2013-2018, James Simpson of GoldFire Studios
@@ -279,13 +279,13 @@
       var self = this || Howler;
 
       // Only run this on mobile devices if audio isn't already eanbled.
-      var isMobile = /iPhone|iPad|iPod|Android|BlackBerry|BB10|Silk|Mobi/i.test(self._navigator && self._navigator.userAgent);
-      var isTouch = !!(('ontouchend' in window) || (self._navigator && self._navigator.maxTouchPoints > 0) || (self._navigator && self._navigator.msMaxTouchPoints > 0));
-      if (self._mobileEnabled || !self.ctx || (!isMobile && !isTouch)) {
+      var isMobile = /iPhone|iPad|iPod|Android|BlackBerry|BB10|Silk|Mobi|Chrome/i.test(self._navigator && self._navigator.userAgent);
+      if (self._mobileEnabled || !self.ctx || !isMobile) {
         return;
       }
 
       self._mobileEnabled = false;
+      self.mobileAutoEnable = false;
 
       // Some mobile devices/platforms have distortion issues when opening/closing tabs and/or web views.
       // Bugs in the browser (especially Mobile Safari) can cause the sampleRate to change from 44100 to 48000.
@@ -302,7 +302,9 @@
       // Call this method on touch start to create and play a buffer,
       // then check if the audio actually played to determine if
       // audio has now been unlocked on iOS, Android, etc.
-      var unlock = function() {
+      var unlock = function(e) {
+        e.preventDefault();
+
         // Fix Android can not play in suspend state.
         Howler._autoResume();
 
@@ -329,17 +331,23 @@
 
           // Update the unlocked state and prevent this check from happening again.
           self._mobileEnabled = true;
-          self.mobileAutoEnable = false;
 
           // Remove the touch start listener.
           document.removeEventListener('touchstart', unlock, true);
           document.removeEventListener('touchend', unlock, true);
+          document.removeEventListener('click', unlock, true);
+
+          // Let all sounds know that audio has been unlocked.
+          for (var i=0; i<self._howls.length; i++) {
+            self._howls[i]._emit('unlock');
+          }
         };
       };
 
       // Setup a touch start listener to attempt an unlock in.
       document.addEventListener('touchstart', unlock, true);
       document.addEventListener('touchend', unlock, true);
+      document.addEventListener('click', unlock, true);
 
       return self;
     },
@@ -498,6 +506,7 @@
       self._onvolume = o.onvolume ? [{fn: o.onvolume}] : [];
       self._onrate = o.onrate ? [{fn: o.onrate}] : [];
       self._onseek = o.onseek ? [{fn: o.onseek}] : [];
+      self._onunlock = o.onunlock ? [{fn: o.onunlock}] : [];
       self._onresume = [];
 
       // Web Audio or HTML5 Audio?
@@ -714,6 +723,12 @@
       sound._stop = (self._sprite[sprite][0] + self._sprite[sprite][1]) / 1000;
       sound._loop = !!(sound._loop || self._sprite[sprite][2]);
 
+      // End the sound instantly if seek is at the end.
+      if (sound._seek >= sound._stop) {
+        self._ended(sound);
+        return;
+      }
+
       // Begin the actual playback.
       var node = sound._node;
       if (self._webAudio) {
@@ -766,18 +781,23 @@
             var play = node.play();
 
             // Support older browsers that don't support promises, and thus don't have this issue.
-            if (typeof Promise !== 'undefined' && play instanceof Promise) {
+            if (typeof Promise !== 'undefined' && (play instanceof Promise || typeof play.then === 'function')) {
               // Implements a lock to prevent DOMException: The play() request was interrupted by a call to pause().
               self._playLock = true;
 
               // Releases the lock and executes queued actions.
-              var runLoadQueue = function() {
-                self._playLock = false;
-                if (!internal) {
-                  self._emit('play', sound._id);
-                }
-              };
-              play.then(runLoadQueue, runLoadQueue);
+              play
+                .then(function() {
+                  self._playLock = false;
+                  if (!internal) {
+                    self._emit('play', sound._id);
+                  }
+                })
+                .catch(function() {
+                  self._playLock = false;
+                  self._emit('playerror', sound._id, 'Playback was unable to start. This is most commonly an issue ' +
+                    'on mobile devices and Chrome where playback was not within a user interaction.');
+                });
             } else if (!internal) {
               self._emit('play', sound._id);
             }
@@ -788,7 +808,7 @@
             // If the node is still paused, then we can assume there was a playback issue.
             if (node.paused) {
               self._emit('playerror', sound._id, 'Playback was unable to start. This is most commonly an issue ' +
-                'on mobile devices where playback was not within a user interaction.');
+                'on mobile devices and Chrome where playback was not within a user interaction.');
               return;
             }
 
@@ -911,7 +931,7 @@
       var self = this;
 
       // If the sound hasn't loaded, add it to the load queue to stop when capable.
-      if (self._state !== 'loaded') {
+      if (self._state !== 'loaded' || self._playLock) {
         self._queue.push({
           event: 'stop',
           action: function() {
@@ -980,7 +1000,7 @@
       var self = this;
 
       // If the sound hasn't loaded, add it to the load queue to mute when capable.
-      if (self._state !== 'loaded') {
+      if (self._state !== 'loaded'|| self._playLock) {
         self._queue.push({
           event: 'mute',
           action: function() {
@@ -1063,7 +1083,7 @@
       var sound;
       if (typeof vol !== 'undefined' && vol >= 0 && vol <= 1) {
         // If the sound hasn't loaded, add it to the load queue to change volume when capable.
-        if (self._state !== 'loaded') {
+        if (self._state !== 'loaded'|| self._playLock) {
           self._queue.push({
             event: 'volume',
             action: function() {
@@ -1122,7 +1142,7 @@
       var self = this;
 
       // If the sound hasn't loaded, add it to the load queue to fade when capable.
-      if (self._state !== 'loaded') {
+      if (self._state !== 'loaded' || self._playLock) {
         self._queue.push({
           event: 'fade',
           action: function() {
@@ -1333,7 +1353,7 @@
       var sound;
       if (typeof rate === 'number') {
         // If the sound hasn't loaded, add it to the load queue to change playback rate when capable.
-        if (self._state !== 'loaded') {
+        if (self._state !== 'loaded' || self._playLock) {
           self._queue.push({
             event: 'rate',
             action: function() {
@@ -1429,7 +1449,7 @@
       }
 
       // If the sound hasn't loaded, add it to the load queue to seek when capable.
-      if (self._state !== 'loaded') {
+      if (self._state !== 'loaded' || self._playLock) {
         self._queue.push({
           event: 'seek',
           action: function() {
@@ -1456,28 +1476,33 @@
           sound._ended = false;
           self._clearTimer(id);
 
-          // Restart the playback if the sound was playing.
-          if (playing) {
-            self.play(id, true);
-          }
-
           // Update the seek position for HTML5 Audio.
           if (!self._webAudio && sound._node) {
             sound._node.currentTime = seek;
           }
 
+          // Seek and emit when ready.
+          var seekAndEmit = function() {
+            self._emit('seek', id);
+
+            // Restart the playback if the sound was playing.
+            if (playing) {
+              self.play(id, true);
+            }
+          };
+
           // Wait for the play lock to be unset before emitting (HTML5 Audio).
           if (playing && !self._webAudio) {
             var emitSeek = function() {
               if (!self._playLock) {
-                self._emit('seek', id);
+                seekAndEmit();
               } else {
                 setTimeout(emitSeek, 0);
               }
             };
             setTimeout(emitSeek, 0);
           } else {
-            self._emit('seek', id);
+            seekAndEmit();
           }
         } else {
           if (self._webAudio) {
@@ -1953,7 +1978,7 @@
       sound._node.bufferSource.loop = sound._loop;
       if (sound._loop) {
         sound._node.bufferSource.loopStart = sound._start || 0;
-        sound._node.bufferSource.loopEnd = sound._stop;
+        sound._node.bufferSource.loopEnd = sound._stop || 0;
       }
       sound._node.bufferSource.playbackRate.setValueAtTime(sound._rate, Howler.ctx.currentTime);
 
@@ -2203,16 +2228,28 @@
    * @param  {Howl}        self
    */
   var decodeAudioData = function(arraybuffer, self) {
-    // Decode the buffer into an audio source.
-    Howler.ctx.decodeAudioData(arraybuffer, function(buffer) {
+    // Load the sound on success.
+    var success = function(buffer) {
       if (buffer && self._sounds.length > 0) {
         cache[self._src] = buffer;
         loadSound(self, buffer);
+      } else {
+        onError();
       }
-    }, function() {
+    };
+
+    // Fire a load error if something broke.
+    var error = function() {
       self._emit('loaderror', null, 'Decoding audio data failed.');
-    });
-  };
+    };
+
+    // Decode the buffer into an audio source.
+    if (typeof Promise !== 'undefined' && Howler.ctx.decodeAudioData.length === 1) {
+      Howler.ctx.decodeAudioData(arraybuffer).then(success).catch(error);
+    } else {
+      Howler.ctx.decodeAudioData(arraybuffer, success, error);
+    }
+  }
 
   /**
    * Sound is now loaded, so finish setting everything up and fire the loaded event.
@@ -2312,7 +2349,7 @@
 /*!
  *  Spatial Plugin - Adds support for stereo and 3D audio where Web Audio is supported.
  *  
- *  howler.js v2.0.13
+ *  howler.js v2.0.14
  *  howlerjs.com
  *
  *  (c) 2013-2018, James Simpson of GoldFire Studios
@@ -2703,9 +2740,13 @@
               setupPanner(sound, 'spatial');
             }
 
-            sound._panner.orientationX.setValueAtTime(x, Howler.ctx.currentTime);
-            sound._panner.orientationY.setValueAtTime(y, Howler.ctx.currentTime);
-            sound._panner.orientationZ.setValueAtTime(z, Howler.ctx.currentTime);
+            if (typeof sound._panner.orientationX !== 'undefined') {
+              sound._panner.orientationX.setValueAtTime(x, Howler.ctx.currentTime);
+              sound._panner.orientationY.setValueAtTime(y, Howler.ctx.currentTime);
+              sound._panner.orientationZ.setValueAtTime(z, Howler.ctx.currentTime);
+            } else {
+              sound._panner.setOrientation(x, y, z);
+            }
           }
 
           self._emit('orientation', sound._id);
