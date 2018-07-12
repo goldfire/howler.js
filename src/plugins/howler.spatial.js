@@ -392,9 +392,13 @@
               setupPanner(sound, 'spatial');
             }
 
-            sound._panner.orientationX.setValueAtTime(x, Howler.ctx.currentTime);
-            sound._panner.orientationY.setValueAtTime(y, Howler.ctx.currentTime);
-            sound._panner.orientationZ.setValueAtTime(z, Howler.ctx.currentTime);
+            if (typeof sound._panner.orientationX !== 'undefined') {
+              sound._panner.orientationX.setValueAtTime(x, Howler.ctx.currentTime);
+              sound._panner.orientationY.setValueAtTime(y, Howler.ctx.currentTime);
+              sound._panner.orientationZ.setValueAtTime(z, Howler.ctx.currentTime);
+            } else {
+              sound._panner.setOrientation(x, y, z);
+            }
           }
 
           self._emit('orientation', sound._id);
