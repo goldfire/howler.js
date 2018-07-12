@@ -225,6 +225,8 @@ Fires when the sound's playback rate has changed. The first parameter is the ID 
 Fires when the sound has been seeked. The first parameter is the ID of the sound.
 #### onfade `Function`
 Fires when the current sound finishes fading in/out. The first parameter is the ID of the sound.
+#### onunlock `Function`
+Fires when audio has been automatically unlocked through a touch/click event.
 
 
 ### Methods
@@ -285,19 +287,19 @@ Get the duration of the audio source. Will return 0 until after the `load` event
 
 #### on(event, function, [id])
 Listen for events. Multiple events can be added by calling this multiple times.
-* **event**: `String` Name of event to fire/set (`load`, `loaderror`, `playerror`, `play`, `end`, `pause`, `stop`, `mute`, `volume`, `rate`, `seek`, `fade`).
+* **event**: `String` Name of event to fire/set (`load`, `loaderror`, `playerror`, `play`, `end`, `pause`, `stop`, `mute`, `volume`, `rate`, `seek`, `fade`, `unlock`).
 * **function**: `Function` Define function to fire on event.
 * **id**: `Number` `optional` Only listen to events for this sound id.
 
 #### once(event, function, [id])
 Same as `on`, but it removes itself after the callback is fired.
-* **event**: `String` Name of event to fire/set (`load`, `loaderror`, `playerror`, `play`, `end`, `pause`, `stop`, `mute`, `volume`, `rate`, `seek`, `fade`).
+* **event**: `String` Name of event to fire/set (`load`, `loaderror`, `playerror`, `play`, `end`, `pause`, `stop`, `mute`, `volume`, `rate`, `seek`, `fade`, `unlock`).
 * **function**: `Function` Define function to fire on event.
 * **id**: `Number` `optional` Only listen to events for this sound id.
 
 #### off(event, [function], [id])
 Remove event listener that you've set. Call without parameters to remove all events.
-* **event**: `String` Name of event (`load`, `loaderror`, `playerror`, `play`, `end`, `pause`, `stop`, `mute`, `volume`, `rate`, `seek`, `fade`).
+* **event**: `String` Name of event (`load`, `loaderror`, `playerror`, `play`, `end`, `pause`, `stop`, `mute`, `volume`, `rate`, `seek`, `fade`, `unlock`).
 * **function**: `Function` `optional` The listener to remove. Omit this to remove all events of type.
 * **id**: `Number` `optional` Only remove events for this sound id.
 
@@ -415,12 +417,28 @@ Get/set the direction the listener is pointing in the 3D cartesian space. A fron
 * **zUp**: `Number` The z-orientation of the top of the listener.
 
 
-### Mobile Playback
-By default, audio on iOS, Android, etc is locked until a sound is played within a user interaction, and then it plays normally the rest of the page session ([Apple documentation](https://developer.apple.com/library/safari/documentation/audiovideo/conceptual/using_html5_audio_video/PlayingandSynthesizingSounds/PlayingandSynthesizingSounds.html)). The default behavior of howler.js is to attempt to silently unlock audio playback by playing an empty buffer on the first `touchend` event. This behavior can be disabled by calling:
+### Mobile/Chrome Playback
+By default, audio on mobile browsers and Chrome is locked until a sound is played within a user interaction, and then it plays normally the rest of the page session ([Apple documentation](https://developer.apple.com/library/safari/documentation/audiovideo/conceptual/using_html5_audio_video/PlayingandSynthesizingSounds/PlayingandSynthesizingSounds.html)). The default behavior of howler.js is to attempt to silently unlock audio playback by playing an empty buffer on the first `touchend` event. This behavior can be disabled by calling:
 
 ```javascript
 Howler.mobileAutoEnable = false;
 ```
+
+If you try to play audio automatically on page load, you can listen to a `playerror` event and then wait for the `unlock` event to try and play the audio again:
+
+```javascript
+var sound = new Howl({
+  src: ['sound.webm', 'sound.mp3'],
+  onplayerror: function() {
+    sound.once('unlock', function() {
+      sound.play();
+    });
+  }
+});
+
+sound.play();
+```
+
 
 ### Dolby Audio Playback
 Full support for playback of the Dolby Audio format (currently support in Edge and Safari) is included. However, you must specify that the file you are loading is `dolby` since it is in a `mp4` container.

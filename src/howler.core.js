@@ -279,13 +279,13 @@
       var self = this || Howler;
 
       // Only run this on mobile devices if audio isn't already eanbled.
-      var isMobile = /iPhone|iPad|iPod|Android|BlackBerry|BB10|Silk|Mobi/i.test(self._navigator && self._navigator.userAgent);
-      var isTouch = !!(('ontouchend' in window) || (self._navigator && self._navigator.maxTouchPoints > 0) || (self._navigator && self._navigator.msMaxTouchPoints > 0));
-      if (self._mobileEnabled || !self.ctx || (!isMobile && !isTouch)) {
+      var isMobile = /iPhone|iPad|iPod|Android|BlackBerry|BB10|Silk|Mobi|Chrome/i.test(self._navigator && self._navigator.userAgent);
+      if (self._mobileEnabled || !self.ctx || !isMobile) {
         return;
       }
 
       self._mobileEnabled = false;
+      self.mobileAutoEnable = false;
 
       // Some mobile devices/platforms have distortion issues when opening/closing tabs and/or web views.
       // Bugs in the browser (especially Mobile Safari) can cause the sampleRate to change from 44100 to 48000.
@@ -302,7 +302,9 @@
       // Call this method on touch start to create and play a buffer,
       // then check if the audio actually played to determine if
       // audio has now been unlocked on iOS, Android, etc.
-      var unlock = function() {
+      var unlock = function(e) {
+        e.preventDefault();
+
         // Fix Android can not play in suspend state.
         Howler._autoResume();
 
@@ -329,17 +331,23 @@
 
           // Update the unlocked state and prevent this check from happening again.
           self._mobileEnabled = true;
-          self.mobileAutoEnable = false;
 
           // Remove the touch start listener.
           document.removeEventListener('touchstart', unlock, true);
           document.removeEventListener('touchend', unlock, true);
+          document.removeEventListener('click', unlock, true);
+
+          // Let all sounds know that audio has been unlocked.
+          for (var i=0; i<self._howls.length; i++) {
+            self._howls[i]._emit('unlock');
+          }
         };
       };
 
       // Setup a touch start listener to attempt an unlock in.
       document.addEventListener('touchstart', unlock, true);
       document.addEventListener('touchend', unlock, true);
+      document.addEventListener('click', unlock, true);
 
       return self;
     },
@@ -498,6 +506,7 @@
       self._onvolume = o.onvolume ? [{fn: o.onvolume}] : [];
       self._onrate = o.onrate ? [{fn: o.onrate}] : [];
       self._onseek = o.onseek ? [{fn: o.onseek}] : [];
+      self._onunlock = o.onunlock ? [{fn: o.onunlock}] : [];
       self._onresume = [];
 
       // Web Audio or HTML5 Audio?
@@ -771,13 +780,18 @@
               self._playLock = true;
 
               // Releases the lock and executes queued actions.
-              var runLoadQueue = function() {
-                self._playLock = false;
-                if (!internal) {
-                  self._emit('play', sound._id);
-                }
-              };
-              play.then(runLoadQueue, runLoadQueue);
+              play
+                .then(function() {
+                  self._playLock = false;
+                  if (!internal) {
+                    self._emit('play', sound._id);
+                  }
+                })
+                .catch(function() {
+                  self._playLock = false;
+                  self._emit('playerror', sound._id, 'Playback was unable to start. This is most commonly an issue ' +
+                    'on mobile devices and Chrome where playback was not within a user interaction.');
+                });
             } else if (!internal) {
               self._emit('play', sound._id);
             }
@@ -788,7 +802,7 @@
             // If the node is still paused, then we can assume there was a playback issue.
             if (node.paused) {
               self._emit('playerror', sound._id, 'Playback was unable to start. This is most commonly an issue ' +
-                'on mobile devices where playback was not within a user interaction.');
+                'on mobile devices and Chrome where playback was not within a user interaction.');
               return;
             }
 
