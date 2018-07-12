@@ -766,7 +766,7 @@
             var play = node.play();
 
             // Support older browsers that don't support promises, and thus don't have this issue.
-            if (typeof Promise !== 'undefined' && play instanceof Promise) {
+            if (typeof Promise !== 'undefined' && (play instanceof Promise || typeof play.then === 'function')) {
               // Implements a lock to prevent DOMException: The play() request was interrupted by a call to pause().
               self._playLock = true;
 
@@ -911,7 +911,7 @@
       var self = this;
 
       // If the sound hasn't loaded, add it to the load queue to stop when capable.
-      if (self._state !== 'loaded') {
+      if (self._state !== 'loaded' || self._playLock) {
         self._queue.push({
           event: 'stop',
           action: function() {
@@ -980,7 +980,7 @@
       var self = this;
 
       // If the sound hasn't loaded, add it to the load queue to mute when capable.
-      if (self._state !== 'loaded') {
+      if (self._state !== 'loaded'|| self._playLock) {
         self._queue.push({
           event: 'mute',
           action: function() {
@@ -1063,7 +1063,7 @@
       var sound;
       if (typeof vol !== 'undefined' && vol >= 0 && vol <= 1) {
         // If the sound hasn't loaded, add it to the load queue to change volume when capable.
-        if (self._state !== 'loaded') {
+        if (self._state !== 'loaded'|| self._playLock) {
           self._queue.push({
             event: 'volume',
             action: function() {
@@ -1122,7 +1122,7 @@
       var self = this;
 
       // If the sound hasn't loaded, add it to the load queue to fade when capable.
-      if (self._state !== 'loaded') {
+      if (self._state !== 'loaded' || self._playLock) {
         self._queue.push({
           event: 'fade',
           action: function() {
@@ -1333,7 +1333,7 @@
       var sound;
       if (typeof rate === 'number') {
         // If the sound hasn't loaded, add it to the load queue to change playback rate when capable.
-        if (self._state !== 'loaded') {
+        if (self._state !== 'loaded' || self._playLock) {
           self._queue.push({
             event: 'rate',
             action: function() {
@@ -1429,7 +1429,7 @@
       }
 
       // If the sound hasn't loaded, add it to the load queue to seek when capable.
-      if (self._state !== 'loaded') {
+      if (self._state !== 'loaded' || self._playLock) {
         self._queue.push({
           event: 'seek',
           action: function() {
