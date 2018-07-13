@@ -2,7 +2,7 @@
  *  Howler.js Audio Player Demo
  *  howlerjs.com
  *
- *  (c) 2013-2017, James Simpson of GoldFire Studios
+ *  (c) 2013-2018, James Simpson of GoldFire Studios
  *  goldfirestudios.com
  *
  *  MIT License
@@ -346,13 +346,13 @@ volume.addEventListener('touchmove', move);
 
 // Setup the "waveform" animation.
 var wave = new SiriWave({
-    container: waveform,
-    width: window.innerWidth,
-    height: window.innerHeight * 0.3,
-    cover: true,
-    speed: 0.03,
-    amplitude: 0.7,
-    frequency: 2
+  container: waveform,
+  width: window.innerWidth,
+  height: window.innerHeight * 0.3,
+  cover: true,
+  speed: 0.03,
+  amplitude: 0.7,
+  frequency: 2
 });
 wave.start();
 

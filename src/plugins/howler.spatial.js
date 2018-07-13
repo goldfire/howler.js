@@ -1,10 +1,10 @@
 /*!
  *  Spatial Plugin - Adds support for stereo and 3D audio where Web Audio is supported.
  *  
- *  howler.js v2.0.3
+ *  howler.js v2.0.14
  *  howlerjs.com
  *
- *  (c) 2013-2017, James Simpson of GoldFire Studios
+ *  (c) 2013-2018, James Simpson of GoldFire Studios
  *  goldfirestudios.com
  *
  *  MIT License
@@ -17,7 +17,7 @@
   // Setup default properties.
   HowlerGlobal.prototype._pos = [0, 0, 0];
   HowlerGlobal.prototype._orientation = [0, 0, -1, 0, 1, 0];
-  
+
   /** Global Methods **/
   /***************************************************************************/
 
@@ -65,7 +65,14 @@
 
     if (typeof x === 'number') {
       self._pos = [x, y, z];
-      self.ctx.listener.setPosition(self._pos[0], self._pos[1], self._pos[2]);
+
+      if (typeof self.ctx.listener.positionX !== 'undefined') {
+        self.ctx.listener.positionX.setTargetAtTime(self._pos[0], Howler.ctx.currentTime, 0.1);
+        self.ctx.listener.positionY.setTargetAtTime(self._pos[1], Howler.ctx.currentTime, 0.1);
+        self.ctx.listener.positionZ.setTargetAtTime(self._pos[2], Howler.ctx.currentTime, 0.1);
+      } else {
+        self.ctx.listener.setPosition(self._pos[0], self._pos[1], self._pos[2]);
+      }
     } else {
       return self._pos;
     }
@@ -105,7 +112,17 @@
 
     if (typeof x === 'number') {
       self._orientation = [x, y, z, xUp, yUp, zUp];
-      self.ctx.listener.setOrientation(x, y, z, xUp, yUp, zUp);
+
+      if (typeof self.ctx.listener.forwardX !== 'undefined') {
+        self.ctx.listener.forwardX.setTargetAtTime(x, Howler.ctx.currentTime, 0.1);
+        self.ctx.listener.forwardY.setTargetAtTime(y, Howler.ctx.currentTime, 0.1);
+        self.ctx.listener.forwardZ.setTargetAtTime(z, Howler.ctx.currentTime, 0.1);
+        self.ctx.listener.upX.setTargetAtTime(x, Howler.ctx.currentTime, 0.1);
+        self.ctx.listener.upY.setTargetAtTime(y, Howler.ctx.currentTime, 0.1);
+        self.ctx.listener.upZ.setTargetAtTime(z, Howler.ctx.currentTime, 0.1);
+      } else {
+        self.ctx.listener.setOrientation(x, y, z, xUp, yUp, zUp);
+      }
     } else {
       return or;
     }
@@ -211,9 +228,15 @@
             }
 
             if (pannerType === 'spatial') {
-              sound._panner.setPosition(pan, 0, 0);
+              if (typeof sound._panner.positionX !== 'undefined') {
+                sound._panner.positionX.setValueAtTime(pan, Howler.ctx.currentTime);
+                sound._panner.positionY.setValueAtTime(0, Howler.ctx.currentTime);
+                sound._panner.positionZ.setValueAtTime(0, Howler.ctx.currentTime);
+              } else {
+                sound._panner.setPosition(pan, 0, 0);
+              }
             } else {
-              sound._panner.pan.value = pan;
+              sound._panner.pan.setValueAtTime(pan, Howler.ctx.currentTime);
             }
           }
 
@@ -228,13 +251,10 @@
   };
 
   /**
-   * Get/set the 3D spatial position of the audio source for this sound or
-   * all in the group. The most common usage is to set the 'x' position for
-   * left/right panning. Setting any value higher than 1.0 will begin to
-   * decrease the volume of the sound as it moves further away.
-   * @param  {Number} x  The x-position of the audio from -1000.0 to 1000.0.
-   * @param  {Number} y  The y-position of the audio from -1000.0 to 1000.0.
-   * @param  {Number} z  The z-position of the audio from -1000.0 to 1000.0.
+   * Get/set the 3D spatial position of the audio source for this sound or group relative to the global listener.
+   * @param  {Number} x  The x-position of the audio source.
+   * @param  {Number} y  The y-position of the audio source.
+   * @param  {Number} z  The z-position of the audio source.
    * @param  {Number} id (optional) The sound ID. If none is passed, all in group will be updated.
    * @return {Howl/Array}    Returns self or the current 3D spatial position: [x, y, z].
    */
@@ -288,7 +308,13 @@
               setupPanner(sound, 'spatial');
             }
 
-            sound._panner.setPosition(x, y, z);
+            if (typeof sound._panner.positionX !== 'undefined') {
+              sound._panner.positionX.setValueAtTime(x, Howler.ctx.currentTime);
+              sound._panner.positionY.setValueAtTime(y, Howler.ctx.currentTime);
+              sound._panner.positionZ.setValueAtTime(z, Howler.ctx.currentTime);
+            } else {
+              sound._panner.setOrientation(x, y, z);
+            }
           }
 
           self._emit('pos', sound._id);
@@ -366,7 +392,13 @@
               setupPanner(sound, 'spatial');
             }
 
-            sound._panner.setOrientation(x, y, z);
+            if (typeof sound._panner.orientationX !== 'undefined') {
+              sound._panner.orientationX.setValueAtTime(x, Howler.ctx.currentTime);
+              sound._panner.orientationY.setValueAtTime(y, Howler.ctx.currentTime);
+              sound._panner.orientationZ.setValueAtTime(z, Howler.ctx.currentTime);
+            } else {
+              sound._panner.setOrientation(x, y, z);
+            }
           }
 
           self._emit('orientation', sound._id);
@@ -388,19 +420,25 @@
    *   pannerAttr(o, id) -> Set's the values of passed sound id.
    *
    *   Attributes:
-   *     coneInnerAngle - (360 by default) There will be no volume reduction inside this angle.
-   *     coneOuterAngle - (360 by default) The volume will be reduced to a constant value of
-   *                      `coneOuterGain` outside this angle.
-   *     coneOuterGain - (0 by default) The amount of volume reduction outside of `coneOuterAngle`.
-   *     distanceModel - ('inverse' by default) Determines algorithm to use to reduce volume as audio moves
-   *                      away from listener. Can be `linear`, `inverse` or `exponential`.
-   *     maxDistance - (10000 by default) Volume won't reduce between source/listener beyond this distance.
+   *     coneInnerAngle - (360 by default) A parameter for directional audio sources, this is an angle, in degrees,
+   *                      inside of which there will be no volume reduction.
+   *     coneOuterAngle - (360 by default) A parameter for directional audio sources, this is an angle, in degrees,
+   *                      outside of which the volume will be reduced to a constant value of `coneOuterGain`.
+   *     coneOuterGain - (0 by default) A parameter for directional audio sources, this is the gain outside of the
+   *                     `coneOuterAngle`. It is a linear value in the range `[0, 1]`.
+   *     distanceModel - ('inverse' by default) Determines algorithm used to reduce volume as audio moves away from
+   *                     listener. Can be `linear`, `inverse` or `exponential.
+   *     maxDistance - (10000 by default) The maximum distance between source and listener, after which the volume
+   *                   will not be reduced any further.
+   *     refDistance - (1 by default) A reference distance for reducing volume as source moves further from the listener.
+   *                   This is simply a variable of the distance model and has a different effect depending on which model
+   *                   is used and the scale of your coordinates. Generally, volume will be equal to 1 at this distance.
+   *     rolloffFactor - (1 by default) How quickly the volume reduces as source moves from listener. This is simply a
+   *                     variable of the distance model and can be in the range of `[0, 1]` with `linear` and `[0, ∞]`
+   *                     with `inverse` and `exponential`.
    *     panningModel - ('HRTF' by default) Determines which spatialization algorithm is used to position audio.
    *                     Can be `HRTF` or `equalpower`.
-   *     refDistance - (1 by default) A reference distance for reducing volume as the source
-   *                    moves away from the listener.
-   *     rolloffFactor - (1 by default) How quickly the volume reduces as source moves from listener.
-   * 
+   *
    * @return {Howl/Object} Returns self or current panner attributes.
    */
   Howl.prototype.pannerAttr = function() {
@@ -423,15 +461,28 @@
 
         // Set the grou's panner attribute values.
         if (typeof id === 'undefined') {
+          if (!o.pannerAttr) {
+            o.pannerAttr = {
+              coneInnerAngle: o.coneInnerAngle,
+              coneOuterAngle: o.coneOuterAngle,
+              coneOuterGain: o.coneOuterGain,
+              distanceModel: o.distanceModel,
+              maxDistance: o.maxDistance,
+              refDistance: o.refDistance,
+              rolloffFactor: o.rolloffFactor,
+              panningModel: o.panningModel
+            };
+          }
+
           self._pannerAttr = {
-            coneInnerAngle: typeof o.coneInnerAngle !== 'undefined' ? o.coneInnerAngle : self._coneInnerAngle,
-            coneOuterAngle: typeof o.coneOuterAngle !== 'undefined' ? o.coneOuterAngle : self._coneOuterAngle,
-            coneOuterGain: typeof o.coneOuterGain !== 'undefined' ? o.coneOuterGain : self._coneOuterGain,
-            distanceModel: typeof o.distanceModel !== 'undefined' ? o.distanceModel : self._distanceModel,
-            maxDistance: typeof o.maxDistance !== 'undefined' ? o.maxDistance : self._maxDistance,
-            panningModel: typeof o.panningModel !== 'undefined' ? o.panningModel : self._panningModel,
-            refDistance: typeof o.refDistance !== 'undefined' ? o.refDistance : self._refDistance,
-            rolloffFactor: typeof o.rolloffFactor !== 'undefined' ? o.rolloffFactor : self._rolloffFactor
+            coneInnerAngle: typeof o.pannerAttr.coneInnerAngle !== 'undefined' ? o.pannerAttr.coneInnerAngle : self._coneInnerAngle,
+            coneOuterAngle: typeof o.pannerAttr.coneOuterAngle !== 'undefined' ? o.pannerAttr.coneOuterAngle : self._coneOuterAngle,
+            coneOuterGain: typeof o.pannerAttr.coneOuterGain !== 'undefined' ? o.pannerAttr.coneOuterGain : self._coneOuterGain,
+            distanceModel: typeof o.pannerAttr.distanceModel !== 'undefined' ? o.pannerAttr.distanceModel : self._distanceModel,
+            maxDistance: typeof o.pannerAttr.maxDistance !== 'undefined' ? o.pannerAttr.maxDistance : self._maxDistance,
+            refDistance: typeof o.pannerAttr.refDistance !== 'undefined' ? o.pannerAttr.refDistance : self._refDistance,
+            rolloffFactor: typeof o.pannerAttr.rolloffFactor !== 'undefined' ? o.pannerAttr.rolloffFactor : self._rolloffFactor,
+            panningModel: typeof o.pannerAttr.panningModel !== 'undefined' ? o.pannerAttr.panningModel : self._panningModel
           };
         }
       } else {
@@ -458,9 +509,9 @@
           coneOuterGain: typeof o.coneOuterGain !== 'undefined' ? o.coneOuterGain : pa.coneOuterGain,
           distanceModel: typeof o.distanceModel !== 'undefined' ? o.distanceModel : pa.distanceModel,
           maxDistance: typeof o.maxDistance !== 'undefined' ? o.maxDistance : pa.maxDistance,
-          panningModel: typeof o.panningModel !== 'undefined' ? o.panningModel : pa.panningModel,
           refDistance: typeof o.refDistance !== 'undefined' ? o.refDistance : pa.refDistance,
-          rolloffFactor: typeof o.rolloffFactor !== 'undefined' ? o.rolloffFactor : pa.rolloffFactor
+          rolloffFactor: typeof o.rolloffFactor !== 'undefined' ? o.rolloffFactor : pa.rolloffFactor,
+          panningModel: typeof o.panningModel !== 'undefined' ? o.panningModel : pa.panningModel
         };
 
         // Update the panner values or create a new panner if none exists.
@@ -471,9 +522,9 @@
           panner.coneOuterGain = pa.coneOuterGain;
           panner.distanceModel = pa.distanceModel;
           panner.maxDistance = pa.maxDistance;
-          panner.panningModel = pa.panningModel;
           panner.refDistance = pa.refDistance;
           panner.rolloffFactor = pa.rolloffFactor;
+          panner.panningModel = pa.panningModel;
         } else {
           // Make sure we have a position to setup the node with.
           if (!sound._pos) {
@@ -532,8 +583,21 @@
 
       // Reset all spatial plugin properties on this sound.
       self._orientation = parent._orientation;
+      self._stereo = parent._stereo;
       self._pos = parent._pos;
       self._pannerAttr = parent._pannerAttr;
+
+      // If a stereo or position was specified, set it up.
+      if (self._stereo) {
+        parent.stereo(self._stereo);
+      } else if (self._pos) {
+        parent.pos(self._pos[0], self._pos[1], self._pos[2], self._id);
+      } else if (self._panner) {
+        // Disconnect the panner.
+        self._panner.disconnect(0);
+        self._panner = undefined;
+        parent._refreshBuffer(self);
+      }
 
       // Complete resetting of the sound.
       return _super.call(this);
@@ -559,21 +623,35 @@
       sound._panner.coneOuterGain = sound._pannerAttr.coneOuterGain;
       sound._panner.distanceModel = sound._pannerAttr.distanceModel;
       sound._panner.maxDistance = sound._pannerAttr.maxDistance;
-      sound._panner.panningModel = sound._pannerAttr.panningModel;
       sound._panner.refDistance = sound._pannerAttr.refDistance;
       sound._panner.rolloffFactor = sound._pannerAttr.rolloffFactor;
-      sound._panner.setPosition(sound._pos[0], sound._pos[1], sound._pos[2]);
-      sound._panner.setOrientation(sound._orientation[0], sound._orientation[1], sound._orientation[2]);
+      sound._panner.panningModel = sound._pannerAttr.panningModel;
+
+      if (typeof sound._panner.positionX !== 'undefined') {
+        sound._panner.positionX.setValueAtTime(sound._pos[0], Howler.ctx.currentTime);
+        sound._panner.positionY.setValueAtTime(sound._pos[1], Howler.ctx.currentTime);
+        sound._panner.positionZ.setValueAtTime(sound._pos[2], Howler.ctx.currentTime);
+      } else {
+        sound._panner.setPosition(sound._pos[0], sound._pos[1], sound._pos[2]);
+      }
+
+      if (typeof sound._panner.orientationX !== 'undefined') {
+        sound._panner.orientationX.setValueAtTime(sound._orientation[0], Howler.ctx.currentTime);
+        sound._panner.orientationY.setValueAtTime(sound._orientation[1], Howler.ctx.currentTime);
+        sound._panner.orientationZ.setValueAtTime(sound._orientation[2], Howler.ctx.currentTime);
+      } else {
+        sound._panner.setOrientation(sound._orientation[0], sound._orientation[1], sound._orientation[2]);
+      }
     } else {
       sound._panner = Howler.ctx.createStereoPanner();
-      sound._panner.pan.value = sound._stereo;
+      sound._panner.pan.setValueAtTime(sound._stereo, Howler.ctx.currentTime);
     }
 
     sound._panner.connect(sound._node);
 
     // Update the connections.
     if (!sound._paused) {
-      sound._parent.pause(sound._id, true).play(sound._id);
+      sound._parent.pause(sound._id, true).play(sound._id, true);
     }
   };
 })();
