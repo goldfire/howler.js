@@ -484,6 +484,16 @@
       self._src = (typeof o.src !== 'string') ? o.src : [o.src];
       self._volume = o.volume !== undefined ? o.volume : 1;
       self._xhrWithCredentials = o.xhrWithCredentials || false;
+      self._xhrHeaders = [];
+
+      if (o.headers && Array.isArray(o.headers)) 
+        o.headers.forEach(h => {
+          if (h.name && h.value)
+            self._xhrHeaders.push({
+              name: h.name,
+              value: h.value
+            });
+        });
 
       // Setup all other default properties.
       self._duration = 0;
@@ -2186,6 +2196,13 @@
       xhr.open('GET', url, true);
       xhr.withCredentials = self._xhrWithCredentials;
       xhr.responseType = 'arraybuffer';
+
+      if (self._xhrHeaders.length > 0) {
+        self._xhrHeaders.forEach(header => {
+          xhr.setRequestHeader(header.name, header.value);
+        });
+      }
+
       xhr.onload = function() {
         // Make sure we get a successful response back.
         var code = (xhr.status + '')[0];
