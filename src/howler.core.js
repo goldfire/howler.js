@@ -2228,19 +2228,19 @@
    * @param  {Howl}        self
    */
   var decodeAudioData = function(arraybuffer, self) {
+    // Fire a load error if something broke.
+    var error = function() {
+      self._emit('loaderror', null, 'Decoding audio data failed.');
+    };
+
     // Load the sound on success.
     var success = function(buffer) {
       if (buffer && self._sounds.length > 0) {
         cache[self._src] = buffer;
         loadSound(self, buffer);
       } else {
-        onError();
+        error();
       }
-    };
-
-    // Fire a load error if something broke.
-    var error = function() {
-      self._emit('loaderror', null, 'Decoding audio data failed.');
     };
 
     // Decode the buffer into an audio source.
