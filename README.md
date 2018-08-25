@@ -77,6 +77,16 @@ In the browser:
 </script>
 ```
 
+As a dependency:
+
+```javascript
+import {Howl, Howler} from 'howler';
+```
+
+```javascript
+const {Howl, Howler} = require('howler');
+```
+
 ### Examples
 
 ##### Most basic, play an MP3:
