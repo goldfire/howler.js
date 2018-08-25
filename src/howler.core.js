@@ -303,8 +303,6 @@
       // then check if the audio actually played to determine if
       // audio has now been unlocked on iOS, Android, etc.
       var unlock = function(e) {
-        e.preventDefault();
-
         // Fix Android can not play in suspend state.
         Howler._autoResume();
 
