@@ -1,3 +1,8 @@
+## 2.0.15 (August 24, 2018)
+- `FIXED` Errors with touch events and blocked click events in Chrome ([#1003](https://github.com/goldfire/howler.js/issues/1003) [#1011](https://github.com/goldfire/howler.js/issues/1011) [#1025](https://github.com/goldfire/howler.js/issues/1025) [#1026](https://github.com/goldfire/howler.js/issues/1026)).
+- `FIXED` Audio decoding error wasn't always handled correctly ([#1019](https://github.com/goldfire/howler.js/pull/1019)).
+- `FIXED` Potential error during playback in Internet Explorer 11 ([#1016](https://github.com/goldfire/howler.js/pull/1016)).
+
 ## 2.0.14 (July 12, 2018)
 - `CHANGED` Auto unlocking of audio now runs on Chrome to fix issue with HTML5 Audio needing user interaction.
 - `CHANGED` Added a new `unlock` event that is fired when the auto unlock happens.

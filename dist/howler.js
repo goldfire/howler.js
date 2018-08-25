@@ -1,5 +1,5 @@
 /*!
- *  howler.js v2.0.14
+ *  howler.js v2.0.15
  *  howlerjs.com
  *
  *  (c) 2013-2018, James Simpson of GoldFire Studios
@@ -303,8 +303,6 @@
       // then check if the audio actually played to determine if
       // audio has now been unlocked on iOS, Android, etc.
       var unlock = function(e) {
-        e.preventDefault();
-
         // Fix Android can not play in suspend state.
         Howler._autoResume();
 
@@ -781,7 +779,7 @@
             var play = node.play();
 
             // Support older browsers that don't support promises, and thus don't have this issue.
-            if (typeof Promise !== 'undefined' && (play instanceof Promise || typeof play.then === 'function')) {
+            if (play && typeof Promise !== 'undefined' && (play instanceof Promise || typeof play.then === 'function')) {
               // Implements a lock to prevent DOMException: The play() request was interrupted by a call to pause().
               self._playLock = true;
 
@@ -2228,19 +2226,19 @@
    * @param  {Howl}        self
    */
   var decodeAudioData = function(arraybuffer, self) {
+    // Fire a load error if something broke.
+    var error = function() {
+      self._emit('loaderror', null, 'Decoding audio data failed.');
+    };
+
     // Load the sound on success.
     var success = function(buffer) {
       if (buffer && self._sounds.length > 0) {
         cache[self._src] = buffer;
         loadSound(self, buffer);
       } else {
-        onError();
+        error();
       }
-    };
-
-    // Fire a load error if something broke.
-    var error = function() {
-      self._emit('loaderror', null, 'Decoding audio data failed.');
     };
 
     // Decode the buffer into an audio source.
@@ -2349,7 +2347,7 @@
 /*!
  *  Spatial Plugin - Adds support for stereo and 3D audio where Web Audio is supported.
  *  
- *  howler.js v2.0.14
+ *  howler.js v2.0.15
  *  howlerjs.com
  *
  *  (c) 2013-2018, James Simpson of GoldFire Studios
