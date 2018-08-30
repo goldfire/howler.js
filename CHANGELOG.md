@@ -13,7 +13,7 @@
 - `FIXED` Instantly fire the `end` event when a sound is seeked past its duration ([#963](https://github.com/goldfire/howler.js/issues/963)).
 - `FIXED` Another issue in Safari where spatial orientation was throwing an error.
 
-## 2.0.13 (Juen 22, 2018)
+## 2.0.13 (June 22, 2018)
 - `FIXED` Prevent `stop` event from firing alongside `end` when using HTML5 Audio ([#974](https://github.com/goldfire/howler.js/issues/074)).
 - `FIXED` Correctly reset a `Sound` after using spatial audio ([#962](https://github.com/goldfire/howler.js/issues/962)).
 - `FIXED` Remove a `Howl` from cache when unloaded after failing to load ([#978](https://github.com/goldfire/howler.js/issues/978)).
