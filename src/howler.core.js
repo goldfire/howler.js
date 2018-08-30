@@ -481,6 +481,7 @@
       self._sprite = o.sprite || {};
       self._src = (typeof o.src !== 'string') ? o.src : [o.src];
       self._volume = o.volume !== undefined ? o.volume : 1;
+      self._sinkId = typeof o.sinkId !== 'undefined' ? o.sinkId : 'default';
       self._xhrWithCredentials = o.xhrWithCredentials || false;
 
       // Setup all other default properties.
@@ -773,7 +774,7 @@
           node.muted = sound._muted || self._muted || Howler._muted || node.muted;
           node.volume = sound._volume * Howler.volume();
           node.playbackRate = sound._rate;
-
+          node.setSinkId(sound._sinkId);
           // Mobile browsers will throw an error if this is called without user interaction.
           try {
             var play = node.play();
