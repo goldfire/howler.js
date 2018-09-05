@@ -300,19 +300,19 @@ Get the duration of the audio source. Will return 0 until after the `load` event
 
 #### on(event, function, [id])
 Listen for events. Multiple events can be added by calling this multiple times.
-* **event**: `String` Name of event to fire/set (`load`, `loaderror`, `playerror`, `play`, `end`, `pause`, `stop`, `mute`, `volume`, `rate`, `seek`, `fade`, `unlock`).
+* **event**: `String` Name of event to fire/set (`load`, `loaderror`, `playerror`, `play`, `end`, `pause`, `stop`, `mute`, `volume`, `rate`, `seek`, `fade`, `unlock`,`downloading`).
 * **function**: `Function` Define function to fire on event.
 * **id**: `Number` `optional` Only listen to events for this sound id.
 
 #### once(event, function, [id])
 Same as `on`, but it removes itself after the callback is fired.
-* **event**: `String` Name of event to fire/set (`load`, `loaderror`, `playerror`, `play`, `end`, `pause`, `stop`, `mute`, `volume`, `rate`, `seek`, `fade`, `unlock`).
+* **event**: `String` Name of event to fire/set (`load`, `loaderror`, `playerror`, `play`, `end`, `pause`, `stop`, `mute`, `volume`, `rate`, `seek`, `fade`, `unlock`,`downloading`).
 * **function**: `Function` Define function to fire on event.
 * **id**: `Number` `optional` Only listen to events for this sound id.
 
 #### off(event, [function], [id])
 Remove event listener that you've set. Call without parameters to remove all events.
-* **event**: `String` Name of event (`load`, `loaderror`, `playerror`, `play`, `end`, `pause`, `stop`, `mute`, `volume`, `rate`, `seek`, `fade`, `unlock`).
+* **event**: `String` Name of event (`load`, `loaderror`, `playerror`, `play`, `end`, `pause`, `stop`, `mute`, `volume`, `rate`, `seek`, `fade`, `unlock`,`downloading`).
 * **function**: `Function` `optional` The listener to remove. Omit this to remove all events of type.
 * **id**: `Number` `optional` Only remove events for this sound id.
 
