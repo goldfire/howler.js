@@ -237,6 +237,9 @@ Fires when the sound has been seeked. The first parameter is the ID of the sound
 Fires when the current sound finishes fading in/out. The first parameter is the ID of the sound.
 #### onunlock `Function`
 Fires when audio has been automatically unlocked through a touch/click event.
+#### ondownloading `Function`
+Fires while audio is being loaded (buffered) on XHR requests used to fetch audio files when using Web Audio API ([see reference](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/withCredentials)). 
+This event uses XHR onprogress callback ([see reference](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequestEventTarget/onprogress)).
 
 
 ### Methods
