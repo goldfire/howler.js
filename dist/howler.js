@@ -505,7 +505,6 @@
       self._onrate = o.onrate ? [{fn: o.onrate}] : [];
       self._onseek = o.onseek ? [{fn: o.onseek}] : [];
       self._onunlock = o.onunlock ? [{fn: o.onunlock}] : [];
-      self._ondownloading = o.ondownloading ? [{fn: o.ondownloading}] : [];
       self._onresume = [];
 
       // Web Audio or HTML5 Audio?
@@ -2204,9 +2203,6 @@
           delete cache[url];
           self.load();
         }
-      };
-      xhr.onprogress = function(event) {
-        self._emit('downloading', event);
       };
       safeXhrSend(xhr);
     }
