@@ -313,7 +313,7 @@
               sound._panner.positionY.setValueAtTime(y, Howler.ctx.currentTime);
               sound._panner.positionZ.setValueAtTime(z, Howler.ctx.currentTime);
             } else {
-              sound._panner.setOrientation(x, y, z);
+              sound._panner.setPosition(x, y, z);
             }
           }
 
