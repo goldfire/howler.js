@@ -1151,6 +1151,11 @@
         return self;
       }
 
+      // Make sure the to/from/len values are numbers.
+      from = parseFloat(from);
+      to = parseFloat(to);
+      len = parseFloat(len);
+
       // Set the volume to the start position.
       self.volume(from, id);
 
