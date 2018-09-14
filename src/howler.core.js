@@ -1216,8 +1216,11 @@
         vol += diff * tick;
 
         // Make sure the volume is in the right bounds.
-        vol = Math.max(0, vol);
-        vol = Math.min(1, vol);
+        if(diff < 0) {
+          vol = Math.max(to, vol);
+        } else {
+          vol = Math.min(to, vol);
+        }
 
         // Round to within 2 decimal points.
         vol = Math.round(vol * 100) / 100;
@@ -1239,7 +1242,7 @@
           clearInterval(sound._interval);
           sound._interval = null;
           sound._fadeTo = null;
-          self.volume(to, sound._id);
+          self.volume(to, sound._id); //does this line has a sense now?
           self._emit('fade', sound._id);
         }
       }, stepLen);
