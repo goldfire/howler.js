@@ -446,7 +446,6 @@
    */
   var Howl = function(o) {
     var self = this;
-    var outputDevice = null;
 
     // Throw an error if no source is provided.
     if (!o.src || o.src.length === 0) {
@@ -483,6 +482,7 @@
       self._src = (typeof o.src !== 'string') ? o.src : [o.src];
       self._volume = o.volume !== undefined ? o.volume : 1;
       self._xhrWithCredentials = o.xhrWithCredentials || false;
+      self._outputDevice = o.outputDevice || null;
 
       // Setup all other default properties.
       self._duration = 0;
@@ -539,12 +539,12 @@
 
     /**
      * Set the device to play sound from.  Only works with html5.
-     * @param {string} deviceId 
+     * @param {string} deviceId
      */
     setOutputDevice: function(deviceId) {
       var self = this;
       if (self._html5) {
-        self.outputDevice = deviceId;
+        self._outputDevice = deviceId;
       } else {
         console.warn('setOutputDevice is only supported on html5');
       }
@@ -750,8 +750,8 @@
       var node = sound._node;
 
       // Play out of the specified output device if one has been specified.  Otherwise play from default output
-      if (self.outputDevice) {
-        node.setSinkId(self.outputDevice);
+      if (self._outputDevice) {
+        node.setSinkId(self._outputDevice);
       }
       
       if (self._webAudio) {
