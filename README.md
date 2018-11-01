@@ -1,11 +1,17 @@
-[![howler.js](https://s3.amazonaws.com/howler.js/howler-logo.png "howler.js")](https://howlerjs.com)
+<div align="center">
+ <img src="https://s3.amazonaws.com/howler.js/howler-logo.png">
+</div>
+
+-----
 
 # Description
 [howler.js](https://howlerjs.com) is an audio library for the modern web. It defaults to [Web Audio API](http://webaudio.github.io/web-audio-api/) and falls back to [HTML5 Audio](https://html.spec.whatwg.org/multipage/embedded-content.html#the-audio-element). This makes working with audio in JavaScript easy and reliable across all platforms.
 
 Additional information, live demos and a user showcase are available at [howlerjs.com](https://howlerjs.com).
 
-### Features
+-----
+
+## Features
 * Single API for all audio needs
 * Defaults to Web Audio API and falls back to HTML5 Audio
 * Handles edge cases and bugs across environments
@@ -20,7 +26,9 @@ Additional information, live demos and a user showcase are available at [howlerj
 * No outside dependencies, just pure JavaScript
 * As light as 7kb gzipped
 
-### Browser Compatibility
+-----
+
+## Browser Compatibility
 Tested in the following browsers/versions:
 * Google Chrome 7.0+
 * Internet Explorer 9.0+
@@ -30,15 +38,19 @@ Tested in the following browsers/versions:
 * Opera 12.0+
 * Microsoft Edge
 
-### Live Demos
+-----
+
+## Live Demos
 * [Audio Player](https://howlerjs.com/#player)
 * [Radio](https://howlerjs.com/#radio)
 * [Spatial Audio](https://howlerjs.com/#spatial)
 * [Audio Sprites](https://howlerjs.com/#sprite)
 
+-----
+
 # Documentation
 
-### Contents
+## Table of contents
 * [Quick Start](#quick-start)
 * [Examples](#examples)
 * [Core](#core)
@@ -56,7 +68,9 @@ Tested in the following browsers/versions:
 * [Format Recommendations](#format-recommendations)
 * [License](#license)
 
-### Quick Start
+-----
+
+## Quick Start
 
 Several options to get up and running:
 
@@ -87,9 +101,11 @@ import {Howl, Howler} from 'howler';
 const {Howl, Howler} = require('howler');
 ```
 
-### Examples
+-----
 
-##### Most basic, play an MP3:
+## Examples
+
+### Most basic, play an MP3:
 ```javascript
 var sound = new Howl({
   src: ['sound.mp3']
@@ -98,7 +114,7 @@ var sound = new Howl({
 sound.play();
 ```
 
-##### More playback options:
+### More playback options:
 ```javascript
 var sound = new Howl({
   src: ['sound.webm', 'sound.mp3', 'sound.wav'],
@@ -111,7 +127,7 @@ var sound = new Howl({
 });
 ```
 
-##### Define and play a sound sprite:
+### Define and play a sound sprite:
 ```javascript
 var sound = new Howl({
   src: ['sounds.webm', 'sounds.mp3'],
@@ -126,7 +142,7 @@ var sound = new Howl({
 sound.play('laser');
 ```
 
-##### Listen for events:
+### Listen for events:
 ```javascript
 var sound = new Howl({
   src: ['sound.webm', 'sound.mp3']
@@ -143,7 +159,7 @@ sound.on('end', function(){
 });
 ```
 
-##### Control multiple sounds:
+### Control multiple sounds:
 ```javascript
 var sound = new Howl({
   src: ['sound.webm', 'sound.mp3']
@@ -159,7 +175,7 @@ sound.fade(1, 0, 1000, id1);
 sound.rate(1.5, id2);
 ```
 
-##### ES6:
+### ES6:
 ```javascript
 import {Howl, Howler} from 'howler';
 
@@ -178,10 +194,11 @@ Howler.volume(0.5);
 
 More in-depth examples (with accompanying live demos) can be found in the [examples directory](https://github.com/goldfire/howler.js/tree/master/examples).
 
+-----
 
-## Core
+# Core
 
-### Options
+## Options
 #### src `Array/String` `[]` *`required`*
 The sources to the track(s) to be loaded for the sound (URLs or base64 data URIs). These should be in order of preference, howler.js will automatically load the first one that is compatible with the current browser. If your files have no extensions, you will need to explicitly specify the extension using the `format` property.
 #### volume `Number` `1.0`
@@ -238,8 +255,9 @@ Fires when the current sound finishes fading in/out. The first parameter is the 
 #### onunlock `Function`
 Fires when audio has been automatically unlocked through a touch/click event.
 
+-----
 
-### Methods
+## Methods
 #### play([sprite/id])
 Begins playback of a sound. Returns the sound id to be used with other methods. Only method that can't be chained.
 * **sprite/id**: `String/Number` `optional` Takes one parameter that can either be a sprite or sound ID. If a sprite is passed, a new sound will play based on the sprite's definition. If a sound ID is passed, the previously played sound will be played (for example, after pausing it). However, if an ID of a sound that has been drained from the pool is passed, nothing will play.
@@ -319,8 +337,9 @@ This is called by default, but if you set `preload` to false, you must call `loa
 #### unload()
 Unload and destroy a Howl object. This will immediately stop all sounds attached to this sound and remove it from the cache.
 
+-----
 
-### Global Options
+## Global Options
 #### usingWebAudio `Boolean`
 `true` if the Web Audio API is available.
 #### noAudio `Boolean`
@@ -334,8 +353,9 @@ Exposes the `AudioContext` with Web Audio API.
 #### masterGain `Boolean` *`Web Audio Only`*
 Exposes the master `GainNode` with Web Audio API. This can be useful for writing plugins or advanced usage.
 
+-----
 
-### Global Methods
+## Global Methods
 The following methods are used to modify all sounds globally, and are called from the `Howler` object.
 #### mute(muted)
 Mute or unmute all sounds.
@@ -352,6 +372,7 @@ Check supported audio codecs. Returns `true` if the codec is supported in the cu
 #### unload()
 Unload and destroy all currently loaded Howl objects. This will immediately stop all sounds and remove them from cache.
 
+-----
 
 ## Plugin: Spatial
 
@@ -371,8 +392,9 @@ Fires when the current sound has the listener position changed. The first parame
 #### onorientation `Function`
 Fires when the current sound has the direction of the listener changed. The first parameter is the ID of the sound.
 
+-----
 
-### Methods
+## Methods
 #### stereo(pan, [id])
 Get/set the stereo panning of the audio source for this sound or all in the group.
 * **pan**: `Number` A value of `-1.0` is all the way left and `1.0` is all the way right.
@@ -405,8 +427,9 @@ Get/set the panner node's attributes for a sound or group of sounds.
   * **panningModel** `HRTF` Determines which spatialization algorithm is used to position audio. Can be `HRTF` or `equalpower`.
 * **id**: `Number` `optional` The sound ID. If none is passed, all in group will be updated.
 
+-----
 
-### Global Methods
+## Global Methods
 #### stereo(pan)
 Helper method to update the stereo panning position of all current `Howls`. Future `Howls` will not use this value unless explicitly set.
 * **pan**: `Number` A value of -1.0 is all the way left and 1.0 is all the way right.
@@ -427,7 +450,7 @@ Get/set the direction the listener is pointing in the 3D cartesian space. A fron
 * **zUp**: `Number` The z-orientation of the top of the listener.
 
 
-### Mobile/Chrome Playback
+## Mobile/Chrome Playback
 By default, audio on mobile browsers and Chrome is locked until a sound is played within a user interaction, and then it plays normally the rest of the page session ([Apple documentation](https://developer.apple.com/library/safari/documentation/audiovideo/conceptual/using_html5_audio_video/PlayingandSynthesizingSounds/PlayingandSynthesizingSounds.html)). The default behavior of howler.js is to attempt to silently unlock audio playback by playing an empty buffer on the first `touchend` event. This behavior can be disabled by calling:
 
 ```javascript
@@ -449,8 +472,9 @@ var sound = new Howl({
 sound.play();
 ```
 
+-----
 
-### Dolby Audio Playback
+## Dolby Audio Playback
 Full support for playback of the Dolby Audio format (currently support in Edge and Safari) is included. However, you must specify that the file you are loading is `dolby` since it is in a `mp4` container.
 
 ```javascript
@@ -460,10 +484,14 @@ var dolbySound = new Howl({
 });
 ```
 
-### Facebook Instant Games
+-----
+
+## Facebook Instant Games
 Howler.js provides audio support for the new [Facebook Instant Games](https://developers.facebook.com/docs/games/instant-games/engine-recommendations) platform. If you encounter any issues while developing for Instant Games, open an issue with the tag `[IG]`.
 
-### Format Recommendations
+-----
+
+## Format Recommendations
 Howler.js supports a wide array of audio codecs that have varying browser support ("mp3", "opus", "ogg", "wav", "aac", "m4a", "mp4", "webm", ...), but if you want full browser coverage you still need to use at least two of them. If your goal is to have the best balance of small filesize and high quality, based on extensive production testing, your best bet is to default to `webm` and fallback to `mp3`. `webm` has nearly full browser coverage with a great combination of compression and quality. You'll need the `mp3` fallback for Internet Explorer.
 
 It is important to remember that howler.js selects the first compatible sound from your array of sources. So if you want `webm` to be used before `mp3`, you need to put the sources in that order.
@@ -474,7 +502,9 @@ If you want your `webm` files to be seekable in Firefox, be sure to encode them 
 ffmpeg -i sound1.wav -dash 1 sound1.webm
 ```
 
-### License
+-----
+
+## License
 
 Copyright (c) 2013-2018 [James Simpson](https://twitter.com/GoldFireStudios) and [GoldFire Studios, Inc.](http://goldfirestudios.com)
 
