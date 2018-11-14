@@ -90,6 +90,10 @@ Player.prototype = {
           // Stop the wave animation.
           wave.container.style.display = 'none';
           bar.style.display = 'block';
+        },
+        onseek: function() {
+          // Start upating the progress of the track.
+          requestAnimationFrame(self.step.bind(self));
         }
       });
     }
