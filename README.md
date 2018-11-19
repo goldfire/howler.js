@@ -50,7 +50,7 @@ Tested in the following browsers/versions:
   * [Options](#options-1)
   * [Methods](#methods-1)
   * [Global Methods](#global-methods-1)
-* [Mobile Playback](#mobile-playback)
+* [Mobile Playback](#mobilechrome-playback)
 * [Dolby Audio Playback](#dolby-audio-playback)
 * [Facebook Instant Games](#facebook-instant-games)
 * [Format Recommendations](#format-recommendations)
