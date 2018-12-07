@@ -2308,6 +2308,11 @@
       Howler.usingWebAudio = false;
     }
 
+    // If the audio context creation still failed, set using web audio to false.
+    if (!Howler.ctx) {
+      Howler.usingWebAudio = false;
+    }
+
     // Check if a webview is being used on iOS8 or earlier (rather than the browser).
     // If it is, disable Web Audio as it causes crashing.
     var iOS = (/iP(hone|od|ad)/.test(Howler._navigator && Howler._navigator.platform));
