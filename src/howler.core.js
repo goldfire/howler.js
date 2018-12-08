@@ -33,6 +33,10 @@
       // Create a global ID counter.
       self._counter = 1000;
 
+      // Pool of unlocked HTML5 Audio objects.
+      self._html5AudioPool = [];
+      self.html5PoolSize = 10;
+
       // Internal properties.
       self._codecs = {};
       self._howls = [];
@@ -40,10 +44,6 @@
       self._volume = 1;
       self._canPlayEvent = 'canplaythrough';
       self._navigator = (typeof window !== 'undefined' && window.navigator) ? window.navigator : null;
-      // Pool of activated HTML5 Audio objects for use on mobile.
-      self._mobileHtml5AudioPool = null;
-      // Tracks if we are using the mobile HTML5 Audio pool.
-      self._isMobileHtml5AudioPoolEnabled = false;
 
       // Public properties.
       self.masterGain = null;
@@ -54,13 +54,6 @@
 
       // Set to false to disable the auto iOS enabler.
       self.mobileAutoEnable = true;
-
-      // The number of enabled HTML5 Audio objects to keep on mobile.
-      // The pool will not be used if mobileAutoEnable is false.
-      self.mobileHtml5AudioPoolDefaultSize = 10;
-      // If true, raise an error if there is an attempt to obtain an unlocked
-      // Audio object from an empty pool.
-      self.shouldMobileHtml5AudioPoolErrorWhenEmpty = false;
 
       // Setup the various state values for global tracking.
       self._setup();
@@ -314,34 +307,48 @@
       // then check if the audio actually played to determine if
       // audio has now been unlocked on iOS, Android, etc.
       var unlock = function(e) {
-        e.preventDefault();
-
-        // Create a pool of activated HTML5 Audio objects that can
+        // Create a pool of unlocked HTML5 Audio objects that can
         // be used for playing sounds without user interaction. HTML5
-        // Audio objects must be individually activated, as opposed
+        // Audio objects must be individually unlocked, as opposed
         // to the WebAudio API which only needs a single activation.
         // This must occur before WebAudio setup or the source.onended
         // event will not fire.
-        Howler._mobileHtml5AudioPool = [];
-        Howler._isMobileHtml5AudioPoolEnabled = true;
-        for (var i = 0; i < Howler.mobileHtml5AudioPoolDefaultSize; i++) {
-          var mobileAudio = new Audio();
+        for (var i=0; i<self.html5PoolSize; i++) {
+          var audioNode = new Audio();
 
           // Mark this Audio object as unlocked to ensure it can get returned
           // to the unlocked pool when released.
-          mobileAudio._isUnlockedForMobile = true;
+          audioNode._unlocked = true;
 
-          // "Play" the audio to activate it. Once an Audio object has been
-          // played, it remains unlocked for its lifetime and can be reused
-          // indefinitely.
-          mobileAudio.play();
+          // "Play" the audio to activate it. Once an Audio object has been played,
+          // it remains unlocked for its lifetime and can be reused indefinitely.
+          audioNode.play();
 
-          // Pool the newly-activated Audio object for later use.
-          Howler._releaseHtml5Audio(mobileAudio);
+          // Add the audio node to the pool.
+          self._releaseHtml5Audio(audioNode);
+        }
+
+        // Loop through any assigned audio nodes and unlock them.
+        for (var i=0; i<self._howls.length; i++) {
+          if (!self._howls[i]._webAudio) {
+            // Get all of the sounds in this Howl group.
+            var ids = self._howls[i]._getSoundIds();
+
+            // Loop through all sounds and unlock the audio nodes.
+            for (var j=0; j<ids.length; j++) {
+              var sound = self._howls[i]._soundById(ids[j]);
+
+              if (sound && sound._node) {
+                sound._node._unlocked = true;
+                sound._node.play();
+                sound._node.pause();
+              }
+            }
+          }
         }
 
         // Fix Android can not play in suspend state.
-        Howler._autoResume();
+        self._autoResume();
 
         // Create an empty buffer.
         var source = self.ctx.createBufferSource();
@@ -388,51 +395,37 @@
     },
 
     /**
-     * Obtain an activated HTML5 Audio object from the pool. If there are no
-     * pooled objects left (or mobileAutoEnable is false), a new Audio
-     * object without activation will be returned.
-     * @return {Audio}
+     * Get an unlocked HTML5 Audio object from the pool. If none are left,
+     * return a new Audio object and throw a warning.
+     * @return {Audio} HTML5 Audio object.
      */
     _obtainHtml5Audio: function() {
       var self = this || Howler;
       var audio = null;
 
-      if (!self._isMobileHtml5AudioPoolEnabled) {
-        // We're not using the mobile HTML5 Audio pool so just return a new Audio object.
-        return new Audio();
+      // Return the next object from the pool if one exists.
+      if (self._html5AudioPool.length) {
+        return self._html5AudioPool.pop();
       }
 
-      // Attempt to obtain an Audio object.
-      if (self._mobileHtml5AudioPool && self._mobileHtml5AudioPool.length) {
-        audio = self._mobileHtml5AudioPool.pop();
-
-      } else {
-        // Raise an error if configured to do so for an empty pool.
-        if (self.shouldMobileHtml5AudioPoolErrorWhenEmpty) {
-          throw "Unable to obtain an unlocked HTML5 Audio object from the pool.";
-        }
-
-        // This Audio object won't be unlocked and cannot be guaranteed to work
-        // on mobile. If we're in a call initiated by a user interaction it will,
-        // otherwise it won't.
-        audio = new Audio();
-        window.console && window.console.warning("Returning potentially locked HTML5 Audio object from pool.");
-      }
-
-      return audio;
+      // Create a new Audio node and throw a warning that it may be locked.
+      console.warn('HTML5 Audio pool exhausted, returning potentially locked audio object.');
+      return new Audio();
     },
 
     /**
      * Return an activated HTML5 Audio object to the pool.
-     * @return {Audio}
+     * @return {Howler}
      */
     _releaseHtml5Audio: function(audio) {
       var self = this || Howler;
 
-      // Only return the object if we are pooling Audio objects.
-      if (self._mobileHtml5AudioPool && audio._isUnlockedForMobile) {
-        self._mobileHtml5AudioPool.push(audio);
+      // Don't add audio to the pool if we don't know if it has been unlocked.
+      if (audio._unlocked) {
+        self._html5AudioPool.push(audio);
       }
+
+      return self;
     },
 
     /**
@@ -2153,7 +2146,7 @@
         self._node.paused = true;
         self._node.connect(Howler.masterGain);
       } else {
-        // Obtain an activated Audio object from the pool.
+        // Get an unlocked Audio object from the pool.
         self._node = Howler._obtainHtml5Audio();
 
         // Listen for errors (http://dev.w3.org/html5/spec-author-view/spec.html#mediaerror).
