@@ -1389,8 +1389,10 @@
           if (sound) {
             // Keep track of our position when the rate changed and update the playback
             // start position so we can properly adjust the seek position for time elapsed.
-            sound._rateSeek = self.seek(id[i]);
-            sound._playStart = self._webAudio ? Howler.ctx.currentTime : sound._playStart;
+            if (self.playing(id[i])) {
+              sound._rateSeek = self.seek(id[i]);
+              sound._playStart = self._webAudio ? Howler.ctx.currentTime : sound._playStart;
+            }
             sound._rate = rate;
 
             // Change the playback rate.
