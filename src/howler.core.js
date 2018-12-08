@@ -188,7 +188,7 @@
       var self = this || Howler;
 
       // Keeps track of the suspend/resume state of the AudioContext.
-      self.state = self.ctx ? self.ctx.state || 'running' : 'running';
+      self.state = self.ctx ? self.ctx.state || 'suspended' : 'suspended';
 
       // Automatically begin the 30-second suspend process
       self._autoSuspend();
@@ -283,7 +283,7 @@
       var self = this || Howler;
 
       // Only run this on mobile devices if audio isn't already eanbled.
-      var isMobile = /iPhone|iPad|iPod|Android|BlackBerry|BB10|Silk|Mobi|Chrome/i.test(self._navigator && self._navigator.userAgent);
+      var isMobile = /iPhone|iPad|iPod|Android|BlackBerry|BB10|Silk|Mobi|Chrome|Safari/i.test(self._navigator && self._navigator.userAgent);
       if (self._mobileEnabled || !self.ctx || !isMobile) {
         return;
       }
@@ -789,18 +789,23 @@
       var seek = Math.max(0, sound._seek > 0 ? sound._seek : self._sprite[sprite][0] / 1000);
       var duration = Math.max(0, ((self._sprite[sprite][0] + self._sprite[sprite][1]) / 1000) - seek);
       var timeout = (duration * 1000) / Math.abs(sound._rate);
-
-      // Update the parameters of the sound
-      sound._paused = false;
-      sound._ended = false;
+      var start = self._sprite[sprite][0] / 1000;
+      var stop = (self._sprite[sprite][0] + self._sprite[sprite][1]) / 1000;
+      var loop = !!(sound._loop || self._sprite[sprite][2]);
       sound._sprite = sprite;
-      sound._seek = seek;
-      sound._start = self._sprite[sprite][0] / 1000;
-      sound._stop = (self._sprite[sprite][0] + self._sprite[sprite][1]) / 1000;
-      sound._loop = !!(sound._loop || self._sprite[sprite][2]);
+
+      // Update the parameters of the sound.
+      var setParams = function() {
+        sound._paused = false;
+        sound._ended = false;
+        sound._seek = seek;
+        sound._start = start;
+        sound._stop = stop;
+        sound._loop = loop;
+      };
 
       // End the sound instantly if seek is at the end.
-      if (sound._seek >= sound._stop) {
+      if (seek >= stop) {
         self._ended(sound);
         return;
       }
@@ -810,6 +815,7 @@
       if (self._webAudio) {
         // Fire this when the sound is ready to play to begin Web Audio playback.
         var playWebAudio = function() {
+          setParams();
           self._refreshBuffer(sound);
 
           // Setup the playback params.
@@ -864,6 +870,7 @@
               // Releases the lock and executes queued actions.
               play
                 .then(function() {
+                  setParams();
                   self._playLock = false;
                   if (!internal) {
                     self._emit('play', sound._id);
@@ -875,6 +882,7 @@
                     'on mobile devices and Chrome where playback was not within a user interaction.');
                 });
             } else if (!internal) {
+              setParams();
               self._emit('play', sound._id);
             }
 
@@ -1459,8 +1467,10 @@
           if (sound) {
             // Keep track of our position when the rate changed and update the playback
             // start position so we can properly adjust the seek position for time elapsed.
-            sound._rateSeek = self.seek(id[i]);
-            sound._playStart = self._webAudio ? Howler.ctx.currentTime : sound._playStart;
+            if (self.playing(id[i])) {
+              sound._rateSeek = self.seek(id[i]);
+              sound._playStart = self._webAudio ? Howler.ctx.currentTime : sound._playStart;
+            }
             sound._rate = rate;
 
             // Change the playback rate.
@@ -2364,6 +2374,11 @@
    * Setup the audio context when available, or switch to HTML5 Audio mode.
    */
   var setupAudioContext = function() {
+    // If we have already detected that Web Audio isn't supported, don't run this step again.
+    if (!Howler.usingWebAudio) {
+      return;
+    }
+
     // Check if we are using Web Audio and setup the AudioContext if we are.
     try {
       if (typeof AudioContext !== 'undefined') {
@@ -2374,6 +2389,11 @@
         Howler.usingWebAudio = false;
       }
     } catch(e) {
+      Howler.usingWebAudio = false;
+    }
+
+    // If the audio context creation still failed, set using web audio to false.
+    if (!Howler.ctx) {
       Howler.usingWebAudio = false;
     }
 
