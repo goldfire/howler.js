@@ -52,8 +52,8 @@
       self.autoSuspend = true;
       self.ctx = null;
 
-      // Set to false to disable the auto iOS enabler.
-      self.mobileAutoEnable = true;
+      // Set to false to disable the auto audio unlocker.
+      self.autoUnlock = true;
 
       // Setup the various state values for global tracking.
       self._setup();
@@ -274,22 +274,22 @@
     },
 
     /**
-     * Mobile browsers will only allow audio to be played after a user interaction.
+     * Some browsers/devices will only allow audio to be played after a user interaction.
      * Attempt to automatically unlock audio on the first user interaction.
      * Concept from: http://paulbakaus.com/tutorials/html5/web-audio-on-ios/
      * @return {Howler}
      */
-    _enableMobileAudio: function() {
+    _unlockAudio: function() {
       var self = this || Howler;
 
-      // Only run this on mobile devices if audio isn't already eanbled.
-      var isMobile = /iPhone|iPad|iPod|Android|BlackBerry|BB10|Silk|Mobi|Chrome|Safari/i.test(self._navigator && self._navigator.userAgent);
-      if (self._mobileEnabled || !self.ctx || !isMobile) {
+      // Only run this on certain browsers/devices.
+      var shouldUnlock = /iPhone|iPad|iPod|Android|BlackBerry|BB10|Silk|Mobi|Chrome|Safari/i.test(self._navigator && self._navigator.userAgent);
+      if (self._audioUnlocked || !self.ctx || !shouldUnlock) {
         return;
       }
 
-      self._mobileEnabled = false;
-      self.mobileAutoEnable = false;
+      self._audioUnlocked = false;
+      self.autoUnlock = false;
 
       // Some mobile devices/platforms have distortion issues when opening/closing tabs and/or web views.
       // Bugs in the browser (especially Mobile Safari) can cause the sampleRate to change from 44100 to 48000.
@@ -372,7 +372,7 @@
           source.disconnect(0);
 
           // Update the unlocked state and prevent this check from happening again.
-          self._mobileEnabled = true;
+          self._audioUnlocked = true;
 
           // Remove the touch start listener.
           document.removeEventListener('touchstart', unlock, true);
@@ -589,8 +589,8 @@
       self._webAudio = Howler.usingWebAudio && !self._html5;
 
       // Automatically try to enable audio on iOS.
-      if (typeof Howler.ctx !== 'undefined' && Howler.ctx && Howler.mobileAutoEnable) {
-        Howler._enableMobileAudio();
+      if (typeof Howler.ctx !== 'undefined' && Howler.ctx && Howler.autoUnlock) {
+        Howler._unlockAudio();
       }
 
       // Keep track of this Howl group in the global controller.
@@ -858,7 +858,7 @@
           node.volume = sound._volume * Howler.volume();
           node.playbackRate = sound._rate;
 
-          // Mobile browsers will throw an error if this is called without user interaction.
+          // Some browsers will throw an error if this is called without user interaction.
           try {
             var play = node.play();
 

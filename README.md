@@ -325,8 +325,8 @@ Unload and destroy a Howl object. This will immediately stop all sounds attached
 `true` if the Web Audio API is available.
 #### noAudio `Boolean`
 `true` if no audio is available.
-#### mobileAutoEnable `Boolean` `true`
-Automatically attempts to enable audio on mobile (iOS, Android, etc) devices.
+#### autoUnlock `Boolean` `true`
+Automatically attempts to enable audio on mobile (iOS, Android, etc) devices and desktop Chrome/Safari.
 #### autoSuspend `Boolean` `true`
 Automatically suspends the Web Audio AudioContext after 30 seconds of inactivity to decrease processing and energy usage. Automatically resumes upon new playback. Set this property to `false` to disable this behavior.
 #### ctx `Boolean` *`Web Audio Only`*
@@ -428,10 +428,10 @@ Get/set the direction the listener is pointing in the 3D cartesian space. A fron
 
 
 ### Mobile/Chrome Playback
-By default, audio on mobile browsers and Chrome is locked until a sound is played within a user interaction, and then it plays normally the rest of the page session ([Apple documentation](https://developer.apple.com/library/safari/documentation/audiovideo/conceptual/using_html5_audio_video/PlayingandSynthesizingSounds/PlayingandSynthesizingSounds.html)). The default behavior of howler.js is to attempt to silently unlock audio playback by playing an empty buffer on the first `touchend` event. This behavior can be disabled by calling:
+By default, audio on mobile browsers and Chrome/Safari is locked until a sound is played within a user interaction, and then it plays normally the rest of the page session ([Apple documentation](https://developer.apple.com/library/safari/documentation/audiovideo/conceptual/using_html5_audio_video/PlayingandSynthesizingSounds/PlayingandSynthesizingSounds.html)). The default behavior of howler.js is to attempt to silently unlock audio playback by playing an empty buffer on the first `touchend` event. This behavior can be disabled by calling:
 
 ```javascript
-Howler.mobileAutoEnable = false;
+Howler.autoUnlock = false;
 ```
 
 If you try to play audio automatically on page load, you can listen to a `playerror` event and then wait for the `unlock` event to try and play the audio again:
