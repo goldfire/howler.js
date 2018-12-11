@@ -338,7 +338,7 @@
             for (var j=0; j<ids.length; j++) {
               var sound = self._howls[i]._soundById(ids[j]);
 
-              if (sound && sound._node) {
+              if (sound && sound._node && !sound._node._unlocked) {
                 sound._node._unlocked = true;
                 sound._node.play();
                 sound._node.pause();
@@ -588,7 +588,7 @@
       // Web Audio or HTML5 Audio?
       self._webAudio = Howler.usingWebAudio && !self._html5;
 
-      // Automatically try to enable audio on iOS.
+      // Automatically try to enable audio.
       if (typeof Howler.ctx !== 'undefined' && Howler.ctx && Howler.autoUnlock) {
         Howler._unlockAudio();
       }
@@ -856,6 +856,7 @@
                 .then(function() {
                   setParams();
                   self._playLock = false;
+                  node._unlocked = true;
                   if (!internal) {
                     self._emit('play', sound._id);
                   }
