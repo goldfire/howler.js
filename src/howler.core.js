@@ -851,10 +851,12 @@
               // Implements a lock to prevent DOMException: The play() request was interrupted by a call to pause().
               self._playLock = true;
 
+              // Set param values immediately.
+              setParams();
+
               // Releases the lock and executes queued actions.
               play
                 .then(function() {
-                  setParams();
                   self._playLock = false;
                   node._unlocked = true;
                   if (!internal) {
@@ -866,6 +868,10 @@
                   self._playLock = false;
                   self._emit('playerror', sound._id, 'Playback was unable to start. This is most commonly an issue ' +
                     'on mobile devices and Chrome where playback was not within a user interaction.');
+
+                  // Reset the ended and paused values.
+                  sound._ended = true;
+                  sound._paused = true;
                 });
             } else if (!internal) {
               setParams();
