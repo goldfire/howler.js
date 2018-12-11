@@ -320,10 +320,6 @@
           // to the unlocked pool when released.
           audioNode._unlocked = true;
 
-          // "Play" the audio to activate it. Once an Audio object has been played,
-          // it remains unlocked for its lifetime and can be reused indefinitely.
-          audioNode.play();
-
           // Add the audio node to the pool.
           self._releaseHtml5Audio(audioNode);
         }
@@ -340,8 +336,7 @@
 
               if (sound && sound._node && !sound._node._unlocked) {
                 sound._node._unlocked = true;
-                sound._node.play();
-                sound._node.pause();
+                sound._node.load();
               }
             }
           }
