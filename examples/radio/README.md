@@ -16,4 +16,4 @@ This example displays how to use howler.js to stream live audio, such as in this
 2. Open `index.html` in your favorite browser.
 
 ## Credits
-Live audio streams provided by [SomaFM](http://somafm.com/).
+Live audio streams provided by [TuneIn](https://tunein.com/).
