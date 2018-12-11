@@ -859,6 +859,7 @@
                   node._unlocked = true;
                   if (!internal) {
                     self._emit('play', sound._id);
+                    self._loadQueue();
                   }
                 })
                 .catch(function() {
