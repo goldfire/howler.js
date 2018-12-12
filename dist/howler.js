@@ -1,5 +1,5 @@
 /*!
- *  howler.js v2.0.15
+ *  howler.js v2.1.0
  *  howlerjs.com
  *
  *  (c) 2013-2018, James Simpson of GoldFire Studios
@@ -33,6 +33,10 @@
       // Create a global ID counter.
       self._counter = 1000;
 
+      // Pool of unlocked HTML5 Audio objects.
+      self._html5AudioPool = [];
+      self.html5PoolSize = 10;
+
       // Internal properties.
       self._codecs = {};
       self._howls = [];
@@ -48,8 +52,8 @@
       self.autoSuspend = true;
       self.ctx = null;
 
-      // Set to false to disable the auto iOS enabler.
-      self.mobileAutoEnable = true;
+      // Set to false to disable the auto audio unlocker.
+      self.autoUnlock = true;
 
       // Setup the various state values for global tracking.
       self._setup();
@@ -184,7 +188,7 @@
       var self = this || Howler;
 
       // Keeps track of the suspend/resume state of the AudioContext.
-      self.state = self.ctx ? self.ctx.state || 'running' : 'running';
+      self.state = self.ctx ? self.ctx.state || 'suspended' : 'suspended';
 
       // Automatically begin the 30-second suspend process
       self._autoSuspend();
@@ -270,22 +274,22 @@
     },
 
     /**
-     * Mobile browsers will only allow audio to be played after a user interaction.
+     * Some browsers/devices will only allow audio to be played after a user interaction.
      * Attempt to automatically unlock audio on the first user interaction.
      * Concept from: http://paulbakaus.com/tutorials/html5/web-audio-on-ios/
      * @return {Howler}
      */
-    _enableMobileAudio: function() {
+    _unlockAudio: function() {
       var self = this || Howler;
 
-      // Only run this on mobile devices if audio isn't already eanbled.
-      var isMobile = /iPhone|iPad|iPod|Android|BlackBerry|BB10|Silk|Mobi|Chrome/i.test(self._navigator && self._navigator.userAgent);
-      if (self._mobileEnabled || !self.ctx || !isMobile) {
+      // Only run this on certain browsers/devices.
+      var shouldUnlock = /iPhone|iPad|iPod|Android|BlackBerry|BB10|Silk|Mobi|Chrome|Safari/i.test(self._navigator && self._navigator.userAgent);
+      if (self._audioUnlocked || !self.ctx || !shouldUnlock) {
         return;
       }
 
-      self._mobileEnabled = false;
-      self.mobileAutoEnable = false;
+      self._audioUnlocked = false;
+      self.autoUnlock = false;
 
       // Some mobile devices/platforms have distortion issues when opening/closing tabs and/or web views.
       // Bugs in the browser (especially Mobile Safari) can cause the sampleRate to change from 44100 to 48000.
@@ -303,8 +307,43 @@
       // then check if the audio actually played to determine if
       // audio has now been unlocked on iOS, Android, etc.
       var unlock = function(e) {
+        // Create a pool of unlocked HTML5 Audio objects that can
+        // be used for playing sounds without user interaction. HTML5
+        // Audio objects must be individually unlocked, as opposed
+        // to the WebAudio API which only needs a single activation.
+        // This must occur before WebAudio setup or the source.onended
+        // event will not fire.
+        for (var i=0; i<self.html5PoolSize; i++) {
+          var audioNode = new Audio();
+
+          // Mark this Audio object as unlocked to ensure it can get returned
+          // to the unlocked pool when released.
+          audioNode._unlocked = true;
+
+          // Add the audio node to the pool.
+          self._releaseHtml5Audio(audioNode);
+        }
+
+        // Loop through any assigned audio nodes and unlock them.
+        for (var i=0; i<self._howls.length; i++) {
+          if (!self._howls[i]._webAudio) {
+            // Get all of the sounds in this Howl group.
+            var ids = self._howls[i]._getSoundIds();
+
+            // Loop through all sounds and unlock the audio nodes.
+            for (var j=0; j<ids.length; j++) {
+              var sound = self._howls[i]._soundById(ids[j]);
+
+              if (sound && sound._node && !sound._node._unlocked) {
+                sound._node._unlocked = true;
+                sound._node.load();
+              }
+            }
+          }
+        }
+
         // Fix Android can not play in suspend state.
-        Howler._autoResume();
+        self._autoResume();
 
         // Create an empty buffer.
         var source = self.ctx.createBufferSource();
@@ -328,7 +367,7 @@
           source.disconnect(0);
 
           // Update the unlocked state and prevent this check from happening again.
-          self._mobileEnabled = true;
+          self._audioUnlocked = true;
 
           // Remove the touch start listener.
           document.removeEventListener('touchstart', unlock, true);
@@ -346,6 +385,45 @@
       document.addEventListener('touchstart', unlock, true);
       document.addEventListener('touchend', unlock, true);
       document.addEventListener('click', unlock, true);
+
+      return self;
+    },
+
+    /**
+     * Get an unlocked HTML5 Audio object from the pool. If none are left,
+     * return a new Audio object and throw a warning.
+     * @return {Audio} HTML5 Audio object.
+     */
+    _obtainHtml5Audio: function() {
+      var self = this || Howler;
+
+      // Return the next object from the pool if one exists.
+      if (self._html5AudioPool.length) {
+        return self._html5AudioPool.pop();
+      }
+
+      //.Check if the audio is locked and throw a warning.
+      var testPlay = new Audio().play();
+      if (testPlay && typeof Promise !== 'undefined' && (testPlay instanceof Promise || typeof testPlay.then === 'function')) {
+        testPlay.catch(function() {
+          console.warn('HTML5 Audio pool exhausted, returning potentially locked audio object.');
+        });
+      }
+
+      return new Audio();
+    },
+
+    /**
+     * Return an activated HTML5 Audio object to the pool.
+     * @return {Howler}
+     */
+    _releaseHtml5Audio: function(audio) {
+      var self = this || Howler;
+
+      // Don't add audio to the pool if we don't know if it has been unlocked.
+      if (audio._unlocked) {
+        self._html5AudioPool.push(audio);
+      }
 
       return self;
     },
@@ -510,9 +588,9 @@
       // Web Audio or HTML5 Audio?
       self._webAudio = Howler.usingWebAudio && !self._html5;
 
-      // Automatically try to enable audio on iOS.
-      if (typeof Howler.ctx !== 'undefined' && Howler.ctx && Howler.mobileAutoEnable) {
-        Howler._enableMobileAudio();
+      // Automatically try to enable audio.
+      if (typeof Howler.ctx !== 'undefined' && Howler.ctx && Howler.autoUnlock) {
+        Howler._unlockAudio();
       }
 
       // Keep track of this Howl group in the global controller.
@@ -639,22 +717,6 @@
       } else if (typeof sprite === 'undefined') {
         // Use the default sound sprite (plays the full audio length).
         sprite = '__default';
-
-        // Check if there is a single paused sound that isn't ended.
-        // If there is, play that sound. If not, continue as usual.
-        var num = 0;
-        for (var i=0; i<self._sounds.length; i++) {
-          if (self._sounds[i]._paused && !self._sounds[i]._ended) {
-            num++;
-            id = self._sounds[i]._id;
-          }
-        }
-
-        if (num === 1) {
-          sprite = null;
-        } else {
-          id = null;
-        }
       }
 
       // Get the selected node, or get one from the pool.
@@ -677,7 +739,7 @@
         // Set the sprite value on this sound.
         sound._sprite = sprite;
 
-        // Makr this sounded as not ended in case another sound is played before this one loads.
+        // Mark this sound as not ended in case another sound is played before this one loads.
         sound._ended = false;
 
         // Add the sound to the queue to be played on load.
@@ -711,18 +773,26 @@
       var seek = Math.max(0, sound._seek > 0 ? sound._seek : self._sprite[sprite][0] / 1000);
       var duration = Math.max(0, ((self._sprite[sprite][0] + self._sprite[sprite][1]) / 1000) - seek);
       var timeout = (duration * 1000) / Math.abs(sound._rate);
-
-      // Update the parameters of the sound
-      sound._paused = false;
-      sound._ended = false;
+      var start = self._sprite[sprite][0] / 1000;
+      var stop = (self._sprite[sprite][0] + self._sprite[sprite][1]) / 1000;
+      var loop = !!(sound._loop || self._sprite[sprite][2]);
       sound._sprite = sprite;
-      sound._seek = seek;
-      sound._start = self._sprite[sprite][0] / 1000;
-      sound._stop = (self._sprite[sprite][0] + self._sprite[sprite][1]) / 1000;
-      sound._loop = !!(sound._loop || self._sprite[sprite][2]);
+
+      // Mark the sound as ended instantly so that this async playback
+      // doesn't get grabbed by another call to play while this one waits to start.
+      sound._ended = false;
+
+      // Update the parameters of the sound.
+      var setParams = function() {
+        sound._paused = false;
+        sound._seek = seek;
+        sound._start = start;
+        sound._stop = stop;
+        sound._loop = loop;
+      };
 
       // End the sound instantly if seek is at the end.
-      if (sound._seek >= sound._stop) {
+      if (seek >= stop) {
         self._ended(sound);
         return;
       }
@@ -732,6 +802,8 @@
       if (self._webAudio) {
         // Fire this when the sound is ready to play to begin Web Audio playback.
         var playWebAudio = function() {
+          self._playLock = false;
+          setParams();
           self._refreshBuffer(sound);
 
           // Setup the playback params.
@@ -754,6 +826,7 @@
           if (!internal) {
             setTimeout(function() {
               self._emit('play', sound._id);
+              self._loadQueue();
             }, 0);
           }
         };
@@ -761,6 +834,9 @@
         if (Howler.state === 'running') {
           playWebAudio();
         } else {
+          self._playLock = true;
+
+          // Wait for the audio context to resume before playing.
           self.once('resume', playWebAudio);
 
           // Cancel the end timer.
@@ -774,7 +850,7 @@
           node.volume = sound._volume * Howler.volume();
           node.playbackRate = sound._rate;
 
-          // Mobile browsers will throw an error if this is called without user interaction.
+          // Some browsers will throw an error if this is called without user interaction.
           try {
             var play = node.play();
 
@@ -783,21 +859,33 @@
               // Implements a lock to prevent DOMException: The play() request was interrupted by a call to pause().
               self._playLock = true;
 
+              // Set param values immediately.
+              setParams();
+
               // Releases the lock and executes queued actions.
               play
                 .then(function() {
                   self._playLock = false;
+                  node._unlocked = true;
                   if (!internal) {
                     self._emit('play', sound._id);
+                    self._loadQueue();
                   }
                 })
                 .catch(function() {
                   self._playLock = false;
                   self._emit('playerror', sound._id, 'Playback was unable to start. This is most commonly an issue ' +
                     'on mobile devices and Chrome where playback was not within a user interaction.');
+
+                  // Reset the ended and paused values.
+                  sound._ended = true;
+                  sound._paused = true;
                 });
             } else if (!internal) {
+              self._playLock = false;
+              setParams();
               self._emit('play', sound._id);
+              self._loadQueue();
             }
 
             // Setting rate before playing won't work in IE, so we set it again here.
@@ -833,6 +921,8 @@
         if (node.readyState >= 3 || loadedNoReadyState) {
           playHtml5();
         } else {
+          self._playLock = true;
+
           var listener = function() {
             // Begin playback.
             playHtml5();
@@ -1151,6 +1241,11 @@
         return self;
       }
 
+      // Make sure the to/from/len values are numbers.
+      from = parseFloat(from);
+      to = parseFloat(to);
+      len = parseFloat(len);
+
       // Set the volume to the start position.
       self.volume(from, id);
 
@@ -1376,8 +1471,10 @@
           if (sound) {
             // Keep track of our position when the rate changed and update the playback
             // start position so we can properly adjust the seek position for time elapsed.
-            sound._rateSeek = self.seek(id[i]);
-            sound._playStart = self._webAudio ? Howler.ctx.currentTime : sound._playStart;
+            if (self.playing(id[i])) {
+              sound._rateSeek = self.seek(id[i]);
+              sound._playStart = self._webAudio ? Howler.ctx.currentTime : sound._playStart;
+            }
             sound._rate = rate;
 
             // Change the playback rate.
@@ -1475,7 +1572,7 @@
           self._clearTimer(id);
 
           // Update the seek position for HTML5 Audio.
-          if (!self._webAudio && sound._node) {
+          if (!self._webAudio && sound._node && !isNaN(sound._node.duration)) {
             sound._node.currentTime = seek;
           }
 
@@ -1592,6 +1689,9 @@
           // Remove any event listeners.
           sounds[i]._node.removeEventListener('error', sounds[i]._errorFn, false);
           sounds[i]._node.removeEventListener(Howler._canPlayEvent, sounds[i]._loadFn, false);
+
+          // Release the Audio object back to the pool.
+          Howler._releaseHtml5Audio(sounds[i]._node);
         }
 
         // Empty out all of the nodes.
@@ -1990,11 +2090,14 @@
      */
     _cleanBuffer: function(node) {
       var self = this;
+      var isIOS = Howler._navigator && Howler._navigator.vendor.indexOf('Apple') >= 0;
 
       if (Howler._scratchBuffer && node.bufferSource) {
         node.bufferSource.onended = null;
         node.bufferSource.disconnect(0);
-        try { node.bufferSource.buffer = Howler._scratchBuffer; } catch(e) {}
+        if (isIOS) {
+          try { node.bufferSource.buffer = Howler._scratchBuffer; } catch(e) {}
+        }
       }
       node.bufferSource = null;
 
@@ -2060,7 +2163,8 @@
         self._node.paused = true;
         self._node.connect(Howler.masterGain);
       } else {
-        self._node = new Audio();
+        // Get an unlocked Audio object from the pool.
+        self._node = Howler._obtainHtml5Audio();
 
         // Listen for errors (http://dev.w3.org/html5/spec-author-view/spec.html#mediaerror).
         self._errorFn = self._errorListener.bind(self);
@@ -2277,6 +2381,11 @@
    * Setup the audio context when available, or switch to HTML5 Audio mode.
    */
   var setupAudioContext = function() {
+    // If we have already detected that Web Audio isn't supported, don't run this step again.
+    if (!Howler.usingWebAudio) {
+      return;
+    }
+
     // Check if we are using Web Audio and setup the AudioContext if we are.
     try {
       if (typeof AudioContext !== 'undefined') {
@@ -2287,6 +2396,11 @@
         Howler.usingWebAudio = false;
       }
     } catch(e) {
+      Howler.usingWebAudio = false;
+    }
+
+    // If the audio context creation still failed, set using web audio to false.
+    if (!Howler.ctx) {
       Howler.usingWebAudio = false;
     }
 
@@ -2347,7 +2461,7 @@
 /*!
  *  Spatial Plugin - Adds support for stereo and 3D audio where Web Audio is supported.
  *  
- *  howler.js v2.0.15
+ *  howler.js v2.1.0
  *  howlerjs.com
  *
  *  (c) 2013-2018, James Simpson of GoldFire Studios
@@ -2659,7 +2773,7 @@
               sound._panner.positionY.setValueAtTime(y, Howler.ctx.currentTime);
               sound._panner.positionZ.setValueAtTime(z, Howler.ctx.currentTime);
             } else {
-              sound._panner.setOrientation(x, y, z);
+              sound._panner.setPosition(x, y, z);
             }
           }
 

@@ -1,3 +1,20 @@
+## 2.1.0 (December 12, 2018)
+- `ADDED` Howler now maintains a general pool of HTML5 Audio nodes that are unlocked on first user input, which fixes issues with subsequent HTML5 Audio plays not working ([#1008](https://github.com/goldfire/howler.js/pull/1008)).
+- `ADDED` New global `html5PoolSize` option that allows setting the default size of the HTML5 Audio object pool ([#1008](https://github.com/goldfire/howler.js/pull/1008)).
+- `CHANGED` Since locking of audio is no longer mobile-only, `mobileAutoEnable` has been renamed to `autoUnlock`.
+- `FIXED` Playing a sound with locked audio in Chrome or elsewhere could cause `playing()` to return `true` ([#939](https://github.com/goldfire/howler.js/issues/939)).
+- `FIXED` Correctly use `setPosition` instead of `setOrientation` in Safari ([#1033](https://github.com/goldfire/howler.js/pull/1033)).
+- `FIXED` Prevent error on `seek` or `duration` being negative ([#1034](https://github.com/goldfire/howler.js/pull/1034)).
+- `FIXED` Force `fade` values to be numbers to prevent errors ([#1027](https://github.com/goldfire/howler.js/issues/1027)).
+- `FIXED` An `InvalidStateError` could sometimes be thrown in Internet Explorer ([#1052](https://github.com/goldfire/howler.js/pull/1052)).
+- `FIXED` Prevent silent failure of `AudioContext` creation in Safari ([#1021](https://github.com/goldfire/howler.js/issues/1021)).
+- `FIXED` Changing `rate` and `seek` on a paused sound could cause `seek` to end up at the wrong position ([#1088](https://github.com/goldfire/howler.js/issues/1088)).
+- `FIXED` Calling `play` twice before a sound had loaded could lead to both sounds having the same `ID` ([#1060](https://github.com/goldfire/howler.js/issues/1060)).
+
+### Breaking Changes
+* If you are directly setting `Howler.mobileAutoEnable` (it defaults to true), then you should change this to `Howler.autoUnlock`.
+* The new HTML5 Audio object pool shouldn't change anything for 99% of use-cases, but if for whatever reason you don't want to use the pool, you can set `html5PoolSize` to 0 to bypass using the pool.
+
 ## 2.0.15 (August 24, 2018)
 - `FIXED` Errors with touch events and blocked click events in Chrome ([#1003](https://github.com/goldfire/howler.js/issues/1003) [#1011](https://github.com/goldfire/howler.js/issues/1011) [#1025](https://github.com/goldfire/howler.js/issues/1025) [#1026](https://github.com/goldfire/howler.js/issues/1026)).
 - `FIXED` Audio decoding error wasn't always handled correctly ([#1019](https://github.com/goldfire/howler.js/pull/1019)).
