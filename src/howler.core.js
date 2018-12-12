@@ -396,15 +396,20 @@
      */
     _obtainHtml5Audio: function() {
       var self = this || Howler;
-      var audio = null;
 
       // Return the next object from the pool if one exists.
       if (self._html5AudioPool.length) {
         return self._html5AudioPool.pop();
       }
 
-      // Create a new Audio node and throw a warning that it may be locked.
-      console.warn('HTML5 Audio pool exhausted, returning potentially locked audio object.');
+      //.Check if the audio is locked and throw a warning.
+      var testPlay = new Audio().play();
+      if (testPlay && typeof Promise !== 'undefined' && (testPlay instanceof Promise || typeof testPlay.then === 'function')) {
+        testPlay.catch(function() {
+          console.warn('HTML5 Audio pool exhausted, returning potentially locked audio object.');
+        });
+      }
+
       return new Audio();
     },
 
