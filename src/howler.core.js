@@ -802,6 +802,7 @@
       if (self._webAudio) {
         // Fire this when the sound is ready to play to begin Web Audio playback.
         var playWebAudio = function() {
+          self._playLock = false;
           setParams();
           self._refreshBuffer(sound);
 
@@ -825,6 +826,7 @@
           if (!internal) {
             setTimeout(function() {
               self._emit('play', sound._id);
+              self._loadQueue();
             }, 0);
           }
         };
@@ -832,6 +834,9 @@
         if (Howler.state === 'running') {
           playWebAudio();
         } else {
+          self._playLock = true;
+
+          // Wait for the audio context to resume before playing.
           self.once('resume', playWebAudio);
 
           // Cancel the end timer.
@@ -877,6 +882,7 @@
                   sound._paused = true;
                 });
             } else if (!internal) {
+              self._playLock = false;
               setParams();
               self._emit('play', sound._id);
             }
@@ -914,6 +920,8 @@
         if (node.readyState >= 3 || loadedNoReadyState) {
           playHtml5();
         } else {
+          self._playLock = true;
+
           var listener = function() {
             // Begin playback.
             playHtml5();
