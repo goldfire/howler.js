@@ -79,7 +79,7 @@ Player.prototype = {
           // Stop the wave animation.
           wave.container.style.display = 'none';
           bar.style.display = 'block';
-          self.skip('right');
+          self.skip('next');
         },
         onpause: function() {
           // Stop the wave animation.
@@ -90,6 +90,10 @@ Player.prototype = {
           // Stop the wave animation.
           wave.container.style.display = 'none';
           bar.style.display = 'block';
+        },
+        onseek: function() {
+          // Start upating the progress of the track.
+          requestAnimationFrame(self.step.bind(self));
         }
       });
     }

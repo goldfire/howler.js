@@ -116,32 +116,32 @@ Radio.prototype = {
 var radio = new Radio([
   {
     freq: '81.4',
-    title: "Groove Salad",
-    src: ['http://ice1.somafm.com/groovesalad-128-mp3', 'http://ice1.somafm.com/groovesalad-128-aac'],
+    title: "BBC Radio 1",
+    src: 'http://bbcmedia.ic.llnwd.net/stream/bbcmedia_radio1_mf_q',
     howl: null
   },
   {
     freq: '89.9',
-    title: "Secret Agent",
-    src: ['http://ice1.somafm.com/secretagent-128-mp3', 'http://ice1.somafm.com/secretagent-128-aac'],
+    title: "Hip Hop Hits",
+    src: 'http://tunein4.streamguys1.com/hhbeafree5',
     howl: null
   },
   {
     freq: '98.9',
-    title: "Indie Pop",
-    src: ['http://ice1.somafm.com/indiepop-128-mp3', 'http://ice1.somafm.com/indiepop-128-aac'],
+    title: "CNN",
+    src: 'http://tunein.streamguys1.com/cnn',
     howl: null
   },
   {
     freq: '103.3',
-    title: "Police Radio",
-    src: ['http://ice1.somafm.com/sf1033-128-mp3', 'http://ice2.somafm.com/sf1033-64-aac'],
+    title: "80's Hits",
+    src: 'http://tunein4.streamguys1.com/80shtfree1',
     howl: null
   },
   {
     freq: '107.7',
-    title: "The Trip",
-    src: ['http://ice1.somafm.com/thetrip-128-mp3', 'http://ice2.somafm.com/thetrip-64-aac'],
+    title: "Today's Hits",
+    src: 'http://rfcmedia.streamguys1.com/MusicPulse.mp3',
     howl: null
   }
 ]);
