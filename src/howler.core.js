@@ -778,10 +778,13 @@
       var loop = !!(sound._loop || self._sprite[sprite][2]);
       sound._sprite = sprite;
 
+      // Mark the sound as ended instantly so that this async playback
+      // doesn't get grabbed by another call to play while this one waits to start.
+      sound._ended = false;
+
       // Update the parameters of the sound.
       var setParams = function() {
         sound._paused = false;
-        sound._ended = false;
         sound._seek = seek;
         sound._start = start;
         sound._stop = stop;
