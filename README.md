@@ -327,6 +327,8 @@ Unload and destroy a Howl object. This will immediately stop all sounds attached
 `true` if no audio is available.
 #### autoUnlock `Boolean` `true`
 Automatically attempts to enable audio on mobile (iOS, Android, etc) devices and desktop Chrome/Safari.
+#### html5PoolSize `Number` `10`
+Each HTML5 Audio object must be unlocked individually, so we keep a global pool of unlocked nodes to share between all `Howl` instances. This pool gets created on the first user interaction and is set to the size of this property.
 #### autoSuspend `Boolean` `true`
 Automatically suspends the Web Audio AudioContext after 30 seconds of inactivity to decrease processing and energy usage. Automatically resumes upon new playback. Set this property to `false` to disable this behavior.
 #### ctx `Boolean` *`Web Audio Only`*
