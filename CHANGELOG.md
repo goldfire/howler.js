@@ -1,3 +1,7 @@
+## 2.1.1 (December 21, 2018)
+- `FIXED` Regression that broke simple play/pause usage in certain edge cases ([#1101](https://github.com/goldfire/howler.js/issues/1101)).
+- `FIXED` Loading and unloading multiple Howls with the same src could cause them all to unload ([#1103](https://github.com/goldfire/howler.js/issues/1103)).
+
 ## 2.1.0 (December 12, 2018)
 - `ADDED` Howler now maintains a general pool of HTML5 Audio nodes that are unlocked on first user input, which fixes issues with subsequent HTML5 Audio plays not working ([#1008](https://github.com/goldfire/howler.js/pull/1008)).
 - `ADDED` New global `html5PoolSize` option that allows setting the default size of the HTML5 Audio object pool ([#1008](https://github.com/goldfire/howler.js/pull/1008)).
