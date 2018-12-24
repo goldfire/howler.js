@@ -466,14 +466,19 @@
 
         self._suspendTimer = null;
         self.state = 'suspending';
-        self.ctx.suspend().then(function() {
+
+        var handleSuspension = function() {
           self.state = 'suspended';
 
           if (self._resumeAfterSuspend) {
             delete self._resumeAfterSuspend;
             self._autoResume();
           }
-        });
+        };
+
+        // Either suspension is resolved or rejected (i.e. in case of interrupted state of audio context)
+        // the Howler's 'suspending' state needs to be updated.
+        self.ctx.suspend().then(handleSuspension, handleSuspension);
       }, 30000);
 
       return self;
@@ -490,10 +495,10 @@
         return;
       }
 
-      if (self.state === 'running' && self._suspendTimer) {
+      if (self.state === 'running' && self.ctx.state !== 'interrupted' && self._suspendTimer) {
         clearTimeout(self._suspendTimer);
         self._suspendTimer = null;
-      } else if (self.state === 'suspended') {
+      } else if (self.state === 'suspended' || self.state === 'running' && self.ctx.state === 'interrupted') {
         self.ctx.resume().then(function() {
           self.state = 'running';
 
@@ -851,7 +856,7 @@
           }
         };
 
-        if (Howler.state === 'running') {
+        if (Howler.state === 'running' && Howler.ctx.state !== 'interrupted') {
           playWebAudio();
         } else {
           self._playLock = true;
