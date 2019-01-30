@@ -14,6 +14,13 @@
 
   /** Global Methods **/
   /***************************************************************************/
+    /**
+     * Round to x decimal places
+     * @param number
+     */
+    var round = function (number, precision) { // [4]
+        return Math.round(number * (10*precision)) / (10*precision);
+    };
 
   /**
    * Create the global controller. All contained methods and properties apply
@@ -1328,7 +1335,7 @@
         vol = Math.min(1, vol);
 
         // Round to within 2 decimal points.
-        vol = Math.round(vol * 100) / 100;
+        vol = round(vol, 2);
 
         // Change the volume.
         if (self._webAudio) {
@@ -1621,9 +1628,9 @@
           if (self._webAudio) {
             var realTime = self.playing(id) ? Howler.ctx.currentTime - sound._playStart : 0;
             var rateSeek = sound._rateSeek ? sound._rateSeek - sound._seek : 0;
-            return sound._seek + (rateSeek + realTime * Math.abs(sound._rate));
+            return round(sound._seek + (rateSeek + realTime * Math.abs(sound._rate)), 3);
           } else {
-            return sound._node.currentTime;
+            return round(sound._node.currentTime, 3);
           }
         }
       }
@@ -2250,7 +2257,7 @@
       var parent = self._parent;
 
       // Round up the duration to account for the lower precision in HTML5 Audio.
-      parent._duration = Math.ceil(self._node.duration * 10) / 10;
+      parent._duration = round(self._node.duration, 1);
 
       // Setup a sprite if none is defined.
       if (Object.keys(parent._sprite).length === 0) {
@@ -2283,7 +2290,7 @@
     // Check if the buffer has already been cached and use it instead.
     if (cache[url]) {
       // Set the duration from the cache.
-      self._duration = cache[url].duration;
+      self._duration = round(cache[url].duration, 3);
 
       // Load the sound into this Howl.
       loadSound(self);
