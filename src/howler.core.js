@@ -188,7 +188,7 @@
       var self = this || Howler;
 
       // Keeps track of the suspend/resume state of the AudioContext.
-      self.state = self.ctx ? self.ctx.state || 'suspended' : 'suspended';
+      self.state = self.ctx ? self.ctx.state || 'running' : 'running';
 
       // Automatically begin the 30-second suspend process
       self._autoSuspend();
