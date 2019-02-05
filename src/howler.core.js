@@ -584,6 +584,7 @@
       self._onseek = o.onseek ? [{fn: o.onseek}] : [];
       self._onunlock = o.onunlock ? [{fn: o.onunlock}] : [];
       self._onresume = [];
+      self._onwhileplaying = o.onwhileplaying ? [{fn: o.onwhileplaying}] : [];
 
       // Web Audio or HTML5 Audio?
       self._webAudio = Howler.usingWebAudio && !self._html5;
@@ -838,7 +839,7 @@
 
           // Start a new timer if none is present.
           if (timeout !== Infinity) {
-            self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
+            self._setInterval(sound._id);
           }
 
           if (!internal) {
@@ -918,9 +919,12 @@
 
             // Setup the end timer on sprites or listen for the ended event.
             if (sprite !== '__default' || sound._loop) {
-              self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
+              self._setInterval(sound._id);
             } else {
               self._endTimers[sound._id] = function() {
+                var seek = Math.min(timeout, self.seek(id));
+                // trigger whileplaying
+                self._emit('whileplaying', sound._id, [timeout, seek]);
                 // Fire ended on this audio node.
                 self._ended(sound);
 
@@ -1510,7 +1514,7 @@
             // Start a new end timer if sound is already playing.
             if (self._endTimers[id[i]] || !sound._paused) {
               self._clearTimer(id[i]);
-              self._endTimers[id[i]] = setTimeout(self._ended.bind(self, sound), timeout);
+              self._setInterval(id[i]);
             }
 
             self._emit('rate', sound._id);
@@ -1922,7 +1926,7 @@
         sound._playStart = Howler.ctx.currentTime;
 
         var timeout = ((sound._stop - sound._start) * 1000) / Math.abs(sound._rate);
-        self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
+        self._setInterval(sound._id, timeout);
       }
 
       // Mark the node as paused.
@@ -1946,6 +1950,46 @@
       }
 
       return self;
+    },
+
+    /**
+     * Set Interval - calling whileplaying
+     * @param id
+     * @param timeout int
+     * @private
+     */
+    _setInterval: function (id, timeout) {
+        var self = this;
+        var sound = self._soundById(id);
+        var hasUndefinedTimeout = (timeout === undefined);
+
+        // HTML AUDIO HAS FAILED TO START
+        // Windows Phone fix - those devices will start playing eventually.
+        if(self._webAudio === false && sound._node.paused == true) {
+            return;
+        }
+
+        self._endTimers[id] = setInterval(function () {
+            if(hasUndefinedTimeout) {
+                timeout = self.duration(id);
+                if(timeout === Infinity) {
+                    return;
+                }
+            }
+
+            var seek = Math.min(timeout, self.seek(id));
+
+            // trigger whileplaying
+            self._emit('whileplaying', id, [timeout, seek]);
+
+            if(timeout !== 0 && seek === timeout) {
+                self._ended(sound);
+                if(self._webAudio === false) {
+                    sound._node.load();
+                }
+            }
+        }, 100);
+
     },
 
     /**
