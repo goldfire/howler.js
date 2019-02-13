@@ -810,7 +810,7 @@
       };
 
       // End the sound instantly if seek is at the end.
-      if (seek >= stop) {
+      if (stop > 0 && seek >= stop) {
         self._ended(sound);
         return;
       }
