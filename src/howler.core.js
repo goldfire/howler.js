@@ -1667,7 +1667,13 @@
       // If we pass an ID, get the sound and return the sprite length.
       var sound = self._soundById(id);
       if (sound) {
-        duration = self._sprite[sound._sprite][1] / 1000;
+        if(self._webAudio === false){
+          //HTML5
+          duration = sound._node.duration;
+        } else {
+          //WEB AUDIO
+          duration = self._sprite[sound._sprite][1] / 1000;
+        }
       }
 
       return duration;
