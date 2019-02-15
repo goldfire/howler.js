@@ -191,7 +191,9 @@
       self.state = self.ctx ? self.ctx.state || 'suspended' : 'suspended';
 
       // Automatically begin the 30-second suspend process
-      self._autoSuspend();
+      if (!(/iP(hone|od|ad)|Mac/.test(self._navigator && self._navigator.platform))) {
+        self._autoSuspend()
+      }
 
       // Check if audio is available.
       if (!self.usingWebAudio) {
@@ -1937,7 +1939,9 @@
         self._cleanBuffer(sound._node);
 
         // Attempt to auto-suspend AudioContext if no sounds are still playing.
-        Howler._autoSuspend();
+        if (!(/iP(hone|od|ad)|Mac/.test(Howler._navigator && Howler._navigator.platform))) {
+          Howler._autoSuspend()
+        }
       }
 
       // When using a sprite, end the track.
