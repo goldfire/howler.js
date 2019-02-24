@@ -554,7 +554,7 @@
       self._muted = o.mute || false;
       self._loop = o.loop || false;
       self._pool = o.pool || 5;
-      self._preload = (typeof o.preload === 'boolean') ? o.preload : true;
+      self._preload = (typeof o.preload === 'boolean' || typeof o.preload === 'string') ? o.preload : false;
       self._rate = o.rate || 1;
       self._sprite = o.sprite || {};
       self._src = (typeof o.src !== 'string') ? o.src : [o.src];
@@ -607,7 +607,7 @@
       }
 
       // Load the source file unless otherwise specified.
-      if (self._preload) {
+      if (self._preload === true || self._preload === 'auto' || self._preload === 'metadata') {
         self.load();
       }
 
@@ -2194,7 +2194,7 @@
 
         // Setup the new audio node.
         self._node.src = parent._src;
-        self._node.preload = 'auto';
+        self._node.preload = parent._preload === true ? 'auto' : parent._preload;
         self._node.volume = volume * Howler.volume();
 
         // Begin loading the source.
