@@ -554,7 +554,7 @@
       self._muted = o.mute || false;
       self._loop = o.loop || false;
       self._pool = o.pool || 5;
-      self._preload = (typeof o.preload === 'boolean' || typeof o.preload === 'string') ? o.preload : false;
+      self._preload = (typeof o.preload === 'boolean' || typeof o.preload === 'string') ? o.preload : 'none';
       self._rate = o.rate || 1;
       self._sprite = o.sprite || {};
       self._src = (typeof o.src !== 'string') ? o.src : [o.src];
