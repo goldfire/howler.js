@@ -2294,9 +2294,12 @@
       var self = this;
       var parent = self._parent;
       var node = self._node;
+      var buffered = self._progress;
 
       //Get the end time of the last dowloaded range of the audio
-      var buffered = node.buffered.end(node.buffered.length - 1);
+      if(node.buffered.length){
+        buffered = node.buffered.end(node.buffered.length - 1);
+      }
 
       self._progress = (buffered/node.duration)*100;
 
