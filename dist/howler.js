@@ -863,8 +863,6 @@
       } else {
         // Fire this when the sound is ready to play to begin HTML5 Audio playback.
         var playHtml5 = function() {
-          // Set currentTime twice or IE plays garbage if the sound has not been played yet and seek is not 0.
-          node.currentTime = seek;
           node.currentTime = seek;
           node.muted = sound._muted || self._muted || Howler._muted || node.muted;
           node.volume = sound._volume * Howler.volume();
@@ -910,6 +908,8 @@
 
             // Setting rate before playing won't work in IE, so we set it again here.
             node.playbackRate = sound._rate;
+            // IE has a tendency to play garbage if we set the current time before the sound was played.
+            node.currentTime = seek;
 
             // If the node is still paused, then we can assume there was a playback issue.
             if (node.paused) {
