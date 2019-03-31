@@ -89,7 +89,6 @@ Radio.prototype = {
 
     // Stop the sound.
     if (sound) {
-      sound.stop();
       sound.unload();
     }
   },
