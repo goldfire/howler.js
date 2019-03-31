@@ -718,8 +718,8 @@
         // Use the default sound sprite (plays the full audio length).
         sprite = '__default';
 
-        // Check if there is a single paused sound that isn't ended. 
-        // If there is, play that sound. If not, continue as usual.  
+        // Check if there is a single paused sound that isn't ended.
+        // If there is, play that sound. If not, continue as usual.
         if (!self._playLock) {
           var num = 0;
           for (var i=0; i<self._sounds.length; i++) {
@@ -908,6 +908,8 @@
 
             // Setting rate before playing won't work in IE, so we set it again here.
             node.playbackRate = sound._rate;
+            // IE has a tendency to play garbage if we set the current time before the sound was played.
+            node.currentTime = seek;
 
             // If the node is still paused, then we can assume there was a playback issue.
             if (node.paused) {
