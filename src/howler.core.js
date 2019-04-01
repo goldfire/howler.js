@@ -554,7 +554,7 @@
       self._muted = o.mute || false;
       self._loop = o.loop || false;
       self._pool = o.pool || 5;
-      self._preload = (typeof o.preload === 'boolean') ? o.preload : true;
+      self._preload = (typeof o.preload === 'boolean' || typeof o.preload === 'string') ? o.preload : 'none';
       self._rate = o.rate || 1;
       self._sprite = o.sprite || {};
       self._src = (typeof o.src !== 'string') ? o.src : [o.src];
@@ -584,6 +584,7 @@
       self._onseek = o.onseek ? [{fn: o.onseek}] : [];
       self._onunlock = o.onunlock ? [{fn: o.onunlock}] : [];
       self._onresume = [];
+      self._onprogress = o.onprogress ? [{fn:o.onprogress}]:[]
 
       // Web Audio or HTML5 Audio?
       self._webAudio = Howler.usingWebAudio && !self._html5;
@@ -607,7 +608,7 @@
       }
 
       // Load the source file unless otherwise specified.
-      if (self._preload) {
+      if (self._preload === true || self._preload === 'auto' || self._preload === 'metadata') {
         self.load();
       }
 
@@ -2120,6 +2121,20 @@
       node.bufferSource = null;
 
       return self;
+    },
+
+    /**
+     * Get download progress of this sound. The progress is percentage (0 - 100).
+     * @param  {Number} id The id of the sound. If none is passed, return the first.
+     * @returns The download progress of the sound.
+     */
+    progress: function(id=0) {
+      var self = this;
+
+      // Get the sound.
+      var sound = self._sounds[id];
+
+      return sound._progress;
     }
   };
 
@@ -2152,6 +2167,7 @@
       self._paused = true;
       self._ended = true;
       self._sprite = '__default';
+      self._progress = 0;
 
       // Generate a unique ID for this sound.
       self._id = ++Howler._counter;
@@ -2192,9 +2208,13 @@
         self._loadFn = self._loadListener.bind(self);
         self._node.addEventListener(Howler._canPlayEvent, self._loadFn, false);
 
+        //Listen for progress event
+        self._loadFn = self._progressListener.bind(self);
+        self._node.addEventListener('progress', self._loadFn, false);
+
         // Setup the new audio node.
         self._node.src = parent._src;
-        self._node.preload = 'auto';
+        self._node.preload = parent._preload === true ? 'auto' : parent._preload;
         self._node.volume = volume * Howler.volume();
 
         // Begin loading the source.
@@ -2265,6 +2285,27 @@
 
       // Clear the event listener.
       self._node.removeEventListener(Howler._canPlayEvent, self._loadFn, false);
+    },
+
+    /**
+     * HTML5 Audio progress listener callback.
+     */
+    _progressListener: function() {
+      var self = this;
+      var parent = self._parent;
+      var node = self._node;
+      var buffered = self._progress;
+
+      //Get the end time of the last dowloaded range of the audio
+      if(node.buffered.length){
+        buffered = node.buffered.end(node.buffered.length - 1);
+      }
+
+      self._progress = (buffered/node.duration)*100;
+
+      //Return the whole buffered ranges as message, incase people
+      //who are using HTML5 want the buffered ranges.
+      parent._emit('progress', self._id, node.buffered);
     }
   };
 
@@ -2326,6 +2367,27 @@
           self.load();
         }
       };
+
+      var progressListener = function(event){
+        var sounds = self._sounds;
+
+        //Get the last added sound since we are the last added sound.
+        var sound = sounds[sounds.length-1];
+
+        var id = sound._id;
+        var percentage =0;
+
+        //Only get the percentage if we have the total length of the audio.
+        if(event.total){
+          percentage = (event.loaded/event.total)*100;
+        }
+
+        sound._progress = percentage;
+
+        //Return the event as message
+        self._emit('progress', id, event);
+      };
+      xhr.addEventListener('progress', progressListener, false)
       safeXhrSend(xhr);
     }
   };
