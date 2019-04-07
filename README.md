@@ -109,6 +109,14 @@ var sound = new Howl({
     console.log('Finished!');
   }
 });
+
+var songWithLoopControlPoints = new Howl({
+  src: ['song_with_intro.webm', 'song_with_intro.mp3', 'song_with_intro.wav'],
+  loop: {
+    start: introEndSampleNumber / sampleRate,
+    end: songEndSampleNumber / sampleRate,
+  },
+});
 ```
 
 ##### Define and play a sound sprite:
@@ -188,8 +196,10 @@ The sources to the track(s) to be loaded for the sound (URLs or base64 data URIs
 The volume of the specific track, from `0.0` to `1.0`.
 #### html5 `Boolean` `false`
 Set to `true` to force HTML5 Audio. This should be used for large audio files so that you don't have to wait for the full file to be downloaded and decoded before playing.
-#### loop `Boolean` `false`
-Set to `true` to automatically loop the sound forever.
+#### loop `Boolean/Object {}` `false`
+Set to `true` to automatically loop the sound forever, or provide a loop control object containing the following properties:
+* **start**: `Number` `optional` The time in seconds at which the sound should begin playing after looping (defaults to beginning of sound).
+* **end**: `Number` `optional` The time in seconds at which the sound should loop (defaults to end of sound).
 #### preload `Boolean` `true`
 Automatically begin downloading the audio file when the `Howl` is defined.
 #### autoplay `Boolean` `false`
@@ -197,7 +207,7 @@ Set to `true` to automatically start playback when sound is loaded.
 #### mute `Boolean` `false`
 Set to `true` to load the audio muted.
 #### sprite `Object` `{}`
-Define a sound sprite for the sound. The offset and duration are defined in milliseconds. A third (optional) parameter is available to set a sprite as looping. An easy way to generate compatible sound sprites is with [audiosprite](https://github.com/tonistiigi/audiosprite).
+Define a sound sprite for the sound. The offset and duration are defined in milliseconds. A third (optional) parameter is available to set a sprite as looping, note that when using a loop control object the values are in *seconds* not milliseconds. An easy way to generate compatible sound sprites is with [audiosprite](https://github.com/tonistiigi/audiosprite).
 ```javascript
 {
   key: [offset, duration, (loop)]
