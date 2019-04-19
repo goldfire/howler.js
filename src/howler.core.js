@@ -283,7 +283,7 @@
       var self = this || Howler;
 
       // Only run this on certain browsers/devices.
-      var shouldUnlock = /iPhone|iPad|iPod|Android|BlackBerry|BB10|Silk|Mobi|Chrome|Safari/i.test(self._navigator && self._navigator.userAgent);
+      var shouldUnlock = /iPhone|iPad|iPod|Android|BlackBerry|BB10|Silk|Mobi|Chrome|Safari|Firefox/i.test(self._navigator && self._navigator.userAgent);
       if (self._audioUnlocked || !self.ctx || !shouldUnlock) {
         return;
       }
