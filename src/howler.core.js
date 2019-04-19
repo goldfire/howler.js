@@ -282,9 +282,8 @@
     _unlockAudio: function() {
       var self = this || Howler;
 
-      // Only run this on certain browsers/devices.
-      var shouldUnlock = /iPhone|iPad|iPod|Android|BlackBerry|BB10|Silk|Mobi|Chrome|Safari|Firefox/i.test(self._navigator && self._navigator.userAgent);
-      if (self._audioUnlocked || !self.ctx || !shouldUnlock) {
+      // Only run this if Web Audio is supported and it hasn't already been unlocked.
+      if (self._audioUnlocked || !self.ctx) {
         return;
       }
 
