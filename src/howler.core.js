@@ -314,14 +314,18 @@
         // This must occur before WebAudio setup or the source.onended
         // event will not fire.
         for (var i=0; i<self.html5PoolSize; i++) {
-          var audioNode = new Audio();
+          try {
+            var audioNode = new Audio();
 
-          // Mark this Audio object as unlocked to ensure it can get returned
-          // to the unlocked pool when released.
-          audioNode._unlocked = true;
+            // Mark this Audio object as unlocked to ensure it can get returned
+            // to the unlocked pool when released.
+            audioNode._unlocked = true;
 
-          // Add the audio node to the pool.
-          self._releaseHtml5Audio(audioNode);
+            // Add the audio node to the pool.
+            self._releaseHtml5Audio(audioNode);
+          } catch (e) {
+            self.noAudio = true;
+          }
         }
 
         // Loop through any assigned audio nodes and unlock them.
