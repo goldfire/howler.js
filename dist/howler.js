@@ -1,8 +1,8 @@
 /*!
- *  howler.js v2.1.1
+ *  howler.js v2.1.2
  *  howlerjs.com
  *
- *  (c) 2013-2018, James Simpson of GoldFire Studios
+ *  (c) 2013-2019, James Simpson of GoldFire Studios
  *  goldfirestudios.com
  *
  *  MIT License
@@ -282,9 +282,8 @@
     _unlockAudio: function() {
       var self = this || Howler;
 
-      // Only run this on certain browsers/devices.
-      var shouldUnlock = /iPhone|iPad|iPod|Android|BlackBerry|BB10|Silk|Mobi|Chrome|Safari/i.test(self._navigator && self._navigator.userAgent);
-      if (self._audioUnlocked || !self.ctx || !shouldUnlock) {
+      // Only run this if Web Audio is supported and it hasn't already been unlocked.
+      if (self._audioUnlocked || !self.ctx) {
         return;
       }
 
@@ -314,14 +313,18 @@
         // This must occur before WebAudio setup or the source.onended
         // event will not fire.
         for (var i=0; i<self.html5PoolSize; i++) {
-          var audioNode = new Audio();
+          try {
+            var audioNode = new Audio();
 
-          // Mark this Audio object as unlocked to ensure it can get returned
-          // to the unlocked pool when released.
-          audioNode._unlocked = true;
+            // Mark this Audio object as unlocked to ensure it can get returned
+            // to the unlocked pool when released.
+            audioNode._unlocked = true;
 
-          // Add the audio node to the pool.
-          self._releaseHtml5Audio(audioNode);
+            // Add the audio node to the pool.
+            self._releaseHtml5Audio(audioNode);
+          } catch (e) {
+            self.noAudio = true;
+          }
         }
 
         // Loop through any assigned audio nodes and unlock them.
@@ -934,6 +937,12 @@
           }
         };
 
+        // If this is streaming audio, make sure the src is set and load again.
+        if (node.src === 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA') {
+          node.src = self._src;
+          node.load();
+        }
+
         // Play immediately if ready, or wait for the 'canplaythrough'e vent.
         var loadedNoReadyState = (window && window.ejecta) || (!node.readyState && Howler._navigator.isCocoonJS);
         if (node.readyState >= 3 || loadedNoReadyState) {
@@ -1084,6 +1093,11 @@
             } else if (!isNaN(sound._node.duration) || sound._node.duration === Infinity) {
               sound._node.currentTime = sound._start || 0;
               sound._node.pause();
+
+              // If this is a live stream, stop download once the audio is stopped.
+              if (sound._node.duration === Infinity) {
+                self._clearSound(sound._node);
+              }
             }
           }
 
@@ -1699,10 +1713,7 @@
         // Remove the source or disconnect.
         if (!self._webAudio) {
           // Set the source to 0-second silence to stop any downloading (except in IE).
-          var checkIE = /MSIE |Trident\//.test(Howler._navigator && Howler._navigator.userAgent);
-          if (!checkIE) {
-            sounds[i]._node.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
-          }
+          self._clearSound(sounds[i]._node);
 
           // Remove any event listeners.
           sounds[i]._node.removeEventListener('error', sounds[i]._errorFn, false);
@@ -2120,6 +2131,17 @@
       node.bufferSource = null;
 
       return self;
+    },
+
+    /**
+     * Set the source to a 0-second silence to stop any downloading (except in IE).
+     * @param  {Object} node Audio node to clear.
+     */
+    _clearSound: function(node) {
+      var checkIE = /MSIE |Trident\//.test(Howler._navigator && Howler._navigator.userAgent);
+      if (!checkIE) {
+        node.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
+      }
     }
   };
 
@@ -2479,10 +2501,10 @@
 /*!
  *  Spatial Plugin - Adds support for stereo and 3D audio where Web Audio is supported.
  *  
- *  howler.js v2.1.1
+ *  howler.js v2.1.2
  *  howlerjs.com
  *
- *  (c) 2013-2018, James Simpson of GoldFire Studios
+ *  (c) 2013-2019, James Simpson of GoldFire Studios
  *  goldfirestudios.com
  *
  *  MIT License
