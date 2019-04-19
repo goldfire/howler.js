@@ -292,7 +292,7 @@ Check if a sound is currently playing or not, returns a `Boolean`. If no sound I
 * **id**: `Number` The sound ID to check.
 
 #### duration([id])
-Get the duration of the audio source. Will return 0 until after the `load` event fires.
+Get the duration of the audio source (in seconds). Will return 0 until after the `load` event fires.
 * **id**: `Number` `optional` The sound ID to check. Passing an ID will return the duration of the sprite being played on this instance; otherwise, the full source duration is returned.
 
 #### on(event, function, [id])
@@ -478,6 +478,6 @@ ffmpeg -i sound1.wav -dash 1 sound1.webm
 
 ### License
 
-Copyright (c) 2013-2018 [James Simpson](https://twitter.com/GoldFireStudios) and [GoldFire Studios, Inc.](http://goldfirestudios.com)
+Copyright (c) 2013-2019 [James Simpson](https://twitter.com/GoldFireStudios) and [GoldFire Studios, Inc.](http://goldfirestudios.com)
 
 Released under the [MIT License](https://github.com/goldfire/howler.js/blob/master/LICENSE.md).
