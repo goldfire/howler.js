@@ -1260,7 +1260,6 @@
      */
     fade: function(from, to, len, id) {
       var self = this;
-
       // If the sound hasn't loaded, add it to the load queue to fade when capable.
       if (self._state !== 'loaded' || self._playLock) {
         self._queue.push({
@@ -2101,6 +2100,8 @@
         sound._node.bufferSource.connect(sound._node);
       }
 
+      sound._node.bufferSource.connect(sound._fxSend);
+
       // Setup looping and playback rate.
       sound._node.bufferSource.loop = sound._loop;
       if (sound._loop) {
@@ -2202,6 +2203,8 @@
         self._node.gain.setValueAtTime(volume, Howler.ctx.currentTime);
         self._node.paused = true;
         self._node.connect(Howler.masterGain);
+
+        self._fxSend = (typeof Howler.ctx.createGain === 'undefined') ? Howler.ctx.createGainNode() : Howler.ctx.createGain();
       } else {
         // Get an unlocked Audio object from the pool.
         self._node = Howler._obtainHtml5Audio();
