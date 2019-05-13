@@ -10,6 +10,8 @@
     <button class="button" id="webaudio">RUN WEB AUDIO TESTS</button>
     <button class="button" id="html5">RUN HTML5 TESTS</button>
     <button class="button" id="spatial">RUN SPATIAL TESTS</button>
+    <button class="button" id="convolver">RUN CONVOLVER TESTS</button>
+    <button class="button" id="filters">RUN FILTER TESTS</button>
   </div>
 
   <script>
@@ -23,6 +25,14 @@
 
     document.getElementById('spatial').onclick = function() {
       window.location = 'spatial.html';
+    };
+
+    document.getElementById('convolver').onclick = function() {
+      window.location = 'convolver.html';
+    };
+
+    document.getElementById('filters').onclick = function() {
+      window.location = 'filters.html';
     };
   </script>
 </body>
