@@ -2218,9 +2218,14 @@
 
         // Setup the new audio node.
         while (self._node.firstChild) {
+          // If this is a reused <audio> element to which we already added a
+          //  <source> child, remove the child and clear the existing src attribute.
           self._node.removeAttribute('src');
           self._node.removeChild(self._node.firstChild);
         }
+        // Use a <source> child element so that we can specify source type.
+        //  This fixes an issue with Safari where it won't load audio if the src URL
+        //  lacks an extension identifying the type of the audio e.g. ".mp3".
         var sourceElem = document.createElement('source');
         sourceElem.src = parent._src;
         if (parent._format) {
