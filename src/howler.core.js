@@ -563,6 +563,7 @@
       self._src = (typeof o.src !== 'string') ? o.src : [o.src];
       self._volume = o.volume !== undefined ? o.volume : 1;
       self._xhrWithCredentials = o.xhrWithCredentials || false;
+      self._xhrHeaders = o._xhrHeaders || {};
 
       // Setup all other default properties.
       self._duration = 0;
@@ -2327,6 +2328,11 @@
       var xhr = new XMLHttpRequest();
       xhr.open('GET', url, true);
       xhr.withCredentials = self._xhrWithCredentials;
+
+      for (var key in self._xhrHeaders) {
+        xhr.setRequestHeader(key, self._xhrHeaders[key]);
+      }
+
       xhr.responseType = 'arraybuffer';
       xhr.onload = function() {
         // Make sure we get a successful response back.
