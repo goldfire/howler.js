@@ -193,9 +193,8 @@
   /**
    * Create a new panner node and save it on the sound.
    * @param  {Sound} sound Specific sound to setup panning on.
-   * @param {String} type Type of panner to create: 'stereo' or 'spatial'.
    */
-  var setupPanner = function(sound, type) {
+  var setupPanner = function(sound) {
     sound._panner = Howler.ctx.createStereoPanner();
     sound._panner.pan.setValueAtTime(sound._stereo, Howler.ctx.currentTime);
     sound._panner.connect(sound._node);
