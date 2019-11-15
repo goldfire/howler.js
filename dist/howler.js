@@ -721,8 +721,8 @@
         // Use the default sound sprite (plays the full audio length).
         sprite = '__default';
 
-        // Check if there is a single paused sound that isn't ended. 
-        // If there is, play that sound. If not, continue as usual.  
+        // Check if there is a single paused sound that isn't ended.
+        // If there is, play that sound. If not, continue as usual.
         if (!self._playLock) {
           var num = 0;
           for (var i=0; i<self._sounds.length; i++) {
@@ -2500,7 +2500,7 @@
 
 /*!
  *  Spatial Plugin - Adds support for stereo and 3D audio where Web Audio is supported.
- *  
+ *
  *  howler.js v2.1.2
  *  howlerjs.com
  *
@@ -2515,6 +2515,10 @@
   'use strict';
 
   // Setup default properties.
+  var HowlerGlobal = window.HowlerGlobal;
+  var Howl = window.Howl;
+  var Sound = window.Sound;
+
   HowlerGlobal.prototype._pos = [0, 0, 0];
   HowlerGlobal.prototype._orientation = [0, 0, -1, 0, 1, 0];
 
