@@ -117,9 +117,9 @@
         self.ctx.listener.forwardX.setTargetAtTime(x, Howler.ctx.currentTime, 0.1);
         self.ctx.listener.forwardY.setTargetAtTime(y, Howler.ctx.currentTime, 0.1);
         self.ctx.listener.forwardZ.setTargetAtTime(z, Howler.ctx.currentTime, 0.1);
-        self.ctx.listener.upX.setTargetAtTime(x, Howler.ctx.currentTime, 0.1);
-        self.ctx.listener.upY.setTargetAtTime(y, Howler.ctx.currentTime, 0.1);
-        self.ctx.listener.upZ.setTargetAtTime(z, Howler.ctx.currentTime, 0.1);
+        self.ctx.listener.upX.setTargetAtTime(xUp, Howler.ctx.currentTime, 0.1);
+        self.ctx.listener.upY.setTargetAtTime(yUp, Howler.ctx.currentTime, 0.1);
+        self.ctx.listener.upZ.setTargetAtTime(zUp, Howler.ctx.currentTime, 0.1);
       } else {
         self.ctx.listener.setOrientation(x, y, z, xUp, yUp, zUp);
       }
