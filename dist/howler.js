@@ -1,5 +1,5 @@
 /*!
- *  howler.js v2.1.2
+ *  howler.js v2.1.2-rsalpha1
  *  howlerjs.com
  *
  *  (c) 2013-2019, James Simpson of GoldFire Studios
@@ -624,6 +624,7 @@
     load: function() {
       var self = this;
       var url = null;
+      var type = '';
 
       // If no audio is available, quit immediately.
       if (Howler.noAudio) {
@@ -638,11 +639,11 @@
 
       // Loop through the sources and pick the first one that is compatible.
       for (var i=0; i<self._src.length; i++) {
-        var ext, str;
+        var str;
 
         if (self._format && self._format[i]) {
           // If an extension was specified, use that instead.
-          ext = self._format[i];
+          type = self._format[i];
         } else {
           // Make sure the source is a string.
           str = self._src[i];
@@ -652,23 +653,23 @@
           }
 
           // Extract the file extension from the URL or base64 data URI.
-          ext = /^data:audio\/([^;,]+);/i.exec(str);
-          if (!ext) {
-            ext = /\.([^.]+)$/.exec(str.split('?', 1)[0]);
+          type = /^data:audio\/([^;,]+);/i.exec(str);
+          if (!type) {
+            type = /\.([^.]+)$/.exec(str.split('?', 1)[0]);
           }
 
-          if (ext) {
-            ext = ext[1].toLowerCase();
+          if (type) {
+            type = type[1].toLowerCase();
           }
         }
 
         // Log a warning if no extension was found.
-        if (!ext) {
+        if (!type) {
           console.warn('No file extension was found. Consider using the "format" property or specify an extension.');
         }
 
         // Check if this extension is available.
-        if (ext && Howler.codecs(ext)) {
+        if (type && Howler.codecs(type)) {
           url = self._src[i];
           break;
         }
@@ -680,6 +681,7 @@
       }
 
       self._src = url;
+      self._format = type;
       self._state = 'loading';
 
       // If the hosting page is HTTPS and the source isn't,
@@ -721,8 +723,8 @@
         // Use the default sound sprite (plays the full audio length).
         sprite = '__default';
 
-        // Check if there is a single paused sound that isn't ended. 
-        // If there is, play that sound. If not, continue as usual.  
+        // Check if there is a single paused sound that isn't ended.
+        // If there is, play that sound. If not, continue as usual.
         if (!self._playLock) {
           var num = 0;
           for (var i=0; i<self._sounds.length; i++) {
@@ -2202,7 +2204,7 @@
         self._node.gain.setValueAtTime(volume, Howler.ctx.currentTime);
         self._node.paused = true;
         self._node.connect(Howler.masterGain);
-      } else {
+      } else if (!Howler.noAudio) {
         // Get an unlocked Audio object from the pool.
         self._node = Howler._obtainHtml5Audio();
 
@@ -2215,7 +2217,22 @@
         self._node.addEventListener(Howler._canPlayEvent, self._loadFn, false);
 
         // Setup the new audio node.
-        self._node.src = parent._src;
+        while (self._node.firstChild) {
+          // If this is a reused <audio> element to which we already added a
+          //  <source> child, remove the child and clear the existing src attribute.
+          self._node.removeAttribute('src');
+          self._node.removeChild(self._node.firstChild);
+        }
+        // Use a <source> child element so that we can specify source type.
+        //  This fixes an issue with Safari where it won't load audio if the src URL
+        //  lacks an extension identifying the type of the audio e.g. ".mp3".
+        var sourceElem = document.createElement('source');
+        sourceElem.src = parent._src;
+        if (parent._format) {
+          sourceElem.type = 'audio/' + parent._format;
+        }
+        self._node.appendChild(sourceElem);
+
         self._node.preload = 'auto';
         self._node.volume = volume * Howler.volume();
 
@@ -2501,7 +2518,7 @@
 /*!
  *  Spatial Plugin - Adds support for stereo and 3D audio where Web Audio is supported.
  *  
- *  howler.js v2.1.2
+ *  howler.js v2.1.2-rsalpha1
  *  howlerjs.com
  *
  *  (c) 2013-2019, James Simpson of GoldFire Studios
