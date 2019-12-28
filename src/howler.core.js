@@ -2214,7 +2214,50 @@
         self._node.addEventListener(Howler._canPlayEvent, self._loadFn, false);
 
         // Setup the new audio node.
-        self._node.src = parent._src;
+        // Loop through available src array and pick a compatible source
+        // Similar to what's being done at the load method
+        for (var i=0; i<parent._src.length; i++) {
+          var ext, str;
+
+          if (parent._format && parent._format[i]) {
+            // If an extension was specified, use that instead.
+            ext = parent._format[i];
+          } else {
+            // Make sure the source is a string.
+            str = parent._src[i];
+            if (typeof str !== 'string') {
+            parent._emit('loaderror', null, 'Non-string found in selected audio sources - ignoring.');
+            continue;
+            }
+
+            // Extract the file extension from the URL or base64 data URI.
+            ext = /^data:audio\/([^;,]+);/i.exec(str);
+            if (!ext) {
+            ext = /\.([^.]+)$/.exec(str.split('?', 1)[0]);
+            }
+
+            if (ext) {
+            ext = ext[1].toLowerCase();
+            }
+          }
+
+          // Log a warning if no extension was found.
+          if (!ext) {
+            console.warn('No file extension was found. Consider using the "format" property or specify an extension.');
+          }
+
+          // Check if this extension is available.
+          if (ext && Howler.codecs(ext)) {
+            self._node.src = parent._src[i];
+            break;
+          }
+        }
+
+        if (!self._node.src) {
+          parent._emit('loaderror', null, 'No codec support for selected audio sources.');
+          return;
+        }
+        
         self._node.preload = 'auto';
         self._node.volume = volume * Howler.volume();
 
