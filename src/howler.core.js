@@ -2258,7 +2258,7 @@
           return;
         }
         
-        self._node.preload = 'auto';
+        self._node.preload = parent._preload;
         self._node.volume = volume * Howler.volume();
 
         // Begin loading the source.
