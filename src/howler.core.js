@@ -563,6 +563,12 @@
       self._src = (typeof o.src !== 'string') ? o.src : [o.src];
       self._volume = o.volume !== undefined ? o.volume : 1;
       self._xhrWithCredentials = o.xhrWithCredentials || false;
+      
+      if (o.outputDeviceId) {
+        self.setOutputDevice(o.outputDeviceId)
+      } else {
+        self._outputDeviceId = null;
+      }
 
       // Setup all other default properties.
       self._duration = 0;
@@ -615,6 +621,19 @@
       }
 
       return self;
+    },
+
+    /**
+     * Set the device to play sound from.  Only works with html5.
+     * @param {string} deviceId
+     */
+    setOutputDevice: function(deviceId) {
+      var self = this;
+      if (self._html5) {
+        self._outputDeviceId = deviceId;
+      } else {
+        console.warn('setOutputDevice is only supported on html5');
+      }
     },
 
     /**
@@ -819,6 +838,12 @@
 
       // Begin the actual playback.
       var node = sound._node;
+
+      // Play out of the specified output device if one has been specified.  Otherwise play from default output
+      if (self._outputDeviceId) {
+        node.setSinkId(self._outputDeviceId);
+      }
+      
       if (self._webAudio) {
         // Fire this when the sound is ready to play to begin Web Audio playback.
         var playWebAudio = function() {
