@@ -5,6 +5,8 @@
 
 Additional information, live demos and a user showcase are available at [howlerjs.com](https://howlerjs.com).
 
+Follow on Twitter for howler.js and development-related discussion: [@GoldFireStudios](https://twitter.com/goldfirestudios).
+
 ### Features
 * Single API for all audio needs
 * Defaults to Web Audio API and falls back to HTML5 Audio
@@ -287,9 +289,9 @@ Get/set whether to loop the sound or group. This method can optionally take 0, 1
 #### state()
 Check the load status of the `Howl`, returns a `unloaded`, `loading` or `loaded`.
 
-#### playing(id)
+#### playing([id])
 Check if a sound is currently playing or not, returns a `Boolean`. If no sound ID is passed, check if any sound in the `Howl` group is playing.
-* **id**: `Number` The sound ID to check.
+* **id**: `Number` `optional` The sound ID to check.
 
 #### duration([id])
 Get the duration of the audio source (in seconds). Will return 0 until after the `load` event fires.
