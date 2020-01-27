@@ -838,11 +838,6 @@
             sound._loop ? node.bufferSource.start(0, seek, 86400) : node.bufferSource.start(0, seek, duration);
           }
 
-          // Start a new timer if none is present.
-          if (timeout !== Infinity) {
-            self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
-          }
-
           if (!internal) {
             setTimeout(function () {
               self._emit('play', sound._id);
@@ -916,20 +911,6 @@
               self._emit('playerror', sound._id, 'Playback was unable to start. This is most commonly an issue ' +
                 'on mobile devices and Chrome where playback was not within a user interaction.');
               return;
-            }
-
-            // Setup the end timer on sprites or listen for the ended event.
-            if (sprite !== '__default' || sound._loop) {
-              self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
-            } else {
-              self._endTimers[sound._id] = function () {
-                // Fire ended on this audio node.
-                self._ended(sound);
-
-                // Clear this listener.
-                node.removeEventListener('ended', self._endTimers[sound._id], false);
-              };
-              node.addEventListener('ended', self._endTimers[sound._id], false);
             }
           } catch (err) {
             self._emit('playerror', sound._id, err);
@@ -1515,17 +1496,6 @@
               sound._node.playbackRate = rate;
             }
 
-            // Reset the timers.
-            var seek = self.seek(id[i]);
-            var duration = ((self._sprite[sound._sprite][0] + self._sprite[sound._sprite][1]) / 1000) - seek;
-            var timeout = (duration * 1000) / Math.abs(sound._rate);
-
-            // Start a new end timer if sound is already playing.
-            if (self._endTimers[id[i]] || !sound._paused) {
-              self._clearTimer(id[i]);
-              self._endTimers[id[i]] = setTimeout(self._ended.bind(self, sound), timeout);
-            }
-
             self._emit('rate', sound._id);
           }
         }
@@ -1930,9 +1900,6 @@
         sound._seek = sound._start || 0;
         sound._rateSeek = 0;
         sound._playStart = Howler.ctx.currentTime;
-
-        var timeout = ((sound._stop - sound._start) * 1000) / Math.abs(sound._rate);
-        self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
       }
 
       // Mark the node as paused.
