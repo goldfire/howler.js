@@ -563,7 +563,7 @@
       self._src = (typeof o.src !== 'string') ? o.src : [o.src];
       self._volume = o.volume !== undefined ? o.volume : 1;
       self._xhrWithCredentials = o.xhrWithCredentials || false;
-      self._xhrHeaders = o.headers || null;
+      self._xhrHeaders = o.xhrHeaders || null;
 
       // Setup all other default properties.
       self._duration = 0;

@@ -213,6 +213,15 @@ The size of the inactive sounds pool. Once sounds are stopped or finish playing,
 howler.js automatically detects your file format from the extension, but you may also specify a format in situations where extraction won't work (such as with a SoundCloud stream).
 #### xhrWithCredentials `Boolean` `false`
 Whether or not to enable the `withCredentials` flag on XHR requests used to fetch audio files when using Web Audio API ([see reference](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/withCredentials)).
+#### xhrHeaders `Object` `null`
+When using Web Audio, howler.js uses an XHR request to load the audio files. If you need to send custom headers with this request, include them with this parameter. For example:
+```javascript
+{
+  xhrHeaders: {
+    Authorization: 'Bearer:' + token,
+  }
+}
+```
 #### onload `Function`
 Fires when the sound is loaded.
 #### onloaderror `Function`
