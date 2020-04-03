@@ -201,9 +201,11 @@ Set to `true` to load the audio muted.
 #### sprite `Object` `{}`
 Define a sound sprite for the sound. The offset and duration are defined in milliseconds. A third (optional) parameter is available to set a sprite as looping. An easy way to generate compatible sound sprites is with [audiosprite](https://github.com/tonistiigi/audiosprite).
 ```javascript
-{
-  key: [offset, duration, (loop)]
-}
+new Howl({
+  sprite: {
+    key1: [offset, duration, (loop)]
+  },
+});
 ```
 #### rate `Number` `1.0`
 The rate of playback. 0.5 to 4.0, with 1.0 being normal speed.
@@ -216,11 +218,11 @@ Whether or not to enable the `withCredentials` flag on XHR requests used to fetc
 #### xhrHeaders `Object` `null`
 When using Web Audio, howler.js uses an XHR request to load the audio files. If you need to send custom headers with this request, include them with this parameter. For example:
 ```javascript
-{
+new Howl({
   xhrHeaders: {
     Authorization: 'Bearer:' + token,
   }
-}
+});
 ```
 #### onload `Function`
 Fires when the sound is loaded.
