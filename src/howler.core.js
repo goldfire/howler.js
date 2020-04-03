@@ -151,6 +151,20 @@
     },
 
     /**
+     * Handle stopping all sounds globally.
+     */
+    stop: function() {
+      var self = this || Howler;
+
+      // Loop through all Howls and stop them.
+      for (var i=0; i<self._howls.length; i++) {
+        self._howls[i].stop();
+      }
+
+      return self;
+    },
+
+    /**
      * Unload and destroy all currently loaded Howl objects.
      * @return {Howler}
      */

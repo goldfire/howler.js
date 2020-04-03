@@ -360,6 +360,9 @@ Mute or unmute all sounds.
 Get/set the global volume for all sounds, relative to their own volume.
 * **volume**: `Number` `optional` Volume from `0.0` to `1.0`.
 
+#### stop()
+Stop all sounds and reset their seek position to the beginning.
+
 #### codecs(ext)
 Check supported audio codecs. Returns `true` if the codec is supported in the current browser.
 * **ext**: `String` File extension. One of: "mp3", "mpeg", "opus", "ogg", "oga", "wav", "aac", "caf", m4a", "mp4", "weba", "webm", "dolby", "flac".
