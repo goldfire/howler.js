@@ -90,7 +90,7 @@ Sprite.prototype = {
   },
 
   /**
-   * Called on window resize to correctly psotion and size the click overlays.
+   * Called on window resize to correctly position and size the click overlays.
    */
   resize: function() {
     var self = this;
