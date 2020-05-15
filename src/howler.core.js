@@ -326,7 +326,7 @@
         // to the WebAudio API which only needs a single activation.
         // This must occur before WebAudio setup or the source.onended
         // event will not fire.
-        for (var i=0; i<self.html5PoolSize; i++) {
+        while (self._html5AudioPool.length < self.html5PoolSize) {
           try {
             var audioNode = new Audio();
 
@@ -338,6 +338,7 @@
             self._releaseHtml5Audio(audioNode);
           } catch (e) {
             self.noAudio = true;
+            break;
           }
         }
 
