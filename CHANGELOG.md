@@ -1,7 +1,7 @@
 ## 2.2.0 (May 17, 2020)
 - `ADDED` New `xhr` property that allows setting custom headers (such as for auth), changing the `withCredentials` setting and specifying the HTTP method for the request. These only apply to Web Audio ([#997](https://github.com/goldfire/howler.js/pull/997)).
 - `ADDED` New `Howler.stop()` global stop method to stop all sounds at once ([#1308](https://github.com/goldfire/howler.js/issues/1308)).
-- `ADDED` Support for `m48` audio format ([#1170](https://github.com/goldfire/howler.js/pull/1170)).
+- `ADDED` Support for `m4b` audio format ([#1170](https://github.com/goldfire/howler.js/pull/1170)).
 - `CHANGED` Allow passing `metadata` string to `preload` option to only preload the metadata ([#1140](https://github.com/goldfire/howler.js/pull/1140)).
 - `FIXED` Correctly handle AudioContext interrupted state causing stuck `suspending` state ([#1106](https://github.com/goldfire/howler.js/pull/1106)).
 - `FIXED` The `volume` method would sometimes return incorrect values when using very short `fade` lengths ([#1045](https://github.com/goldfire/howler.js/pull/1045)).
