@@ -1290,8 +1290,8 @@
       }
 
       // Make sure the to/from/len values are numbers.
-      from = parseFloat(from);
-      to = parseFloat(to);
+      from = Math.min(Math.max(0, parseFloat(from)), 1);
+      to = Math.min(Math.max(0, parseFloat(to)), 1);
       len = parseFloat(len);
 
       // Set the volume to the start position.
@@ -1354,7 +1354,7 @@
         vol += diff * tick;
 
         // Make sure the volume is in the right bounds.
-        if(diff < 0) {
+        if (diff < 0) {
           vol = Math.max(to, vol);
         } else {
           vol = Math.min(to, vol);
@@ -1380,7 +1380,7 @@
           clearInterval(sound._interval);
           sound._interval = null;
           sound._fadeTo = null;
-          self.volume(to, sound._id); //does this line has a sense now?
+          self.volume(to, sound._id);
           self._emit('fade', sound._id);
         }
       }, stepLen);
