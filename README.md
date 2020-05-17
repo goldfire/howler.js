@@ -192,8 +192,8 @@ The volume of the specific track, from `0.0` to `1.0`.
 Set to `true` to force HTML5 Audio. This should be used for large audio files so that you don't have to wait for the full file to be downloaded and decoded before playing.
 #### loop `Boolean` `false`
 Set to `true` to automatically loop the sound forever.
-#### preload `Boolean` `true`
-Automatically begin downloading the audio file when the `Howl` is defined.
+#### preload `Boolean|String` `true`
+Automatically begin downloading the audio file when the `Howl` is defined. If using HTML5 Audio, you can set this to `'metadata'` to only preload the file's metadata (to get its duration without download the entire file, for example). 
 #### autoplay `Boolean` `false`
 Set to `true` to automatically start playback when sound is loaded.
 #### mute `Boolean` `false`

@@ -572,7 +572,7 @@
       self._muted = o.mute || false;
       self._loop = o.loop || false;
       self._pool = o.pool || 5;
-      self._preload = (typeof o.preload === 'boolean' || typeof o.preload === 'string') ? o.preload : 'none';
+      self._preload = (typeof o.preload === 'boolean' || o.preload === 'metadata') ? o.preload : true;
       self._rate = o.rate || 1;
       self._sprite = o.sprite || {};
       self._src = (typeof o.src !== 'string') ? o.src : [o.src];
@@ -626,7 +626,7 @@
       }
 
       // Load the source file unless otherwise specified.
-      if (self._preload === true || self._preload === 'auto' || self._preload === 'metadata') {
+      if (self._preload && self._preload !== 'none') {
         self.load();
       }
 
