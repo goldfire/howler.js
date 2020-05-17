@@ -365,7 +365,7 @@ Stop all sounds and reset their seek position to the beginning.
 
 #### codecs(ext)
 Check supported audio codecs. Returns `true` if the codec is supported in the current browser.
-* **ext**: `String` File extension. One of: "mp3", "mpeg", "opus", "ogg", "oga", "wav", "aac", "caf", m4a", "mp4", "weba", "webm", "dolby", "flac".
+* **ext**: `String` File extension. One of: "mp3", "mpeg", "opus", "ogg", "oga", "wav", "aac", "caf", "m4a", "m4b", "mp4", "weba", "webm", "dolby", "flac".
 
 #### unload()
 Unload and destroy all currently loaded Howl objects. This will immediately stop all sounds and remove them from cache.
@@ -482,7 +482,7 @@ var dolbySound = new Howl({
 Howler.js provides audio support for the new [Facebook Instant Games](https://developers.facebook.com/docs/games/instant-games/engine-recommendations) platform. If you encounter any issues while developing for Instant Games, open an issue with the tag `[IG]`.
 
 ### Format Recommendations
-Howler.js supports a wide array of audio codecs that have varying browser support ("mp3", "opus", "ogg", "wav", "aac", "m4a", "mp4", "webm", ...), but if you want full browser coverage you still need to use at least two of them. If your goal is to have the best balance of small filesize and high quality, based on extensive production testing, your best bet is to default to `webm` and fallback to `mp3`. `webm` has nearly full browser coverage with a great combination of compression and quality. You'll need the `mp3` fallback for Internet Explorer.
+Howler.js supports a wide array of audio codecs that have varying browser support ("mp3", "opus", "ogg", "wav", "aac", "m4a", "m4b", "mp4", "webm", ...), but if you want full browser coverage you still need to use at least two of them. If your goal is to have the best balance of small filesize and high quality, based on extensive production testing, your best bet is to default to `webm` and fallback to `mp3`. `webm` has nearly full browser coverage with a great combination of compression and quality. You'll need the `mp3` fallback for Internet Explorer.
 
 It is important to remember that howler.js selects the first compatible sound from your array of sources. So if you want `webm` to be used before `mp3`, you need to put the sources in that order.
 
