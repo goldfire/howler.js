@@ -1,3 +1,16 @@
+## 2.2.0 (May 17, 2020)
+- `ADDED` New `xhr` property that allows setting custom headers (such as for auth), changing the `withCredentials` setting and specifying the HTTP method for the request. These only apply to Web Audio ([#997](https://github.com/goldfire/howler.js/pull/997)).
+- `ADDED` New `Howler.stop()` global stop method to stop all sounds at once ([#1308](https://github.com/goldfire/howler.js/issues/1308)).
+- `ADDED` Support for `m48` audio format ([#1170](https://github.com/goldfire/howler.js/pull/1170)).
+- `CHANGED` Allow passing `metadata` string to `preload` option to only preload the metadata ([#1140](https://github.com/goldfire/howler.js/pull/1140)).
+- `FIXED` Correctly handle AudioContext interrupted state causing stuck `suspending` state ([#1106](https://github.com/goldfire/howler.js/pull/1106)).
+- `FIXED` The `volume` method would sometimes return incorrect values when using very short `fade` lengths ([#1045](https://github.com/goldfire/howler.js/pull/1045)).
+- `FIXED` Error that `HowlerGlobal` was not defined when using `jsdom-global` ([#1331](https://github.com/goldfire/howler.js/pull/1331)).
+- `FIXED` Memory leak in Safari when an audio context can't be unlocked ([#1338](https://github.com/goldfire/howler.js/pull/1338)).
+
+### Breaking Changes
+* The `xhrWithCredentials` property is now included in the `xhr` property object with key `withCredentials`.
+
 ## 2.1.3 (December 24, 2019)
 - `FIXED` Don't try to obtain HTML5 audio if there is no audio support ([#1191](https://github.com/goldfire/howler.js/issues/1191)).
 - `FIXED` The x/y/z orientations for the top of the listener weren't being set properly ([#1221](https://github.com/goldfire/howler.js/pull/1221)).
