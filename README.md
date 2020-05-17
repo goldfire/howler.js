@@ -213,14 +213,24 @@ The rate of playback. 0.5 to 4.0, with 1.0 being normal speed.
 The size of the inactive sounds pool. Once sounds are stopped or finish playing, they are marked as ended and ready for cleanup. We keep a pool of these to recycle for improved performance. Generally this doesn't need to be changed. It is important to keep in mind that when a sound is paused, it won't be removed from the pool and will still be considered active so that it can be resumed later.
 #### format `Array` `[]`
 howler.js automatically detects your file format from the extension, but you may also specify a format in situations where extraction won't work (such as with a SoundCloud stream).
-#### xhrWithCredentials `Boolean` `false`
-Whether or not to enable the `withCredentials` flag on XHR requests used to fetch audio files when using Web Audio API ([see reference](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/withCredentials)).
-#### xhrHeaders `Object` `null`
-When using Web Audio, howler.js uses an XHR request to load the audio files. If you need to send custom headers with this request, include them with this parameter. For example:
+#### xhr `Object` `null`
+When using Web Audio, howler.js uses an XHR request to load the audio files. If you need to send custom headers, set the HTTP method or enable `withCredentials` ([see reference](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/withCredentials)), include them with this parameter. Each is optional (method defaults to `GET`, headers default to `null` and withCredentials defaults to `false`). For example:
 ```javascript
+// Using each of the properties.
 new Howl({
-  xhrHeaders: {
-    Authorization: 'Bearer:' + token,
+  xhr: {
+    method: 'POST',
+    headers: {
+      Authorization: 'Bearer:' + token,
+    },
+    withCredentials: true,
+  }
+});
+
+// Only changing the method.
+new Howl({
+  xhr: {
+    method: 'POST',
   }
 });
 ```

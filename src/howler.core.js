@@ -483,6 +483,7 @@
         self._suspendTimer = null;
         self.state = 'suspending';
 
+        // Handle updating the state of the audio context after suspending.
         var handleSuspension = function() {
           self.state = 'suspended';
 
@@ -492,8 +493,8 @@
           }
         };
 
-        // Either suspension is resolved or rejected (i.e. in case of interrupted state of audio context)
-        // the Howler's 'suspending' state needs to be updated.
+        // Either the state gets suspended or it is interrupted.
+        // Either way, we need to update the state to suspended.
         self.ctx.suspend().then(handleSuspension, handleSuspension);
       }, 30000);
 
@@ -583,8 +584,11 @@
       self._sprite = o.sprite || {};
       self._src = (typeof o.src !== 'string') ? o.src : [o.src];
       self._volume = o.volume !== undefined ? o.volume : 1;
-      self._xhrWithCredentials = o.xhrWithCredentials || false;
-      self._xhrHeaders = o.xhrHeaders || null;
+      self._xhr = {
+        method: o.xhr && o.xhr.method ? o.xhr.method : 'GET',
+        headers: o.xhr && o.xhr.headers ? o.xhr.headers : null,
+        withCredentials: o.xhr && o.xhr.withCredentials ? o.xhr.withCredentials : false,
+      };
 
       // Setup all other default properties.
       self._duration = 0;
@@ -2349,14 +2353,14 @@
     } else {
       // Load the buffer from the URL.
       var xhr = new XMLHttpRequest();
-      xhr.open('GET', url, true);
-      xhr.withCredentials = self._xhrWithCredentials;
+      xhr.open(self._xhr.method, url, true);
+      xhr.withCredentials = self._xhr.withCredentials;
       xhr.responseType = 'arraybuffer';
 
       // Apply any custom headers to the request.
-      if (self._xhrHeaders) {
-        Object.keys(self._xhrHeaders).forEach(function(key) {
-          xhr.setRequestHeader(key, self._xhrHeaders[key]);
+      if (self._xhr.headers) {
+        Object.keys(self._xhr.headers).forEach(function(key) {
+          xhr.setRequestHeader(key, self._xhr.headers[key]);
         });
       }
 
