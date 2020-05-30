@@ -13,26 +13,6 @@
     <canvas id="canvas" width="1" height="1"></canvas>
     <canvas id="hud"> </canvas>
     <div id="console"></div>
-    <script>
-      const _console = (function () {
-        var div = document.getElementById("console");
-        var buffer = Array(10).fill("");
-        var position = 0;
-        var display = () => {
-          div.innerHTML =
-            buffer.slice(position % 10, 10).join("") +
-            buffer.slice(0, position % 10).join("");
-        };
-        return {
-          log: function (str) {
-            var c = position % 10;
-            buffer[c] = "<br>" + str;
-            position++;
-            display();
-          },
-        };
-      })();
-    </script>
 
     <!-- Scripts -->
     <script src="../../src/howler.core.js"></script>
@@ -43,6 +23,9 @@
     <script src="./js/texture.js"></script>
     <script src="./js/map.js"></script>
     <script src="./js/camera.js"></script>
+    <script src="./js/_console.js"></script>
+    <script src="./js/mouse.js"></script>
+
     <script src="./js/game.js"></script>
   </body>
 </html>
