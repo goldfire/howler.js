@@ -1,24 +1,48 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="user-scalable=no">
-  <title>Howler.js 3D Spatial Audio</title>
-  <link rel="stylesheet" href="./styles.css">
-</head>
-<body>
-  <!-- Game Canvas -->
-  <canvas id="canvas" width="1" height="1">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="user-scalable=no" />
+    <title>Howler.js 3D Spatial Audio</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <!-- Game Canvas -->
+    <button id="start">Start</button>
 
-  <!-- Scripts -->
-  <script src="../../src/howler.core.js"></script>
-  <script src="../../src/plugins/howler.spatial.js"></script>
-  <script src="./js/sound.js"></script>
-  <script src="./js/player.js"></script>
-  <script src="./js/controls.js"></script>
-  <script src="./js/texture.js"></script>
-  <script src="./js/map.js"></script>
-  <script src="./js/camera.js"></script>
-  <script src="./js/game.js"></script>
-</body>
+    <canvas id="canvas" width="1" height="1"></canvas>
+    <canvas id="hud"> </canvas>
+    <div id="console"></div>
+    <script>
+      const _console = (function () {
+        var div = document.getElementById("console");
+        var buffer = Array(10).fill("");
+        var position = 0;
+        var display = () => {
+          div.innerHTML =
+            buffer.slice(position % 10, 10).join("") +
+            buffer.slice(0, position % 10).join("");
+        };
+        return {
+          log: function (str) {
+            var c = position % 10;
+            buffer[c] = "<br>" + str;
+            position++;
+            display();
+          },
+        };
+      })();
+    </script>
+
+    <!-- Scripts -->
+    <script src="../../src/howler.core.js"></script>
+    <script src="../../src/plugins/howler.spatial.js"></script>
+    <script src="./js/sound.js"></script>
+    <script src="./js/player.js"></script>
+    <script src="./js/controls.js"></script>
+    <script src="./js/texture.js"></script>
+    <script src="./js/map.js"></script>
+    <script src="./js/camera.js"></script>
+    <script src="./js/game.js"></script>
+  </body>
 </html>
