@@ -616,16 +616,16 @@
     type = type || 'spatial';
 
     // Create the new panner node.
-    if (type === 'spatial') {
+    if (type === 'spatial' && sound.pannerAttr) {
       sound._panner = Howler.ctx.createPanner();
-      sound._panner.coneInnerAngle = sound._pannerAttr.coneInnerAngle;
-      sound._panner.coneOuterAngle = sound._pannerAttr.coneOuterAngle;
-      sound._panner.coneOuterGain = sound._pannerAttr.coneOuterGain;
-      sound._panner.distanceModel = sound._pannerAttr.distanceModel;
-      sound._panner.maxDistance = sound._pannerAttr.maxDistance;
-      sound._panner.refDistance = sound._pannerAttr.refDistance;
-      sound._panner.rolloffFactor = sound._pannerAttr.rolloffFactor;
-      sound._panner.panningModel = sound._pannerAttr.panningModel;
+      sound._panner.coneInnerAngle = typeof sound._pannerAttr.coneInnerAngle !== 'undefined' ? sound._pannerAttr.coneInnerAngle : sound._panner.coneInnerAngle;
+      sound._panner.coneOuterAngle = typeof sound._pannerAttr.coneOuterAngle !== 'undefined' ? sound._pannerAttr.coneOuterAngle : sound._panner.coneOuterAngle;
+      sound._panner.coneOuterGain = typeof sound._pannerAttr.coneOuterGain !== 'undefined'? sound._pannerAttr.coneOuterGain : sound._panner.coneOuterGain;
+      sound._panner.distanceModel = typeof sound._pannerAttr.distanceModel !== 'undefined'? sound._pannerAttr.distanceModel : sound._panner.distanceModel;
+      sound._panner.maxDistance = typeof sound._pannerAttr.maxDistance !== 'undefined' ? sound._pannerAttr.maxDistance : sound._panner.distanceModel;
+      sound._panner.refDistance = typeof sound._pannerAttr.refDistance !== 'undefined' ? sound._pannerAttr.refDistance : sound._panner.refDistance;
+      sound._panner.rolloffFactor = typeof sound._pannerAttr.rolloffFactor !== 'undefined' ? sound._pannerAttr.rolloffFactor : sound._panner.rolloffFactor;
+      sound._panner.panningModel = typeof sound._pannerAttr.panningModel !== 'undefined' ? sound._pannerAttr.panningModel : sound._panner.panningModel;
 
       if (typeof sound._panner.positionX !== 'undefined') {
         sound._panner.positionX.setValueAtTime(sound._pos[0], Howler.ctx.currentTime);
