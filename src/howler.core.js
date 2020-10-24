@@ -1362,15 +1362,15 @@
         lastTick = Date.now();
         vol += diff * tick;
 
+        // Round to within 2 decimal points.
+        vol = Math.round(vol * 100) / 100;
+
         // Make sure the volume is in the right bounds.
         if (diff < 0) {
           vol = Math.max(to, vol);
         } else {
           vol = Math.min(to, vol);
         }
-
-        // Round to within 2 decimal points.
-        vol = Math.round(vol * 100) / 100;
 
         // Change the volume.
         if (self._webAudio) {
