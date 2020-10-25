@@ -1478,6 +1478,7 @@
           // Remove any event listeners.
           sounds[i]._node.removeEventListener('error', sounds[i]._errorFn, false);
           sounds[i]._node.removeEventListener(Howler._canPlayEvent, sounds[i]._loadFn, false);
+          sounds[i]._node.removeEventListener('ended', sounds[i]._endFn, false);
         }
 
         // Empty out all of the nodes.
@@ -1926,8 +1927,8 @@
         self._loadFn = self._loadListener.bind(self);
         self._node.addEventListener(Howler._canPlayEvent, self._loadFn, false);
 
-        // Listen for 'ended' event to let us know the sound has ended.
-        // Normally we'd do fine without, but this will help a Safari edge case with infinite html5 audio
+        // Listen for the 'ended' event on the sound to account for edge-case where
+        // a finite sound has a duration of Infinity.
         self._endFn = self._endListener.bind(self);
         self._node.addEventListener('ended', self._endFn, false);
 
@@ -2013,23 +2014,23 @@
     _endListener: function() {
       var self = this;
       var parent = self._parent;
-  
-      // This event should fire only when the audio ended despite being marked infinite by the browser
-      if (parent._duration === Infinity) {
 
-        // Update the parent duration to match the real audio duration
+      // Only handle the `ended`` event if the duration is Infinity.
+      if (parent._duration === Infinity) {
+        // Update the parent duration to match the real audio duration.
         // Round up the duration to account for the lower precision in HTML5 Audio.
         parent._duration = Math.ceil(self._node.duration * 10) / 10;
-  
-        // Setup a sprite that corresponds to the real duration.
+
+        // Update the sprite that corresponds to the real duration.
         if (parent._sprite.__default[1] === Infinity) {
           parent._sprite.__default[1] = parent._duration * 1000;
         }
 
+        // Run the regular ended method.
         parent._ended(self);
       }
 
-      // Clear the event listener.
+      // Clear the event listener since the duration is now correct.
       self._node.removeEventListener('ended', self._endFn, false);
     }
   };
