@@ -2,7 +2,7 @@
  *  Howler.js Audio Player Demo
  *  howlerjs.com
  *
- *  (c) 2013-2016, James Simpson of GoldFire Studios
+ *  (c) 2013-2020, James Simpson of GoldFire Studios
  *  goldfirestudios.com
  *
  *  MIT License
@@ -79,7 +79,7 @@ Player.prototype = {
           // Stop the wave animation.
           wave.container.style.display = 'none';
           bar.style.display = 'block';
-          self.skip('right');
+          self.skip('next');
         },
         onpause: function() {
           // Stop the wave animation.
@@ -90,6 +90,10 @@ Player.prototype = {
           // Stop the wave animation.
           wave.container.style.display = 'none';
           bar.style.display = 'block';
+        },
+        onseek: function() {
+          // Start upating the progress of the track.
+          requestAnimationFrame(self.step.bind(self));
         }
       });
     }
@@ -346,13 +350,13 @@ volume.addEventListener('touchmove', move);
 
 // Setup the "waveform" animation.
 var wave = new SiriWave({
-    container: waveform,
-    width: window.innerWidth,
-    height: window.innerHeight * 0.3,
-    cover: true,
-    speed: 0.03,
-    amplitude: 0.7,
-    frequency: 2
+  container: waveform,
+  width: window.innerWidth,
+  height: window.innerHeight * 0.3,
+  cover: true,
+  speed: 0.03,
+  amplitude: 0.7,
+  frequency: 2
 });
 wave.start();
 

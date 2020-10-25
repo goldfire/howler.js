@@ -2,7 +2,7 @@
  *  Howler.js Audio Sprite Demo
  *  howlerjs.com
  *
- *  (c) 2013-2016, James Simpson of GoldFire Studios
+ *  (c) 2013-2020, James Simpson of GoldFire Studios
  *  goldfirestudios.com
  *
  *  MIT License
@@ -90,7 +90,7 @@ Sprite.prototype = {
   },
 
   /**
-   * Called on window resize to correctly psotion and size the click overlays.
+   * Called on window resize to correctly position and size the click overlays.
    */
   resize: function() {
     var self = this;

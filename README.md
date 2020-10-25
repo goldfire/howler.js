@@ -5,6 +5,8 @@
 
 Additional information, live demos and a user showcase are available at [howlerjs.com](https://howlerjs.com).
 
+Follow on Twitter for howler.js and development-related discussion: [@GoldFireStudios](https://twitter.com/goldfirestudios).
+
 ### Features
 * Single API for all audio needs
 * Defaults to Web Audio API and falls back to HTML5 Audio
@@ -50,8 +52,9 @@ Tested in the following browsers/versions:
   * [Options](#options-1)
   * [Methods](#methods-1)
   * [Global Methods](#global-methods-1)
-* [Mobile Playback](#mobile-playback)
+* [Mobile Playback](#mobilechrome-playback)
 * [Dolby Audio Playback](#dolby-audio-playback)
+* [Facebook Instant Games](#facebook-instant-games)
 * [Format Recommendations](#format-recommendations)
 * [License](#license)
 
@@ -61,6 +64,7 @@ Several options to get up and running:
 
 * Clone the repo: `git clone https://github.com/goldfire/howler.js.git`
 * Install with [npm](https://www.npmjs.com/package/howler): `npm install howler`
+* Install with [Yarn](https://yarnpkg.com/en/package/howler): `yarn add howler`
 * Install with [Bower](http://bower.io/): `bower install howler`
 * Hosted CDN: [`cdnjs`](https://cdnjs.com/libraries/howler) [`jsDelivr`](https://www.jsdelivr.com/projects/howler.js)
 
@@ -73,6 +77,16 @@ In the browser:
       src: ['sound.webm', 'sound.mp3']
     });
 </script>
+```
+
+As a dependency:
+
+```javascript
+import {Howl, Howler} from 'howler';
+```
+
+```javascript
+const {Howl, Howler} = require('howler');
 ```
 
 ### Examples
@@ -137,7 +151,7 @@ var sound = new Howl({
   src: ['sound.webm', 'sound.mp3']
 });
 
-// Play returns a uniqe Sound ID that can be passed
+// Play returns a unique Sound ID that can be passed
 // into any method on Howl to control that specific sound.
 var id1 = sound.play();
 var id2 = sound.play();
@@ -147,22 +161,39 @@ sound.fade(1, 0, 1000, id1);
 sound.rate(1.5, id2);
 ```
 
+##### ES6:
+```javascript
+import {Howl, Howler} from 'howler';
+
+// Setup the new Howl.
+const sound = new Howl({
+  src: ['sound.webm', 'sound.mp3']
+});
+
+// Play the sound.
+sound.play();
+
+// Change global volume.
+Howler.volume(0.5);
+```
+
+
 More in-depth examples (with accompanying live demos) can be found in the [examples directory](https://github.com/goldfire/howler.js/tree/master/examples).
 
 
 ## Core
 
 ### Options
-#### src `Array` `[]` *`required`*
-The sources to the track(s) to be loaded for the sound (URLs or base64 data URIs). These should be in order of preference, howler.js will automatically load the first one that is compatible with the current browser. If your files have no extensions, you will need to explicitly specify the extension using the `ext` property.
+#### src `Array/String` `[]` *`required`*
+The sources to the track(s) to be loaded for the sound (URLs or base64 data URIs). These should be in order of preference, howler.js will automatically load the first one that is compatible with the current browser. If your files have no extensions, you will need to explicitly specify the extension using the `format` property.
 #### volume `Number` `1.0`
 The volume of the specific track, from `0.0` to `1.0`.
 #### html5 `Boolean` `false`
 Set to `true` to force HTML5 Audio. This should be used for large audio files so that you don't have to wait for the full file to be downloaded and decoded before playing.
 #### loop `Boolean` `false`
 Set to `true` to automatically loop the sound forever.
-#### preload `Boolean` `true`
-Automatically begin downloading the audio file when the `Howl` is defined.
+#### preload `Boolean|String` `true`
+Automatically begin downloading the audio file when the `Howl` is defined. If using HTML5 Audio, you can set this to `'metadata'` to only preload the file's metadata (to get its duration without download the entire file, for example). 
 #### autoplay `Boolean` `false`
 Set to `true` to automatically start playback when sound is loaded.
 #### mute `Boolean` `false`
@@ -170,9 +201,11 @@ Set to `true` to load the audio muted.
 #### sprite `Object` `{}`
 Define a sound sprite for the sound. The offset and duration are defined in milliseconds. A third (optional) parameter is available to set a sprite as looping. An easy way to generate compatible sound sprites is with [audiosprite](https://github.com/tonistiigi/audiosprite).
 ```javascript
-{
-  key: [offset, duration, (loop)]
-}
+new Howl({
+  sprite: {
+    key1: [offset, duration, (loop)]
+  },
+});
 ```
 #### rate `Number` `1.0`
 The rate of playback. 0.5 to 4.0, with 1.0 being normal speed.
@@ -180,10 +213,33 @@ The rate of playback. 0.5 to 4.0, with 1.0 being normal speed.
 The size of the inactive sounds pool. Once sounds are stopped or finish playing, they are marked as ended and ready for cleanup. We keep a pool of these to recycle for improved performance. Generally this doesn't need to be changed. It is important to keep in mind that when a sound is paused, it won't be removed from the pool and will still be considered active so that it can be resumed later.
 #### format `Array` `[]`
 howler.js automatically detects your file format from the extension, but you may also specify a format in situations where extraction won't work (such as with a SoundCloud stream).
+#### xhr `Object` `null`
+When using Web Audio, howler.js uses an XHR request to load the audio files. If you need to send custom headers, set the HTTP method or enable `withCredentials` ([see reference](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/withCredentials)), include them with this parameter. Each is optional (method defaults to `GET`, headers default to `null` and withCredentials defaults to `false`). For example:
+```javascript
+// Using each of the properties.
+new Howl({
+  xhr: {
+    method: 'POST',
+    headers: {
+      Authorization: 'Bearer:' + token,
+    },
+    withCredentials: true,
+  }
+});
+
+// Only changing the method.
+new Howl({
+  xhr: {
+    method: 'POST',
+  }
+});
+```
 #### onload `Function`
 Fires when the sound is loaded.
 #### onloaderror `Function`
 Fires when the sound is unable to load. The first parameter is the ID of the sound (if it exists) and the second is the error message/code.
+#### onplayerror `Function`
+Fires when the sound is unable to play. The first parameter is the ID of the sound and the second is the error message/code.
 #### onplay `Function`
 Fires when the sound begins playing. The first parameter is the ID of the sound.
 #### onend `Function`
@@ -202,6 +258,8 @@ Fires when the sound's playback rate has changed. The first parameter is the ID 
 Fires when the sound has been seeked. The first parameter is the ID of the sound.
 #### onfade `Function`
 Fires when the current sound finishes fading in/out. The first parameter is the ID of the sound.
+#### onunlock `Function`
+Fires when audio has been automatically unlocked through a touch/click event.
 
 
 ### Methods
@@ -252,29 +310,29 @@ Get/set whether to loop the sound or group. This method can optionally take 0, 1
 #### state()
 Check the load status of the `Howl`, returns a `unloaded`, `loading` or `loaded`.
 
-#### playing(id)
+#### playing([id])
 Check if a sound is currently playing or not, returns a `Boolean`. If no sound ID is passed, check if any sound in the `Howl` group is playing.
-* **id**: `Number` The sound ID to check.
+* **id**: `Number` `optional` The sound ID to check.
 
 #### duration([id])
-Get the duration of the audio source. Will return 0 until after the `load` event fires.
+Get the duration of the audio source (in seconds). Will return 0 until after the `load` event fires.
 * **id**: `Number` `optional` The sound ID to check. Passing an ID will return the duration of the sprite being played on this instance; otherwise, the full source duration is returned.
 
 #### on(event, function, [id])
 Listen for events. Multiple events can be added by calling this multiple times.
-* **event**: `String` Name of event to fire/set (`load`, `loaderror`, `play`, `end`, `pause`, `stop`, `mute`, `volume`, `rate`, `seek`, `fade`).
+* **event**: `String` Name of event to fire/set (`load`, `loaderror`, `playerror`, `play`, `end`, `pause`, `stop`, `mute`, `volume`, `rate`, `seek`, `fade`, `unlock`).
 * **function**: `Function` Define function to fire on event.
 * **id**: `Number` `optional` Only listen to events for this sound id.
 
 #### once(event, function, [id])
 Same as `on`, but it removes itself after the callback is fired.
-* **event**: `String` Name of event to fire/set (`load`, `loaderror`, `play`, `end`, `pause`, `stop`, `mute`, `volume`, `rate`, `seek`, `fade`).
+* **event**: `String` Name of event to fire/set (`load`, `loaderror`, `playerror`, `play`, `end`, `pause`, `stop`, `mute`, `volume`, `rate`, `seek`, `fade`, `unlock`).
 * **function**: `Function` Define function to fire on event.
 * **id**: `Number` `optional` Only listen to events for this sound id.
 
 #### off(event, [function], [id])
 Remove event listener that you've set. Call without parameters to remove all events.
-* **event**: `String` Name of event (`load`, `loaderror`, `play`, `end`, `pause`, `stop`, `mute`, `volume`, `rate`, `seek`, `fade`).
+* **event**: `String` Name of event (`load`, `loaderror`, `playerror`, `play`, `end`, `pause`, `stop`, `mute`, `volume`, `rate`, `seek`, `fade`, `unlock`).
 * **function**: `Function` `optional` The listener to remove. Omit this to remove all events of type.
 * **id**: `Number` `optional` Only remove events for this sound id.
 
@@ -290,8 +348,10 @@ Unload and destroy a Howl object. This will immediately stop all sounds attached
 `true` if the Web Audio API is available.
 #### noAudio `Boolean`
 `true` if no audio is available.
-#### mobileAutoEnable `Boolean` `true`
-Automatically attempts to enable audio on mobile (iOS, Android, etc) devices.
+#### autoUnlock `Boolean` `true`
+Automatically attempts to enable audio on mobile (iOS, Android, etc) devices and desktop Chrome/Safari.
+#### html5PoolSize `Number` `10`
+Each HTML5 Audio object must be unlocked individually, so we keep a global pool of unlocked nodes to share between all `Howl` instances. This pool gets created on the first user interaction and is set to the size of this property.
 #### autoSuspend `Boolean` `true`
 Automatically suspends the Web Audio AudioContext after 30 seconds of inactivity to decrease processing and energy usage. Automatically resumes upon new playback. Set this property to `false` to disable this behavior.
 #### ctx `Boolean` *`Web Audio Only`*
@@ -310,9 +370,12 @@ Mute or unmute all sounds.
 Get/set the global volume for all sounds, relative to their own volume.
 * **volume**: `Number` `optional` Volume from `0.0` to `1.0`.
 
+#### stop()
+Stop all sounds and reset their seek position to the beginning.
+
 #### codecs(ext)
 Check supported audio codecs. Returns `true` if the codec is supported in the current browser.
-* **ext**: `String` File extension. One of: "mp3", "mpeg", "opus", "ogg", "oga", "wav", "aac", "caf", m4a", "mp4", "weba", "webm", "dolby", "flac".
+* **ext**: `String` File extension. One of: "mp3", "mpeg", "opus", "ogg", "oga", "wav", "aac", "caf", "m4a", "m4b", "mp4", "weba", "webm", "dolby", "flac".
 
 #### unload()
 Unload and destroy all currently loaded Howl objects. This will immediately stop all sounds and remove them from cache.
@@ -322,11 +385,11 @@ Unload and destroy all currently loaded Howl objects. This will immediately stop
 
 ### Options
 #### orientation `Array` `[1, 0, 0]`
-Sets the direction the audio source is pointing in the 3D cartesian coordinate space. Depending on how direction the sound is, based on the `cone` attributes, a sound pointing away from the listener can be quiet or silent.
+Sets the direction the audio source is pointing in the 3D cartesian coordinate space. Depending on how directional the sound is, based on the `cone` attributes, a sound pointing away from the listener can be quiet or silent.
 #### stereo `Number` `null`
 Sets the stereo panning value of the audio source for this sound or group. This makes it easy to setup left/right panning with a value of `-1.0` being far left and a value of `1.0` being far right.
 #### pos `Array` `null`
-Sets the 3D spatial position of the audio source for this sound or group. Setting any value higher than `1.0` will begin to decrease the volume of the sound as it moves further away.
+Sets the 3D spatial position of the audio source for this sound or group relative to the global listener.
 #### pannerAttr `Object`
 Sets the panner node's attributes for a sound or group of sounds. See the `pannerAttr` method for all available options.
 #### onstereo `Function`
@@ -344,30 +407,30 @@ Get/set the stereo panning of the audio source for this sound or all in the grou
 * **id**: `Number` `optional` The sound ID. If none is passed, all in group will be updated.
 
 #### pos(x, y, z, [id])
-Get/set the 3D spatial position of the audio source for this sound or group. Setting any value higher than `1.0` will begin to decrease the volume of the sound as it moves further away.
-* **x**: `Number` The x-position of the audio from `-1000.0` to `1000.0`.
-* **y**: `Number` The y-position of the audio from `-1000.0` to `1000.0`.
-* **z**: `Number` The z-position of the audio from `-1000.0` to `1000.0`.
+Get/set the 3D spatial position of the audio source for this sound or group relative to the global listener.
+* **x**: `Number` The x-position of the audio source.
+* **y**: `Number` The y-position of the audio source.
+* **z**: `Number` The z-position of the audio source.
 * **id**: `Number` `optional` The sound ID. If none is passed, all in group will be updated.
 
 #### orientation(x, y, z, [id])
-Get/set the direction the audio source is pointing in the 3D cartesian coordinate space. Depending on the direction of the sound, based on the `cone` attributes, a sound pointing away from the listener can be quiet or silent.
+Get/set the direction the audio source is pointing in the 3D cartesian coordinate space. Depending on how directional the sound is, based on the `cone` attributes, a sound pointing away from the listener can be quiet or silent.
 * **x**: `Number` The x-orientation of the source.
 * **y**: `Number` The y-orientation of the source.
 * **z**: `Number` The z-orientation of the source.
 * **id**: `Number` `optional` The sound ID. If none is passed, all in group will be updated.
 
 #### pannerAttr(o, [id])
-Get/set the panner node's attributes for a sound or group of sounds. This method can optionall take 0, 1 or 2 arguments.
+Get/set the panner node's attributes for a sound or group of sounds.
 * **o**: `Object` All values to update.
-  * **coneInnerAngle** `360` There will be no volume reduction inside this angle.
-  * **coneOuterAngle** `360` The volume will be reduced to a constant value of `coneOuterGain` outside this angle.
-  * **coneOuterGain** `0` The amount of volume reduction outside of `coneOuterAngle`.
-  * **distanceModel** `inverse` Determines algorithm to use to reduce volume as audio moves away from listener. Can be `linear`, `inverse` or `exponential.
-  * **maxDistance** `10000` Volume won't reduce between source/listener beyond this distance.
+  * **coneInnerAngle** `360` A parameter for directional audio sources, this is an angle, in degrees, inside of which there will be no volume reduction.
+  * **coneOuterAngle** `360` A parameter for directional audio sources, this is an angle, in degrees, outside of which the volume will be reduced to a constant value of `coneOuterGain`.
+  * **coneOuterGain** `0` A parameter for directional audio sources, this is the gain outside of the `coneOuterAngle`. It is a linear value in the range `[0, 1]`.
+  * **distanceModel** `inverse` Determines algorithm used to reduce volume as audio moves away from listener. Can be `linear`, `inverse` or `exponential`. You can find the implementations of each in the [spec](https://webaudio.github.io/web-audio-api/#idl-def-DistanceModelType).
+  * **maxDistance** `10000` The maximum distance between source and listener, after which the volume will not be reduced any further.
+  * **refDistance** `1` A reference distance for reducing volume as source moves further from the listener. This is simply a variable of the distance model and has a different effect depending on which model is used and the scale of your coordinates. Generally, volume will be equal to 1 at this distance.
+  * **rolloffFactor** `1` How quickly the volume reduces as source moves from listener. This is simply a variable of the distance model and can be in the range of `[0, 1]` with `linear` and `[0, ∞]` with `inverse` and `exponential`.
   * **panningModel** `HRTF` Determines which spatialization algorithm is used to position audio. Can be `HRTF` or `equalpower`.
-  * **refDistance** `1` A reference distance for reducing volume as the source moves away from the listener.
-  * **rolloffFactor** `1` How quickly the volume reduces as source moves from listener.
 * **id**: `Number` `optional` The sound ID. If none is passed, all in group will be updated.
 
 
@@ -392,12 +455,28 @@ Get/set the direction the listener is pointing in the 3D cartesian space. A fron
 * **zUp**: `Number` The z-orientation of the top of the listener.
 
 
-### Mobile Playback
-By default, audio on iOS, Android, etc is locked until a sound is played within a user interaction, and then it plays normally the rest of the page session ([Apple documentation](https://developer.apple.com/library/safari/documentation/audiovideo/conceptual/using_html5_audio_video/PlayingandSynthesizingSounds/PlayingandSynthesizingSounds.html)). The default behavior of howler.js is to attempt to silently unlock audio playback by playing an empty buffer on the first `touchend` event. This behavior can be disabled by calling:
+### Mobile/Chrome Playback
+By default, audio on mobile browsers and Chrome/Safari is locked until a sound is played within a user interaction, and then it plays normally the rest of the page session ([Apple documentation](https://developer.apple.com/library/safari/documentation/audiovideo/conceptual/using_html5_audio_video/PlayingandSynthesizingSounds/PlayingandSynthesizingSounds.html)). The default behavior of howler.js is to attempt to silently unlock audio playback by playing an empty buffer on the first `touchend` event. This behavior can be disabled by calling:
 
 ```javascript
-Howler.mobileAutoEnable = false;
+Howler.autoUnlock = false;
 ```
+
+If you try to play audio automatically on page load, you can listen to a `playerror` event and then wait for the `unlock` event to try and play the audio again:
+
+```javascript
+var sound = new Howl({
+  src: ['sound.webm', 'sound.mp3'],
+  onplayerror: function() {
+    sound.once('unlock', function() {
+      sound.play();
+    });
+  }
+});
+
+sound.play();
+```
+
 
 ### Dolby Audio Playback
 Full support for playback of the Dolby Audio format (currently support in Edge and Safari) is included. However, you must specify that the file you are loading is `dolby` since it is in a `mp4` container.
@@ -409,8 +488,11 @@ var dolbySound = new Howl({
 });
 ```
 
+### Facebook Instant Games
+Howler.js provides audio support for the new [Facebook Instant Games](https://developers.facebook.com/docs/games/instant-games/engine-recommendations) platform. If you encounter any issues while developing for Instant Games, open an issue with the tag `[IG]`.
+
 ### Format Recommendations
-Howler.js supports a wide array of audio codecs that have varying browser support ("mp3", "opus", "ogg", "wav", "aac", "m4a", "mp4", "webm", ...), but if you want full browser coverage you still need to use at least two of them. If your goal is to have the best balance of small filesize and high quality, based on extensive production testing, your best bet is to default to `webm` and fallback to `mp3`. `webm` has nearly full browser coverage with a great combination of compression and quality. You'll need the `mp3` fallback for Internet Explorer.
+Howler.js supports a wide array of audio codecs that have varying browser support ("mp3", "opus", "ogg", "wav", "aac", "m4a", "m4b", "mp4", "webm", ...), but if you want full browser coverage you still need to use at least two of them. If your goal is to have the best balance of small filesize and high quality, based on extensive production testing, your best bet is to default to `webm` and fallback to `mp3`. `webm` has nearly full browser coverage with a great combination of compression and quality. You'll need the `mp3` fallback for Internet Explorer.
 
 It is important to remember that howler.js selects the first compatible sound from your array of sources. So if you want `webm` to be used before `mp3`, you need to put the sources in that order.
 
@@ -422,6 +504,6 @@ ffmpeg -i sound1.wav -dash 1 sound1.webm
 
 ### License
 
-Copyright (c) 2013-2016 [James Simpson](https://twitter.com/GoldFireStudios) and [GoldFire Studios, Inc.](http://goldfirestudios.com)
+Copyright (c) 2013-2020 [James Simpson](https://twitter.com/GoldFireStudios) and [GoldFire Studios, Inc.](http://goldfirestudios.com)
 
 Released under the [MIT License](https://github.com/goldfire/howler.js/blob/master/LICENSE.md).
