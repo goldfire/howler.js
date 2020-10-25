@@ -123,25 +123,25 @@ var radio = new Radio([
   {
     freq: '89.9',
     title: "Hip Hop Hits",
-    src: 'http://tunein4.streamguys1.com/hhbeafree5',
+    src: 'https://streaming.radio.co/s97881c7e0/listen',
     howl: null
   },
   {
     freq: '98.9',
     title: "CNN",
-    src: 'http://tunein.streamguys1.com/cnn',
+    src: 'https://tunein.streamguys1.com/cnn-new',
     howl: null
   },
   {
     freq: '103.3',
     title: "80's Hits",
-    src: 'http://tunein4.streamguys1.com/80shtfree1',
+    src: 'https://rfcmedia.streamguys1.com/80hits.mp3',
     howl: null
   },
   {
     freq: '107.7',
     title: "Today's Hits",
-    src: 'http://rfcmedia.streamguys1.com/MusicPulse.mp3',
+    src: 'https://rfcmedia.streamguys1.com/MusicPulse.mp3',
     howl: null
   }
 ]);
