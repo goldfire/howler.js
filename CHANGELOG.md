@@ -1,3 +1,9 @@
+## 2.2.1 (Oct 25, 2020)
+- `FIXED` The latest Safari 14 changed how WAV support was detected ([#1415](https://github.com/goldfire/howler.js/pull/1415)).
+- `FIXED` Edge case that could cause an infinite loop while fading ([#1369](https://github.com/goldfire/howler.js/pull/1369)).
+- `FIXED` Calling `seek` without a seek value while a file was still loading no longer adds it to the queue and correctly returns `0` ([#1189](https://github.com/goldfire/howler.js/issues/1189)).
+- `FIXED` Correctly handle finite audio files that return `Infinity` duration in Safari ([#658](https://github.com/goldfire/howler.js/pull/658)).
+
 ## 2.2.0 (May 17, 2020)
 - `ADDED` New `xhr` property that allows setting custom headers (such as for auth), changing the `withCredentials` setting and specifying the HTTP method for the request. These only apply to Web Audio ([#997](https://github.com/goldfire/howler.js/pull/997)).
 - `ADDED` New `Howler.stop()` global stop method to stop all sounds at once ([#1308](https://github.com/goldfire/howler.js/issues/1308)).
