@@ -828,6 +828,9 @@
       // doesn't get grabbed by another call to play while this one waits to start.
       sound._ended = false;
 
+      // AVA ISP-1920 workaround for updating earlier the _paused state
+      sound._paused = false;
+
       // Update the parameters of the sound.
       var setParams = function() {
         sound._paused = false;
@@ -932,6 +935,8 @@
               setParams();
               self._emit('play', sound._id);
               self._loadQueue();
+            } else { // AVA CSP-4874 workaround: release the playLock for internal howler actions in browsers without Promise audio play support (like qtWebEngine chromium)
+              self._playLock = false;
             }
 
             // Setting rate before playing won't work in IE, so we set it again here.
