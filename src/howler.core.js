@@ -890,7 +890,7 @@
         }
       } else {
         // Fire this when the sound is ready to play to begin HTML5 Audio playback.
-        var playHtml5 = function() {
+        var playHtml5 = function(skipQueue) {
           node.currentTime = seek;
           node.muted = sound._muted || self._muted || Howler._muted || node.muted;
           node.volume = sound._volume * Howler.volume();
@@ -913,8 +913,10 @@
                 .then(function() {
                   self._playLock = false;
                   node._unlocked = true;
-                  if (!internal) {
+                  if(!internal){
                     self._emit('play', sound._id);
+                  }
+                  if (!skipQueue) {
                     self._loadQueue();
                   }
                 })
@@ -927,11 +929,16 @@
                   sound._ended = true;
                   sound._paused = true;
                 });
-            } else if (!internal) {
-              self._playLock = false;
-              setParams();
-              self._emit('play', sound._id);
-              self._loadQueue();
+            } else {
+              if (!internal) {
+                self._playLock = false;
+                setParams();
+                self._emit('play', sound._id);
+              }
+
+              if(!skipQueue){
+                self._loadQueue();
+              }
             }
 
             // Setting rate before playing won't work in IE, so we set it again here.
@@ -971,14 +978,14 @@
         // Play immediately if ready, or wait for the 'canplaythrough'e vent.
         var loadedNoReadyState = (window && window.ejecta) || (!node.readyState && Howler._navigator.isCocoonJS);
         if (node.readyState >= 3 || loadedNoReadyState) {
-          playHtml5();
+          playHtml5(internal);
         } else {
           self._playLock = true;
 
           var listener = function() {
             // Begin playback.
-            playHtml5();
-
+            playHtml5(false);
+            
             // Clear this listener.
             node.removeEventListener(Howler._canPlayEvent, listener, false);
           };
