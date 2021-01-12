@@ -913,7 +913,7 @@
                 .then(function() {
                   self._playLock = false;
                   node._unlocked = true;
-                  if(!internal){
+                  if (!internal) {
                     self._emit('play', sound._id);
                   }
                   if (!skipQueue) {
@@ -936,7 +936,7 @@
                 self._emit('play', sound._id);
               }
 
-              if(!skipQueue){
+              if (!skipQueue) {
                 self._loadQueue();
               }
             }
@@ -985,7 +985,7 @@
           var listener = function() {
             // Begin playback.
             playHtml5(false);
-            
+
             // Clear this listener.
             node.removeEventListener(Howler._canPlayEvent, listener, false);
           };
