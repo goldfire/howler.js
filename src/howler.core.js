@@ -1463,6 +1463,18 @@
             if (loop) {
               sound._node.bufferSource.loopStart = sound._start || 0;
               sound._node.bufferSource.loopEnd = sound._stop;
+
+              if (self.playing(ids[i])) {
+                // Buffer needs to be refreshed if an active audio is playing as some browsers, like Firefox, will not loop otherwise
+                self._refreshBuffer(sound);
+
+                // Play the sound using the supported method.
+                if (typeof sound._node.bufferSource.start === 'undefined') {
+                  sound._node.bufferSource.noteGrainOn(0, self.seek(ids[i]), 86400);
+                } else {
+                  sound._node.bufferSource.start(0, self.seek(ids[i]), 86400);
+                }
+              }
             }
           }
         }
