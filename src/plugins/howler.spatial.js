@@ -24,8 +24,8 @@
   /**
    * Helper method to update the stereo panning position of all current Howls.
    * Future Howls will not use this value unless explicitly set.
-   * @param  {Number} pan A value of -1.0 is all the way left and 1.0 is all the way right.
-   * @return {Howler/Number}     Self or current stereo panning value.
+   * @param {Number} pan - A value of -1.0 is all the way left and 1.0 is all the way right.
+   * @return {Howler|Number} - Self or current stereo panning value.
    */
   HowlerGlobal.prototype.stereo = function(pan) {
     var self = this;
@@ -46,10 +46,10 @@
   /**
    * Get/set the position of the listener in 3D cartesian space. Sounds using
    * 3D position will be relative to the listener's position.
-   * @param  {Number} x The x-position of the listener.
-   * @param  {Number} y The y-position of the listener.
-   * @param  {Number} z The z-position of the listener.
-   * @return {Howler/Array}   Self or current listener position.
+   * @param {Number} x - The x-position of the listener.
+   * @param {Number} y - The y-position of the listener.
+   * @param {Number} z - The z-position of the listener.
+   * @return {Howler|Array} - Self or current listener position.
    */
   HowlerGlobal.prototype.pos = function(x, y, z) {
     var self = this;
@@ -86,13 +86,13 @@
    * face of the listener is pointing, and up is the direction the top of the
    * listener is pointing. Thus, these values are expected to be at right angles
    * from each other.
-   * @param  {Number} x   The x-orientation of the listener.
-   * @param  {Number} y   The y-orientation of the listener.
-   * @param  {Number} z   The z-orientation of the listener.
-   * @param  {Number} xUp The x-orientation of the top of the listener.
-   * @param  {Number} yUp The y-orientation of the top of the listener.
-   * @param  {Number} zUp The z-orientation of the top of the listener.
-   * @return {Howler/Array}     Returns self or the current orientation vectors.
+   * @param {Number} x - The x-orientation of the listener.
+   * @param {Number} y - The y-orientation of the listener.
+   * @param {Number} z - The z-orientation of the listener.
+   * @param {Number} xUp - The x-orientation of the top of the listener.
+   * @param {Number} yUp - The y-orientation of the top of the listener.
+   * @param {Number} zUp - The z-orientation of the top of the listener.
+   * @return {Howler|Array} - Returns self or the current orientation vectors.
    */
   HowlerGlobal.prototype.orientation = function(x, y, z, xUp, yUp, zUp) {
     var self = this;
@@ -135,7 +135,7 @@
 
   /**
    * Add new properties to the core init.
-   * @param  {Function} _super Core init method.
+   * @param {Function} _super - Core init method.
    * @return {Howl}
    */
   Howl.prototype.init = (function(_super) {
@@ -169,9 +169,9 @@
 
   /**
    * Get/set the stereo panning of the audio source for this sound or all in the group.
-   * @param  {Number} pan  A value of -1.0 is all the way left and 1.0 is all the way right.
-   * @param  {Number} id (optional) The sound ID. If none is passed, all in group will be updated.
-   * @return {Howl/Number}    Returns self or the current stereo panning value.
+   * @param {Number} pan - A value of -1.0 is all the way left and 1.0 is all the way right.
+   * @param {Number} [id] - (optional) The sound ID. If none is passed, all in group will be updated.
+   * @return {Howl|Number} - Returns self or the current stereo panning value.
    */
   Howl.prototype.stereo = function(pan, id) {
     var self = this;
@@ -252,11 +252,11 @@
 
   /**
    * Get/set the 3D spatial position of the audio source for this sound or group relative to the global listener.
-   * @param  {Number} x  The x-position of the audio source.
-   * @param  {Number} y  The y-position of the audio source.
-   * @param  {Number} z  The z-position of the audio source.
-   * @param  {Number} id (optional) The sound ID. If none is passed, all in group will be updated.
-   * @return {Howl/Array}    Returns self or the current 3D spatial position: [x, y, z].
+   * @param {Number} x - The x-position of the audio source.
+   * @param {Number} y - The y-position of the audio source.
+   * @param {Number} z - The z-position of the audio source.
+   * @param {Number} [id] - (optional) The sound ID. If none is passed, all in group will be updated.
+   * @return {Howl|Array} - Returns self or the current 3D spatial position: [x, y, z].
    */
   Howl.prototype.pos = function(x, y, z, id) {
     var self = this;
@@ -331,11 +331,11 @@
    * Get/set the direction the audio source is pointing in the 3D cartesian coordinate
    * space. Depending on how direction the sound is, based on the `cone` attributes,
    * a sound pointing away from the listener can be quiet or silent.
-   * @param  {Number} x  The x-orientation of the source.
-   * @param  {Number} y  The y-orientation of the source.
-   * @param  {Number} z  The z-orientation of the source.
-   * @param  {Number} id (optional) The sound ID. If none is passed, all in group will be updated.
-   * @return {Howl/Array}    Returns self or the current 3D spatial orientation: [x, y, z].
+   * @param {Number} x - The x-orientation of the source.
+   * @param {Number} y - The y-orientation of the source.
+   * @param {Number} z - The z-orientation of the source.
+   * @param {Number} [id] - (optional) The sound ID. If none is passed, all in group will be updated.
+   * @return {Howl|Array} - Returns self or the current 3D spatial orientation: [x, y, z].
    */
   Howl.prototype.orientation = function(x, y, z, id) {
     var self = this;
@@ -413,7 +413,7 @@
 
   /**
    * Get/set the panner node's attributes for a sound or group of sounds.
-   * This method can optionall take 0, 1 or 2 arguments.
+   * This method can optional take 0, 1 or 2 arguments.
    *   pannerAttr() -> Returns the group's values.
    *   pannerAttr(id) -> Returns the sound id's values.
    *   pannerAttr(o) -> Set's the values of all sounds in this Howl group.
@@ -439,7 +439,7 @@
    *     panningModel - ('HRTF' by default) Determines which spatialization algorithm is used to position audio.
    *                     Can be `HRTF` or `equalpower`.
    *
-   * @return {Howl/Object} Returns self or current panner attributes.
+   * @return {Howl|Object} Returns self or current panner attributes.
    */
   Howl.prototype.pannerAttr = function() {
     var self = this;
@@ -459,7 +459,7 @@
       if (typeof args[0] === 'object') {
         o = args[0];
 
-        // Set the grou's panner attribute values.
+        // Set the groups panner attribute values.
         if (typeof id === 'undefined') {
           if (!o.pannerAttr) {
             o.pannerAttr = {
@@ -545,7 +545,7 @@
 
   /**
    * Add new properties to the core Sound init.
-   * @param  {Function} _super Core Sound init method.
+   * @param {Function} _super - Core Sound init method.
    * @return {Sound}
    */
   Sound.prototype.init = (function(_super) {
@@ -573,7 +573,7 @@
 
   /**
    * Override the Sound.reset method to clean up properties from the spatial plugin.
-   * @param  {Function} _super Sound reset method.
+   * @param {Function} _super - Sound reset method.
    * @return {Sound}
    */
   Sound.prototype.reset = (function(_super) {
@@ -609,8 +609,8 @@
 
   /**
    * Create a new panner node and save it on the sound.
-   * @param  {Sound} sound Specific sound to setup panning on.
-   * @param {String} type Type of panner to create: 'stereo' or 'spatial'.
+   * @param {Sound} sound - Specific sound to setup panning on.
+   * @param {String} type - Type of panner to create: 'stereo' or 'spatial'.
    */
   var setupPanner = function(sound, type) {
     type = type || 'spatial';
