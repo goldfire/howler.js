@@ -1466,9 +1466,14 @@
 
               if (self.playing(ids[i])) {
                 // Buffer needs to be refreshed if an active audio is playing as some browsers, like Firefox, will not loop otherwise
+                if (typeof sound._node.bufferSource.stop === 'undefined') {
+                  sound._node.bufferSource.noteOff(0);
+                } else {
+                  sound._node.bufferSource.stop(0);
+                }
+
                 self._refreshBuffer(sound);
 
-                // Play the sound using the supported method.
                 if (typeof sound._node.bufferSource.start === 'undefined') {
                   sound._node.bufferSource.noteGrainOn(0, self.seek(ids[i]), 86400);
                 } else {
