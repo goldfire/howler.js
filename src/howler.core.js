@@ -2345,7 +2345,8 @@
      * HTML5 Audio pause listener callback.
      */
     _pauseListener: function() {
-      this._parent.pause(this._id);
+      this._paused = true;
+      this._parent._emit('pause', this._id);
     },
     
     /**
