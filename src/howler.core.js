@@ -2334,7 +2334,8 @@
     },
 
     /**
-     * HTML5 Audio play listener callback.
+     * HTML5 Audio play listener callback
+     * Sound is already played/paused so just update state and notify
      */
     _playListener: function() {
       this._paused = false;
@@ -2343,6 +2344,7 @@
     
     /**
      * HTML5 Audio pause listener callback.
+     * Sound is already played/paused so just update state and notify
      */
     _pauseListener: function() {
       this._paused = true;
