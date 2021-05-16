@@ -1584,7 +1584,9 @@
       // Determine the values based on arguments.
       if (args.length === 0) {
         // We will simply return the current position of the first node.
-        id = self._sounds[0]._id;
+        if (self._sounds.length) {
+          id = self._sounds[0]._id;
+        }
       } else if (args.length === 1) {
         // First check if this is an ID, and if not, assume it is a new seek position.
         var ids = self._getSoundIds();
