@@ -100,6 +100,16 @@ var sound = new Howl({
 sound.play();
 ```
 
+##### Streaming audio (for live audio or large files):
+```javascript
+var sound = new Howl({
+  src: ['stream.mp3'],
+  html5: true
+});
+
+sound.play();
+```
+
 ##### More playback options:
 ```javascript
 var sound = new Howl({
