@@ -1604,7 +1604,7 @@
 
       // If there is no ID, bail out.
       if (typeof id === 'undefined') {
-        return self;
+        return 0;
       }
 
       // If the sound hasn't loaded, add it to the load queue to seek when capable.
