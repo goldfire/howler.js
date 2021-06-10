@@ -92,7 +92,7 @@ Player.prototype = {
           bar.style.display = 'block';
         },
         onseek: function() {
-          // Start upating the progress of the track.
+          // Start updating the progress of the track.
           requestAnimationFrame(self.step.bind(self));
         }
       });
