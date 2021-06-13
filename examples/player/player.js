@@ -61,7 +61,7 @@ Player.prototype = {
           // Display the duration.
           duration.innerHTML = self.formatTime(Math.round(sound.duration()));
 
-          // Start upating the progress of the track.
+          // Start updating the progress of the track.
           requestAnimationFrame(self.step.bind(self));
 
           // Start the wave animation if we have already loaded
@@ -92,7 +92,7 @@ Player.prototype = {
           bar.style.display = 'block';
         },
         onseek: function() {
-          // Start upating the progress of the track.
+          // Start updating the progress of the track.
           requestAnimationFrame(self.step.bind(self));
         }
       });
