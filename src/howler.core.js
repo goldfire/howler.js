@@ -976,8 +976,11 @@
           playHtml5();
         } else {
           self._playLock = true;
+          self._state = 'loading';
 
           var listener = function() {
+            self._state = 'loaded';
+            
             // Begin playback.
             playHtml5();
 
