@@ -258,10 +258,10 @@ Fires when the sound is loaded.
 Fires when the sound is unable to load. The first parameter is the ID of the sound (if it exists) and the second is the error message/code.
 
 The load error codes are [defined in the spec](http://dev.w3.org/html5/spec-author-view/spec.html#mediaerror):
-**1** - The fetching process for the media resource was aborted by the user agent at the user's request.
-**2** - A network error of some description caused the user agent to stop fetching the media resource, after the resource was established to be usable.
-**3** - An error of some description occured while decoding the media resource, after the resource was established to be usable.
-**4** - The media resource indicated by the src attribute or assigned media provider object was not suitable.
+* **1** - The fetching process for the media resource was aborted by the user agent at the user's request.
+* **2** - A network error of some description caused the user agent to stop fetching the media resource, after the resource was established to be usable.
+* **3** - An error of some description occured while decoding the media resource, after the resource was established to be usable.
+* **4** - The media resource indicated by the src attribute or assigned media provider object was not suitable.
 #### onplayerror `Function`
 Fires when the sound is unable to play. The first parameter is the ID of the sound and the second is the error message/code.
 #### onplay `Function`
