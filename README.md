@@ -52,6 +52,7 @@ Tested in the following browsers/versions:
   * [Options](#options-1)
   * [Methods](#methods-1)
   * [Global Methods](#global-methods-1)
+* [Group Playback](#group-playback)
 * [Mobile Playback](#mobilechrome-playback)
 * [Dolby Audio Playback](#dolby-audio-playback)
 * [Facebook Instant Games](#facebook-instant-games)
@@ -463,6 +464,32 @@ Get/set the direction the listener is pointing in the 3D cartesian space. A fron
 * **xUp**: `Number` The x-orientation of the top of the listener.
 * **yUp**: `Number` The y-orientation of the top of the listener.
 * **zUp**: `Number` The z-orientation of the top of the listener.
+
+
+### Group Playback
+Each `new Howl()` instance is also a group. You can play multiple sounds from the `Howl` and control them individually or as a group. For example, the following plays two sounds from a sprite, changes their volume together and then pauses both of them at the same time.
+
+```javascript
+var sound = new Howl({
+  src: ['sound.webm', 'sound.mp3'],
+  sprite: {
+    track01: [0, 20000],
+    track02: [21000, 41000]
+  }
+});
+
+// Play each of the track.s
+sound.play('track01');
+sound.play('track02');
+
+// Change the volume of both tracks.
+sound.volume(0.5);
+
+// After a second, pause both sounds in the group.
+setTimeout(function() {
+  sound.pause();
+}, 1000);
+```
 
 
 ### Mobile/Chrome Playback
