@@ -264,8 +264,11 @@
       var mpegTest = audioTest.canPlayType('audio/mpeg;').replace(/^no$/, '');
 
       // Opera version <33 has mixed MP3 support, so we need to check for and block it.
-      var checkOpera = self._navigator && self._navigator.userAgent.match(/OPR\/([0-6].)/g);
+      var ua = self._navigator ? self._navigator.userAgent : '';
+      var checkOpera = ua.match(/OPR\/([0-6].)/g);
       var isOldOpera = (checkOpera && parseInt(checkOpera[0].split('/')[1], 10) < 33);
+      var checkSafari = ua.indexOf('Safari') !== -1 && ua.indexOf('Chrome') === -1;
+      var isOldSafari = (checkSafari && parseInt(ua.match(/Version\/(.*?) /)[1], 10) < 15);
 
       self._codecs = {
         mp3: !!(!isOldOpera && (mpegTest || audioTest.canPlayType('audio/mp3;').replace(/^no$/, ''))),
@@ -279,8 +282,8 @@
         m4a: !!(audioTest.canPlayType('audio/x-m4a;') || audioTest.canPlayType('audio/m4a;') || audioTest.canPlayType('audio/aac;')).replace(/^no$/, ''),
         m4b: !!(audioTest.canPlayType('audio/x-m4b;') || audioTest.canPlayType('audio/m4b;') || audioTest.canPlayType('audio/aac;')).replace(/^no$/, ''),
         mp4: !!(audioTest.canPlayType('audio/x-mp4;') || audioTest.canPlayType('audio/mp4;') || audioTest.canPlayType('audio/aac;')).replace(/^no$/, ''),
-        weba: !!audioTest.canPlayType('audio/webm; codecs="vorbis"').replace(/^no$/, ''),
-        webm: !!audioTest.canPlayType('audio/webm; codecs="vorbis"').replace(/^no$/, ''),
+        weba: !!(!isOldSafari && audioTest.canPlayType('audio/webm; codecs="vorbis"').replace(/^no$/, '')),
+        webm: !!(!isOldSafari && audioTest.canPlayType('audio/webm; codecs="vorbis"').replace(/^no$/, '')),
         dolby: !!audioTest.canPlayType('audio/mp4; codecs="ec-3"').replace(/^no$/, ''),
         flac: !!(audioTest.canPlayType('audio/x-flac;') || audioTest.canPlayType('audio/flac;')).replace(/^no$/, '')
       };
