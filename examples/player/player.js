@@ -67,6 +67,7 @@ Player.prototype = {
           // Start the wave animation if we have already loaded
           wave.container.style.display = 'block';
           bar.style.display = 'none';
+          playBtn.style.display = 'none';
           pauseBtn.style.display = 'block';
         },
         onload: function() {
@@ -85,6 +86,8 @@ Player.prototype = {
           // Stop the wave animation.
           wave.container.style.display = 'none';
           bar.style.display = 'block';
+          playBtn.style.display = 'block';
+          pauseBtn.style.display = 'none';
         },
         onstop: function() {
           // Stop the wave animation.
@@ -130,9 +133,6 @@ Player.prototype = {
     // Puase the sound.
     sound.pause();
 
-    // Show the play button.
-    playBtn.style.display = 'block';
-    pauseBtn.style.display = 'none';
   },
 
   /**
