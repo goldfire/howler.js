@@ -1,3 +1,13 @@
+## 2.2.2 (June 27, 2021)
+The README has been updated with more examples and various clarifications. PRs/issues with suggestions for further improvements are appreciated.
+
+- `CHANGED` Include `keydown` event when unlocking audio ([#1417](https://github.com/goldfire/howler.js/pull/1417)).
+- `CHANGED` The audio state is changed to `loading` while the player is buffering ([#1444](https://github.com/goldfire/howler.js/pull/1444)).
+- `FIXED` Looping sounds wouldn't always work correctly in recent versions of Firefox desktop ([#1445](https://github.com/goldfire/howler.js/pull/1445)).
+- `FIXED` Disabled WebM in Safari 14 until bug in Safar is resolved ([#1476](https://github.com/goldfire/howler.js/issues/1476)).
+- `FIXED` Error when calling `seek()` on audio that hasn't loaded ([#1423](https://github.com/goldfire/howler.js/pull/1423)).
+- `FIXED` Before a sound had loaded, calling `pause()` after `seek()` didn't have the intended behavior ([#1439](https://github.com/goldfire/howler.js/issues/1439)).
+
 ## 2.2.1 (Oct 25, 2020)
 - `FIXED` The latest Safari 14 changed how WAV support was detected ([#1415](https://github.com/goldfire/howler.js/pull/1415)).
 - `FIXED` Edge case that could cause an infinite loop while fading ([#1369](https://github.com/goldfire/howler.js/pull/1369)).
