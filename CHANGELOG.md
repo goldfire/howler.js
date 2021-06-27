@@ -4,7 +4,7 @@ The README has been updated with more examples and various clarifications. PRs/i
 - `CHANGED` Include `keydown` event when unlocking audio ([#1417](https://github.com/goldfire/howler.js/pull/1417)).
 - `CHANGED` The audio state is changed to `loading` while the player is buffering ([#1444](https://github.com/goldfire/howler.js/pull/1444)).
 - `FIXED` Looping sounds wouldn't always work correctly in recent versions of Firefox desktop ([#1445](https://github.com/goldfire/howler.js/pull/1445)).
-- `FIXED` Disabled WebM in Safari 14 until bug in Safar is resolved ([#1476](https://github.com/goldfire/howler.js/issues/1476)).
+- `FIXED` Disabled WebM in Safari 14 until bug in Safari is resolved ([#1476](https://github.com/goldfire/howler.js/issues/1476)).
 - `FIXED` Error when calling `seek()` on audio that hasn't loaded ([#1423](https://github.com/goldfire/howler.js/pull/1423)).
 - `FIXED` Before a sound had loaded, calling `pause()` after `seek()` didn't have the intended behavior ([#1439](https://github.com/goldfire/howler.js/issues/1439)).
 
