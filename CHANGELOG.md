@@ -1,3 +1,6 @@
+## 2.2.3 (June 30, 2021)
+- `FIXED` Fatal error in Chrome for iOS ([#1491](https://github.com/goldfire/howler.js/issues/1491)).
+
 ## 2.2.2 (June 27, 2021)
 The README has been updated with more examples and various clarifications. PRs/issues with suggestions for further improvements are appreciated.
 
