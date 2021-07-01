@@ -1818,6 +1818,16 @@
       var self = this;
       var events = self['_on' + event];
 
+      if(once){
+        for (var i=0; i < events.length; i++) {
+          var storedEvent = events[i];
+          if(storedEvent.once && (''+storedEvent.fn == ''+fn)){
+            //event already stored
+            return;
+          }
+        }
+      }
+
       if (typeof fn === 'function') {
         events.push(once ? {id: id, fn: fn, once: once} : {id: id, fn: fn});
       }
