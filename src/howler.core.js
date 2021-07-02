@@ -20,7 +20,9 @@
    * to all sounds that are currently playing or will be in the future.
    */
   var HowlerGlobal = function() {
+    console.log("HowlerJS initialiging [STARTED]")
     this.init();
+    console.log("HowlerJS initialiged [FINISHED]")
   };
   HowlerGlobal.prototype = {
     /**
@@ -28,6 +30,7 @@
      * @return {Howler}
      */
     init: function() {
+      console.log("Checking Errors {re-init}")
       var self = this || Howler;
 
       // Create a global ID counter.
@@ -59,6 +62,7 @@
       self._setup();
 
       return self;
+      sonsole.log("Error found [LINE : 65]")
     },
 
     /**
@@ -67,12 +71,15 @@
      * @return {Howler/Float}     Returns self or current volume.
      */
     volume: function(vol) {
+      console.log("Using Volume")
       var self = this || Howler;
       vol = parseFloat(vol);
 
       // If we don't have an AudioContext created yet, run the setup.
       if (!self.ctx) {
+        console.log("Setuping Audio Context [Begining]")
         setupAudioContext();
+        console.log("Setuping Audio Context [Done]")
       }
 
       if (typeof vol !== 'undefined' && vol >= 0 && vol <= 1) {
@@ -85,7 +92,9 @@
 
         // When using Web Audio, we just need to adjust the master gain.
         if (self.usingWebAudio) {
+          console.log("Checking Audio Errors at Line 95 [Begining]")
           self.masterGain.gain.setValueAtTime(vol, Howler.ctx.currentTime);
+          console.log("Checking Audio Errors at Line 95 [DONE none found]")
         }
 
         // Loop through and change volume for all HTML5 audio nodes.
@@ -116,6 +125,7 @@
      * @param  {Boolean} muted Is muted or not.
      */
     mute: function(muted) {
+      console.log("Checking Audio Errors at Line 128 [Begining]")
       var self = this || Howler;
 
       // If we don't have an AudioContext created yet, run the setup.
@@ -148,20 +158,23 @@
       }
 
       return self;
+      console.log("Checking Audio Errors at Line 95 [DONE none found]")
     },
 
     /**
      * Handle stopping all sounds globally.
      */
     stop: function() {
+      console.log("Checking Audio Errors at Line 168 [Begining]")
       var self = this || Howler;
 
       // Loop through all Howls and stop them.
       for (var i=0; i<self._howls.length; i++) {
         self._howls[i].stop();
       }
-
+    console.log("Checking Audio Errors at Line 175 [End none found]")
       return self;
+      
     },
 
     /**
@@ -169,6 +182,7 @@
      * @return {Howler}
      */
     unload: function() {
+      console.log("Checking Audio Errors at Line 185 [Begining]")
       var self = this || Howler;
 
       for (var i=self._howls.length-1; i>=0; i--) {
@@ -181,7 +195,7 @@
         self.ctx = null;
         setupAudioContext();
       }
-
+      console.log("Checking Audio Errors at Line 185 [None found]")
       return self;
     },
 
