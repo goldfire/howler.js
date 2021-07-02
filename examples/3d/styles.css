@@ -1,6 +1,6 @@
 html {
   width: 100%;
-  height: 100%;  
+  height: 100%;
   overflow: hidden;
   padding: 0;
   margin: 0;
@@ -20,6 +20,32 @@ body {
 }
 
 #canvas {
+  position: absolute;
   width: 100%;
   height: 100%;
+}
+#hud {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+}
+#console {
+  opacity: 0.5;
+  color: white;
+  background-color: black;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 79em;
+  height: 5em;
+}
+#start {
+  position: absolute;
+  left: 10%;
+  top: 30vh;
+  width: 80%;
+  height: 3em;
+  font-size: 2em;
+  z-index: 3;
 }
