@@ -480,7 +480,7 @@ Get/set the direction the listener is pointing in the 3D cartesian space. A fron
 
 
 ### Group Playback
-Each `new Howl()` instance is also a group. You can play multiple sounds from the `Howl` and control them individually or as a group. For example, the following plays two sounds from a sprite, changes their volume together and then pauses both of them at the same time.
+Each `new Howl()` instance is also a group. You can play multiple sound instances from the `Howl` and control them individually or as a group (note: each `Howl` can only contain a single audio file). For example, the following plays two sounds from a sprite, changes their volume together and then pauses both of them at the same time.
 
 ```javascript
 var sound = new Howl({
