@@ -552,8 +552,13 @@ If you want your `webm` files to be seekable in Firefox, be sure to encode them 
 ffmpeg -i sound1.wav -dash 1 sound1.webm
 ```
 
+### Sponsors
+Support the ongoing development of howler.js and get your logo on our README with a link to your site [[become a sponsor](https://github.com/sponsors/goldfire)]. You can also become a backer at a lower tier and get your name in the [BACKERS](https://github.com/goldfire/howler.js/blob/master/BACKERS.md) list. All support is greatly appreciated!
+
+[![GoldFire Studios](https://s3.amazonaws.com/howler.js/sponsors/goldfire_studios.png "GoldFire Studios")](https://goldfirestudios.com)
+
 ### License
 
-Copyright (c) 2013-2020 [James Simpson](https://twitter.com/GoldFireStudios) and [GoldFire Studios, Inc.](http://goldfirestudios.com)
+Copyright (c) 2013-2021 [James Simpson](https://twitter.com/GoldFireStudios) and [GoldFire Studios, Inc.](http://goldfirestudios.com)
 
 Released under the [MIT License](https://github.com/goldfire/howler.js/blob/master/LICENSE.md).
