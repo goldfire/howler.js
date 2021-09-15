@@ -5,5 +5,5 @@ Support the ongoing development of howler.js and get your logo on our README wit
 [![GoldFire Studios](https://s3.amazonaws.com/howler.js/sponsors/goldfire_studios.png "GoldFire Studios")](https://goldfirestudios.com)
 
 ## Backers [[add your name](https://github.com/sponsors/goldfire)]
-James Simpson
-Spark Dev Network
+* James Simpson
+* Spark Dev Network
