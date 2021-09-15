@@ -6,3 +6,4 @@ Support the ongoing development of howler.js and get your logo on our README wit
 
 ## Backers [[add your name](https://github.com/sponsors/goldfire)]
 James Simpson
+Spark Dev Network
