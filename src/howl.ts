@@ -140,9 +140,7 @@ export interface HowlOptions extends HowlListeners {
    *
    * @default `{}`
    */
-  sprite?: {
-    [name: string]: [number, number] | [number, number, boolean];
-  };
+  sprite?: SoundSpriteDefinitions;
 
   /**
    * The rate of playback. 0.5 to 4.0, with 1.0 being normal speed.
@@ -209,15 +207,15 @@ interface HowlEventHandler {
 class Howl {
   // User defined properties
   _autoplay: boolean = false;
-  _format: HowlOptions['format'];
+  _format: string[] = [];
   _html5: boolean = false;
   _muted: boolean = false;
   _loop: boolean = false;
   _pool: number = 5;
   _preload: boolean | 'metadata' = true;
   _rate: number = 1;
-  _sprite: HowlOptions['sprite'];
-  _src: HowlOptions['src'];
+  _sprite: SoundSpriteDefinitions = {};
+  _src: string | string[] = [];
   _volume: number = 1;
   _xhr: HowlOptions['xhr'];
 
@@ -266,7 +264,12 @@ class Howl {
     }
 
     // Setup user-defined default properties.
-    this._format = typeof o.format !== 'string' ? o.format : [o.format];
+    this._format =
+      o.format === undefined
+        ? []
+        : typeof o.format !== 'string'
+        ? o.format
+        : [o.format];
     this._html5 = o.html5 || false;
     this._muted = o.mute || false;
     this._loop = o.loop || false;
@@ -335,7 +338,7 @@ class Howl {
    * @return {Howler}
    */
   load() {
-    var url = null;
+    var url: string | null = null;
 
     // If no audio is available, quit immediately.
     if (Howler.noAudio) {
@@ -434,6 +437,7 @@ class Howl {
     // Determine if a sprite, sound id or nothing was passed
     if (typeof sprite === 'number') {
       id = sprite;
+      // @ts-expect-error Not sure how to handle this with TypeScript.
       sprite = null;
     } else if (
       typeof sprite === 'string' &&
@@ -458,6 +462,7 @@ class Howl {
         }
 
         if (num === 1) {
+          // @ts-expect-error Not sure how to handle this with TypeScript.
           sprite = null;
         } else {
           id = null;
@@ -534,7 +539,7 @@ class Howl {
     sound._ended = false;
 
     // Update the parameters of the sound.
-    var setParams = function () {
+    const setParams = () => {
       sound._paused = false;
       sound._seek = seek;
       sound._start = start;
@@ -552,7 +557,7 @@ class Howl {
     var node = sound._node;
     if (this._webAudio) {
       // Fire this when the sound is ready to play to begin Web Audio playback.
-      var playWebAudio = function () {
+      var playWebAudio = () => {
         this._playLock = false;
         setParams();
         this._refreshBuffer(sound);
@@ -582,7 +587,7 @@ class Howl {
         }
 
         if (!internal) {
-          setTimeout(function () {
+          setTimeout(() => {
             this._emit('play', sound._id);
             this._loadQueue();
           }, 0);
@@ -675,7 +680,7 @@ class Howl {
               timeout,
             );
           } else {
-            this._endTimers[sound._id] = function () {
+            this._endTimers[sound._id] = () => {
               // Fire ended on this audio node.
               this._ended(sound);
 
@@ -1106,7 +1111,7 @@ class Howl {
     sound._fadeTo = to;
 
     // Update the volume value on each interval tick.
-    sound._interval = setInterval(function () {
+    sound._interval = setInterval(() => {
       // Update the volume based on the time since the last tick.
       var tick = (Date.now() - lastTick) / len;
       lastTick = Date.now();
@@ -1405,7 +1410,7 @@ class Howl {
         }
 
         // Seek and emit when ready.
-        var seekAndEmit = function () {
+        const seekAndEmit = () => {
           // Restart the playback if the sound was playing.
           if (playing) {
             this.play(id, true);
@@ -1416,7 +1421,7 @@ class Howl {
 
         // Wait for the play lock to be unset before emitting (HTML5 Audio).
         if (playing && !this._webAudio) {
-          var emitSeek = function () {
+          const emitSeek = () => {
             if (!this._playLock) {
               seekAndEmit();
             } else {
@@ -1642,7 +1647,7 @@ class Howl {
    * @param  {Number} msg   Message to go with event.
    * @return {Howl}
    */
-  _emit(event: string, id?: number, msg?: string) {
+  _emit(event: string, id?: number | null, msg?: string) {
     var events = this['_on' + event];
 
     // Loop through event store and fire all functions.
@@ -1865,7 +1870,7 @@ class Howl {
    * @param  {Number} id Only return one ID if one is passed.
    * @return {Array}    Array of IDs.
    */
-  _getSoundIds(id) {
+  _getSoundIds(id: number) {
     if (typeof id === 'undefined') {
       var ids = [];
       for (var i = 0; i < this._sounds.length; i++) {

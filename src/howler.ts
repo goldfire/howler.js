@@ -87,8 +87,8 @@ class Howler {
    * @param  {Float} vol Volume from 0.0 to 1.0.
    * @return {Howler/Float}     Returns self or current volume.
    */
-  volume(vol: string) {
-    const volume = parseFloat(vol);
+  volume(vol?: string) {
+    const volume = typeof vol === 'string' ? parseFloat(vol) : undefined;
 
     // If we don't have an AudioContext created yet, run the setup.
     if (!this.ctx) {

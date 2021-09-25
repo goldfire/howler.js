@@ -20,6 +20,13 @@ class Sound {
   _sprite: string = '__default';
   _id: number;
 
+  _node: GainNode | HTMLAudioElement;
+  _errorFn?: EventListener;
+  _loadFn?: EventListener;
+  _endFn?: EventListener;
+
+  _rateSeek?: number;
+
   /**
    * Setup the sound object, which each node attached to a Howl group is contained in.
    * @param {Object} howl The Howl parent group.
@@ -37,7 +44,7 @@ class Sound {
     this._id = ++Howler._counter;
 
     // Add itself to the parent's pool.
-    parent._sounds.push(this);
+    this._parent._sounds.push(this);
 
     // Create the new node.
     this.create();
@@ -54,17 +61,18 @@ class Sound {
 
     if (parent._webAudio) {
       // Create the gain node for controlling volume (the source will connect to this).
-      this._node =
+      this._node = (
         typeof Howler.ctx.createGain === 'undefined'
           ? // @ts-expect-error Support old browsers
             Howler.ctx.createGainNode()
-          : Howler.ctx.createGain();
+          : Howler.ctx.createGain()
+      ) as GainNode;
       this._node.gain.setValueAtTime(volume, Howler.ctx.currentTime);
       this._node.paused = true;
       this._node.connect(Howler.masterGain);
     } else if (!Howler.noAudio) {
       // Get an unlocked Audio object from the pool.
-      this._node = Howler._obtainHtml5Audio();
+      this._node = Howler._obtainHtml5Audio() as HTMLAudioElement;
 
       // Listen for errors (http://dev.w3.org/html5/spec-author-view/spec.html#mediaerror).
       this._errorFn = this._errorListener.bind(this);
@@ -80,9 +88,10 @@ class Sound {
       this._node.addEventListener('ended', this._endFn, false);
 
       // Setup the new audio node.
-      this._node.src = parent._src;
-      this._node.preload = parent._preload === true ? 'auto' : parent._preload;
-      this._node.volume = volume * Howler.volume();
+      this._node.src = parent._src as string;
+      this._node.preload =
+        parent._preload === true ? 'auto' : (parent._preload as string);
+      this._node.volume = volume * (Howler.volume() as number);
 
       // Begin loading the source.
       this._node.load();
