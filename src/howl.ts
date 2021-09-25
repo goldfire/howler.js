@@ -1633,8 +1633,8 @@ class Howl {
     // Clear out `this`.
     this._state = 'unloaded';
     this._sounds = [];
-    // @ts-expect-error Temporarily ignore strict type checking to allow dynamic JS
-    this = null;
+    // NOTE: This is operation is not allowed in modern TS + JS. Don't know how to replace it though.
+    // this = null;
 
     return null;
   }
