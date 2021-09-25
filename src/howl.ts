@@ -1,5 +1,5 @@
-import Howler from './howler';
-import { loadBuffer, cache, isAudioBufferSourceNode } from './helpers';
+import Howler, { HowlerAudioContext, HowlerAudioElement } from './howler';
+import { loadBuffer, cache } from './helpers';
 import Sound, { HowlGainNode } from './sound';
 
 export type HowlCallback = (soundId: number) => void;
@@ -549,7 +549,7 @@ class Howl {
       sound._seek = seek;
       sound._start = start;
       sound._stop = stop;
-      sound._loop = !!(sound._loop || this._sprite[sprite][2]);
+      sound._loop = !!(sound._loop || this._sprite[sprite as string][2]);
     };
 
     // End the sound instantly if seek is at the end.
@@ -562,15 +562,18 @@ class Howl {
     const node = sound._node;
     if (this._webAudio) {
       // Fire this when the sound is ready to play to begin Web Audio playback.
-      var playWebAudio = () => {
+      const playWebAudio = () => {
         this._playLock = false;
         setParams();
         this._refreshBuffer(sound);
 
         // Setup the playback params.
-        var vol = sound._muted || this._muted ? 0 : sound._volume;
-        (node as HowlGainNode).gain.setValueAtTime(vol, Howler.ctx.currentTime);
-        sound._playStart = Howler.ctx.currentTime;
+        const vol = sound._muted || this._muted ? 0 : sound._volume;
+        (node as HowlGainNode).gain.setValueAtTime(
+          vol,
+          (Howler.ctx as HowlerAudioContext).currentTime,
+        );
+        sound._playStart = (Howler.ctx as HowlerAudioContext).currentTime;
 
         // Play the sound using the supported method.
         if (
@@ -610,7 +613,10 @@ class Howl {
         }
       };
 
-      if (Howler.state === 'running' && Howler.ctx.state !== 'interrupted') {
+      if (
+        Howler.state === 'running' &&
+        (Howler.ctx as HowlerAudioContext).state !== 'interrupted'
+      ) {
         playWebAudio();
       } else {
         this._playLock = true;
@@ -654,7 +660,7 @@ class Howl {
             play
               .then(() => {
                 this._playLock = false;
-                node._unlocked = true;
+                (node as HowlerAudioElement)._unlocked = true;
                 if (!internal) {
                   this._emit('play', sound._id);
                 } else {
@@ -681,7 +687,7 @@ class Howl {
           }
 
           // Setting rate before playing won't work in IE, so we set it again here.
-          node.playbackRate = sound._rate;
+          (node as HTMLAudioElement).playbackRate = sound._rate;
 
           // If the node is still paused, then we can assume there was a playback issue.
           if (node.paused) {
@@ -715,26 +721,26 @@ class Howl {
             node.addEventListener('ended', this._endTimers[sound._id], false);
           }
         } catch (err) {
-          this._emit('playerror', sound._id, err);
+          this._emit('playerror', sound._id, err as any);
         }
       };
 
       // If this is streaming audio, make sure the src is set and load again.
       if (
-        node.src ===
+        (node as HTMLAudioElement).src ===
         'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA'
       ) {
-        node.src = this._src;
-        node.load();
+        (node as HTMLAudioElement).src = this._src as string;
+        (node as HTMLAudioElement).load();
       }
 
       // Play immediately if ready, or wait for the 'canplaythrough'event.
-      var loadedNoReadyState =
+      const loadedNoReadyState =
         // @ts-expect-error Support old browsers
         (window && window.ejecta) ||
         // @ts-expect-error Support old browsers
         (!node.readyState && Howler._navigator.isCocoonJS);
-      if (node.readyState >= 3 || loadedNoReadyState) {
+      if ((node as HTMLAudioElement).readyState >= 3 || loadedNoReadyState) {
         playHtml5();
       } else {
         this._playLock = true;
@@ -847,7 +853,7 @@ class Howl {
    * @param id The sound ID (empty to stop all in group).
    * @param internal Internal Use: true prevents event firing.
    */
-  stop(id: number, internal?: boolean) {
+  stop(id?: number, internal?: boolean) {
     // If the sound hasn't loaded, add it to the load queue to stop when capable.
     if (this._state !== 'loaded' || this._playLock) {
       this._queue.push({
@@ -971,7 +977,7 @@ class Howl {
           this._stopFade(sound._id);
         }
 
-        if (this._webAudio && sound._node) {
+        if (this._webAudio && sound._node && Howler.ctx) {
           (sound._node as HowlGainNode).gain.setValueAtTime(
             muted ? 0 : sound._volume,
             Howler.ctx.currentTime,
@@ -1055,7 +1061,7 @@ class Howl {
             this._stopFade(id[i]);
           }
 
-          if (this._webAudio && sound._node && !sound._muted) {
+          if (this._webAudio && sound._node && !sound._muted && Howler.ctx) {
             (sound._node as HowlGainNode).gain.setValueAtTime(
               vol,
               Howler.ctx.currentTime,
@@ -1122,7 +1128,7 @@ class Howl {
         }
 
         // If we are using Web Audio, let the native methods do the actual fade.
-        if (this._webAudio && !sound._muted) {
+        if (this._webAudio && !sound._muted && Howler.ctx) {
           var currentTime = Howler.ctx.currentTime;
           var end = currentTime + len / 1000;
           sound._volume = from;
@@ -1222,7 +1228,7 @@ class Howl {
     var sound = this._soundById(id);
 
     if (sound && sound._interval) {
-      if (this._webAudio) {
+      if (this._webAudio && Howler.ctx) {
         (sound._node as HowlGainNode).gain.cancelScheduledValues(
           Howler.ctx.currentTime,
         );
@@ -1348,7 +1354,7 @@ class Howl {
         // Get the sound.
         sound = this._soundById(id[i]);
 
-        if (sound) {
+        if (sound && Howler.ctx) {
           // Keep track of our position when the rate changed and update the playback
           // start position so we can properly adjust the seek position for time elapsed.
           if (this.playing(id[i])) {
@@ -1466,7 +1472,11 @@ class Howl {
         this._clearTimer(id);
 
         // Update the seek position for HTML5 Audio.
-        if (!this._webAudio && sound._node && !isNaN(sound._node.duration)) {
+        if (
+          !this._webAudio &&
+          sound._node &&
+          !isNaN((sound._node as HTMLAudioElement).duration)
+        ) {
           sound._node.currentTime = seek;
         }
 
@@ -1494,11 +1504,11 @@ class Howl {
           seekAndEmit();
         }
       } else {
-        if (this._webAudio) {
-          var realTime = this.playing(id)
+        if (this._webAudio && Howler.ctx) {
+          const realTime = this.playing(id)
             ? Howler.ctx.currentTime - sound._playStart
             : 0;
-          var rateSeek = sound._rateSeek ? sound._rateSeek - sound._seek : 0;
+          const rateSeek = sound._rateSeek ? sound._rateSeek - sound._seek : 0;
           return sound._seek + (rateSeek + realTime * Math.abs(sound._rate));
         } else {
           return sound._node.currentTime;
@@ -1563,7 +1573,7 @@ class Howl {
   unload() {
     // Stop playing any active sounds.
     var sounds = this._sounds;
-    for (var i = 0; i < sounds.length; i++) {
+    for (let i = 0; i < sounds.length; i++) {
       // Stop the sound if it is currently playing.
       if (!sounds[i]._paused) {
         this.stop(sounds[i]._id);
@@ -1584,10 +1594,11 @@ class Howl {
         sounds[i]._node.removeEventListener('ended', sounds[i]._endFn, false);
 
         // Release the Audio object back to the pool.
-        Howler._releaseHtml5Audio(sounds[i]._node);
+        Howler._releaseHtml5Audio(sounds[i]._node as HowlerAudioElement);
       }
 
       // Empty out all of the nodes.
+      // @ts-expect-error Disable type checking to avoid dynamic edge case.
       delete sounds[i]._node;
 
       // Make sure all timers are cleared out.
@@ -1602,10 +1613,10 @@ class Howl {
 
     // Delete this sound from the cache (if no other Howl is using it).
     var remCache = true;
-    for (i = 0; i < Howler._howls.length; i++) {
+    for (let i = 0; i < Howler._howls.length; i++) {
       if (
         Howler._howls[i]._src === this._src ||
-        this._src.indexOf(Howler._howls[i]._src) >= 0
+        this._src.indexOf(Howler._howls[i]._src as string) >= 0
       ) {
         remCache = false;
         break;
@@ -1613,7 +1624,7 @@ class Howl {
     }
 
     if (cache && remCache) {
-      delete cache[this._src];
+      delete cache[this._src as string];
     }
 
     // Clear global errors.
@@ -1622,6 +1633,7 @@ class Howl {
     // Clear out `this`.
     this._state = 'unloaded';
     this._sounds = [];
+    // @ts-expect-error Temporarily ignore strict type checking to allow dynamic JS
     this = null;
 
     return null;
@@ -1633,9 +1645,8 @@ class Howl {
    * @param  {Function} fn    Listener to call.
    * @param  {Number}   id    (optional) Only listen to events for this sound.
    * @param  {Number}   once  (INTERNAL) Marks event to fire only once.
-   * @return {Howl}
    */
-  on(event, fn, id, once) {
+  on(event: string, fn: Function, id?: number, once?: number) {
     var events = this['_on' + event];
 
     if (typeof fn === 'function') {
@@ -1689,10 +1700,9 @@ class Howl {
 
   /**
    * Listen to a custom event and remove it once fired.
-   * @param  {String}   event Event name.
-   * @param  {Function} fn    Listener to call.
-   * @param  {Number}   id    (optional) Only listen to events for this sound.
-   * @return {Howl}
+   * @param event Event name.
+   * @param fn    Listener to call.
+   * @param id    (optional) Only listen to events for this sound.
    */
   once(event: string, fn: Function, id?: number) {
     // Setup the event listener.
@@ -1703,10 +1713,9 @@ class Howl {
 
   /**
    * Emit all events of a specific type and pass the sound id.
-   * @param  {String} event Event name.
-   * @param  {Number} id    Sound ID.
-   * @param  {Number} msg   Message to go with event.
-   * @return {Howl}
+   * @param event Event name.
+   * @param id    Sound ID.
+   * @param msg   Message to go with event.
    */
   _emit(event: string, id?: number | null, msg?: string | number) {
     var events = this['_on' + event];
@@ -1739,7 +1748,6 @@ class Howl {
    * Queue of actions initiated before the sound has loaded.
    * These will be called in sequence, with the next only firing
    * after the previous has finished executing (even if async like play).
-   * @return {Howl}
    */
   _loadQueue(event?: string) {
     if (this._queue.length > 0) {
@@ -1762,8 +1770,7 @@ class Howl {
 
   /**
    * Fired when playback ends at the end of the duration.
-   * @param  {Sound} sound The sound object to work with.
-   * @return {Howl}
+   * @param sound The sound object to work with.
    */
   _ended(sound: Sound) {
     var sprite = sound._sprite;
@@ -1775,7 +1782,7 @@ class Howl {
       !this._webAudio &&
       sound._node &&
       !sound._node.paused &&
-      !sound._node.ended &&
+      !(sound._node as HowlerAudioElement).ended &&
       sound._node.currentTime < sound._stop
     ) {
       setTimeout(this._ended.bind(this, sound), 100);
@@ -1794,7 +1801,7 @@ class Howl {
     }
 
     // Restart this timer if on a Web Audio loop.
-    if (this._webAudio && loop) {
+    if (this._webAudio && loop && Howler.ctx) {
       this._emit('play', sound._id);
       sound._seek = sound._start || 0;
       sound._rateSeek = 0;
@@ -1834,9 +1841,8 @@ class Howl {
   /**
    * Clear the end timer for a sound playback.
    * @param  {Number} id The sound ID.
-   * @return {Howl}
    */
-  _clearTimer(id) {
+  _clearTimer(id: number) {
     if (this._endTimers[id]) {
       // Clear the timeout or remove the ended listener.
       if (typeof this._endTimers[id] !== 'function') {
@@ -1855,10 +1861,10 @@ class Howl {
   }
   /**
    * Return the sound identified by this ID, or return null.
-   * @param  {Number} id Sound ID
-   * @return {Object}    Sound object or null.
+   * @param id Sound ID
+   * @return Sound object or null.
    */
-  _soundById(id) {
+  _soundById(id: number) {
     // Loop through all sounds and find the one with this ID.
     for (var i = 0; i < this._sounds.length; i++) {
       if (id === this._sounds[i]._id) {
@@ -1871,13 +1877,13 @@ class Howl {
 
   /**
    * Return an inactive sound from the pool or create a new one.
-   * @return {Sound} Sound playback object.
+   * @return Sound playback object.
    */
   _inactiveSound() {
     this._drain();
 
     // Find the first inactive node to recycle.
-    for (var i = 0; i < this._sounds.length; i++) {
+    for (let i = 0; i < this._sounds.length; i++) {
       if (this._sounds[i]._ended) {
         return this._sounds[i].reset();
       }
@@ -1891,9 +1897,9 @@ class Howl {
    * Drain excess inactive sounds from the pool.
    */
   _drain() {
-    var limit = this._pool;
-    var cnt = 0;
-    var i = 0;
+    const limit = this._pool;
+    let cnt = 0;
+    let i = 0;
 
     // If there are less sounds than the max pool size, we are done.
     if (this._sounds.length < limit) {
@@ -1916,7 +1922,7 @@ class Howl {
       if (this._sounds[i]._ended) {
         // Disconnect the audio source when using Web Audio.
         if (this._webAudio && this._sounds[i]._node) {
-          this._sounds[i]._node.disconnect(0);
+          (this._sounds[i]._node as HowlGainNode).disconnect(0);
         }
 
         // Remove sounds until we have the pool size.
@@ -1950,28 +1956,40 @@ class Howl {
    */
   _refreshBuffer(sound: Sound) {
     // Setup the buffer source for playback.
-    (sound._node as HowlGainNode).bufferSource =
-      Howler.ctx.createBufferSource();
-    (sound._node as HowlGainNode).bufferSource.buffer = cache[this._src];
+    (sound._node as HowlGainNode).bufferSource = (
+      Howler.ctx as HowlerAudioContext
+    ).createBufferSource();
+    (
+      (sound._node as HowlGainNode).bufferSource as AudioBufferSourceNode
+    ).buffer = cache[this._src as string];
 
     // Connect to the correct node.
     if (sound._panner) {
-      (sound._node as HowlGainNode).bufferSource.connect(sound._panner);
+      (
+        (sound._node as HowlGainNode).bufferSource as AudioBufferSourceNode
+      ).connect(sound._panner);
     } else {
-      (sound._node as HowlGainNode).bufferSource.connect(
-        sound._node as HowlGainNode,
-      );
+      (
+        (sound._node as HowlGainNode).bufferSource as AudioBufferSourceNode
+      ).connect(sound._node as HowlGainNode);
     }
 
     // Setup looping and playback rate.
-    (sound._node as HowlGainNode).bufferSource.loop = sound._loop;
+    ((sound._node as HowlGainNode).bufferSource as AudioBufferSourceNode).loop =
+      sound._loop;
     if (sound._loop) {
-      (sound._node as HowlGainNode).bufferSource.loopStart = sound._start || 0;
-      (sound._node as HowlGainNode).bufferSource.loopEnd = sound._stop || 0;
+      (
+        (sound._node as HowlGainNode).bufferSource as AudioBufferSourceNode
+      ).loopStart = sound._start || 0;
+      (
+        (sound._node as HowlGainNode).bufferSource as AudioBufferSourceNode
+      ).loopEnd = sound._stop || 0;
     }
-    (sound._node as HowlGainNode).bufferSource.playbackRate.setValueAtTime(
+    (
+      (sound._node as HowlGainNode).bufferSource as AudioBufferSourceNode
+    ).playbackRate.setValueAtTime(
       sound._rate,
-      Howler.ctx.currentTime,
+      (Howler.ctx as HowlerAudioContext).currentTime,
     );
 
     return this;
@@ -1982,20 +2000,25 @@ class Howl {
    * @param  {Object} node Sound's audio node containing the buffer source.
    * @return {Howl}
    */
-  _cleanBuffer(node) {
+  _cleanBuffer(node: Sound['_node']) {
     var isIOS =
       Howler._navigator && Howler._navigator.vendor.indexOf('Apple') >= 0;
 
-    if (Howler._scratchBuffer && node.bufferSource) {
-      node.bufferSource.onended = null;
-      node.bufferSource.disconnect(0);
+    if (Howler._scratchBuffer && (node as HowlGainNode).bufferSource) {
+      ((node as HowlGainNode).bufferSource as AudioBufferSourceNode).onended =
+        null;
+      ((node as HowlGainNode).bufferSource as AudioBufferSourceNode).disconnect(
+        0,
+      );
       if (isIOS) {
         try {
-          node.bufferSource.buffer = Howler._scratchBuffer;
+          (
+            (node as HowlGainNode).bufferSource as AudioBufferSourceNode
+          ).buffer = Howler._scratchBuffer;
         } catch (e) {}
       }
     }
-    node.bufferSource = null;
+    (node as HowlGainNode).bufferSource = null;
 
     return this;
   }

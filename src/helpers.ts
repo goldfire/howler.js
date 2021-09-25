@@ -1,6 +1,5 @@
 import Howl, { HowlXHROptions } from './Howl';
-import Howler from './howler';
-import { HowlGainNode } from './sound';
+import Howler, { HowlerAudioContext } from './howler';
 
 export const cache = {};
 
@@ -109,11 +108,18 @@ function decodeAudioData(arraybuffer: ArrayBuffer, self: Howl) {
   // Decode the buffer into an audio source.
   if (
     typeof Promise !== 'undefined' &&
-    Howler.ctx.decodeAudioData.length === 1
+    (Howler.ctx as HowlerAudioContext).decodeAudioData.length === 1
   ) {
-    Howler.ctx.decodeAudioData(arraybuffer).then(success).catch(error);
+    (Howler.ctx as HowlerAudioContext)
+      .decodeAudioData(arraybuffer)
+      .then(success)
+      .catch(error);
   } else {
-    Howler.ctx.decodeAudioData(arraybuffer, success, error);
+    (Howler.ctx as HowlerAudioContext).decodeAudioData(
+      arraybuffer,
+      success,
+      error,
+    );
   }
 }
 

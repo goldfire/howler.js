@@ -5,7 +5,7 @@
  * IDEA: Maybe use ES private properties, as they can be compiled away with esbuild + TS.
  */
 
-import Howler from './howler';
+import Howler, { HowlerAudioElement } from './howler';
 import Howl from './howl';
 
 export interface HowlGainNode extends GainNode {
@@ -27,12 +27,12 @@ class Sound {
   _sprite: string = '__default';
   _id: number;
 
-  _node: HowlGainNode | HTMLAudioElement;
+  _node: HowlGainNode | HowlerAudioElement;
   _errorFn: EventListener = () => {};
   _loadFn: EventListener = () => {};
   _endFn: EventListener = () => {};
   // TODO: Add better type when adding the spatial audio plugin.
-  _panner: unknown;
+  _panner?: AudioParam;
 
   _rateSeek?: number;
   _playStart: number = 0;
@@ -60,7 +60,7 @@ class Sound {
     // Add itself to the parent's pool.
     this._parent._sounds.push(this);
 
-    if (this._parent._webAudio) {
+    if (this._parent._webAudio && Howler.ctx) {
       // Create the gain node for controlling volume (the source will connect to this).
       this._node = (
         typeof Howler.ctx.createGain === 'undefined'
@@ -70,7 +70,7 @@ class Sound {
       ) as HowlGainNode;
     } else {
       // Get an unlocked Audio object from the pool.
-      this._node = Howler._obtainHtml5Audio() as HTMLAudioElement;
+      this._node = Howler._obtainHtml5Audio() as HowlerAudioElement;
     }
 
     // Create the new node.
@@ -85,7 +85,7 @@ class Sound {
     var volume =
       Howler._muted || this._muted || this._parent._muted ? 0 : this._volume;
 
-    if (parent._webAudio) {
+    if (parent._webAudio && Howler.ctx) {
       (this._node as HowlGainNode).gain.setValueAtTime(
         volume,
         Howler.ctx.currentTime,

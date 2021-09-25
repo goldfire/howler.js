@@ -1,39 +1,16 @@
 import Howl from './Howl';
 
-interface HowlerInstance {
-  mute(muted: boolean): this;
-  stop(): this;
-  volume(): number;
-  volume(volume: number): this;
-  codecs(ext: string): boolean;
-  unload(): this;
-  usingWebAudio: boolean;
-  html5PoolSize: number;
-  noAudio: boolean;
-  autoUnlock: boolean;
-  autoSuspend: boolean;
-  ctx: AudioContext;
-  masterGain: GainNode;
-
-  stereo(pan: number): this;
-  pos(x: number, y: number, z: number): this | void;
-  orientation(
-    x: number,
-    y: number,
-    z: number,
-    xUp: number,
-    yUp: number,
-    zUp: number,
-  ): this | void;
-}
-
-interface HowlerAudioElement extends HTMLAudioElement {
+export interface HowlerAudioElement extends HTMLAudioElement {
   _unlocked: boolean;
 }
 
-type HowlerAudioContextState = AudioContextState | 'suspending' | 'closed';
+type HowlerAudioContextState =
+  | AudioContextState
+  | 'suspending'
+  | 'closed'
+  | 'interrupted';
 
-type HowlerAudioContext = Omit<AudioContext, 'state'> & {
+export type HowlerAudioContext = Omit<AudioContext, 'state'> & {
   // In iOS Safari, the state can also be set to 'interrupted'
   // https://developer.mozilla.org/en-US/docs/Web/API/BaseAudioContext/state#resuming_interrupted_play_states_in_ios_safari
   state: AudioContextState | 'interrupted';
@@ -47,7 +24,7 @@ class Howler {
   noAudio = false;
   usingWebAudio = true;
   autoSuspend = true;
-  ctx: HowlerAudioContext;
+  ctx: HowlerAudioContext | null = null;
 
   // Set to false to disable the auto audio unlocker.
   autoUnlock = true;
@@ -72,6 +49,8 @@ class Howler {
   state: HowlerAudioContextState = 'suspended';
   _suspendTimer: number | null = null;
   _resumeAfterSuspend?: boolean;
+
+  _scratchBuffer: any;
 
   /**
    * Create the global controller. All contained methods and properties apply
@@ -104,7 +83,7 @@ class Howler {
       }
 
       // When using Web Audio, we just need to adjust the master gain.
-      if (this.usingWebAudio) {
+      if (this.usingWebAudio && this.masterGain && this.ctx) {
         this.masterGain.gain.setValueAtTime(volume, this.ctx.currentTime);
       }
 
@@ -133,9 +112,9 @@ class Howler {
 
   /**
    * Handle muting and unmuting globally.
-   * @param  {Boolean} muted Is muted or not.
+   * @param muted Is muted or not.
    */
-  mute(muted) {
+  mute(muted: boolean) {
     // If we don't have an AudioContext created yet, run the setup.
     if (!this.ctx) {
       this._setupAudioContext();
@@ -144,10 +123,10 @@ class Howler {
     this._muted = muted;
 
     // With Web Audio, we just need to mute the master gain.
-    if (this.usingWebAudio) {
+    if (this.usingWebAudio && this.masterGain && this.ctx) {
       this.masterGain.gain.setValueAtTime(
         muted ? 0 : this._volume,
-        Howler.ctx.currentTime,
+        this.ctx.currentTime,
       );
     }
 
@@ -162,7 +141,9 @@ class Howler {
           var sound = this._howls[i]._soundById(ids[j]);
 
           if (sound && sound._node) {
-            sound._node.muted = muted ? true : sound._muted;
+            (sound._node as HowlerAudioElement).muted = muted
+              ? true
+              : sound._muted;
           }
         }
       }
@@ -209,9 +190,8 @@ class Howler {
   /**
    * Check for codec support of specific extension.
    * @param  {String} ext Audio file extention.
-   * @return {Boolean}
    */
-  codecs(ext) {
+  codecs(ext: string) {
     return this._codecs[ext.replace(/^x-/, '')];
   }
 
@@ -309,17 +289,17 @@ class Howler {
     }
 
     // Create and expose the master GainNode when using Web Audio (useful for plugins or advanced usage).
-    if (this.usingWebAudio) {
+    if (this.usingWebAudio && this.masterGain && this.ctx) {
       this.masterGain =
         typeof this.ctx.createGain === 'undefined'
           ? // @ts-expect-error Support old browsers
             this.ctx.createGainNode()
           : this.ctx.createGain();
-      this.masterGain.gain.setValueAtTime(
+      (this.masterGain as GainNode).gain.setValueAtTime(
         this._muted ? 0 : this._volume,
         this.ctx.currentTime,
       );
-      this.masterGain.connect(this.ctx.destination);
+      (this.masterGain as GainNode).connect(this.ctx.destination);
     }
 
     // Re-run the setup on Howler.
@@ -331,7 +311,7 @@ class Howler {
    * @return {Howler}
    */
   _setupCodecs() {
-    var audioTest: HTMLAudioElement | null = null;
+    let audioTest: HTMLAudioElement | null = null;
 
     // Must wrap in a try/catch because IE11 in server mode throws an error.
     try {
@@ -344,17 +324,17 @@ class Howler {
       return this;
     }
 
-    var mpegTest = audioTest.canPlayType('audio/mpeg;').replace(/^no$/, '');
+    const mpegTest = audioTest.canPlayType('audio/mpeg;').replace(/^no$/, '');
 
     // Opera version <33 has mixed MP3 support, so we need to check for and block it.
-    var ua = this._navigator ? this._navigator.userAgent : '';
-    var checkOpera = ua.match(/OPR\/([0-6].)/g);
-    var isOldOpera =
+    const ua = this._navigator ? this._navigator.userAgent : '';
+    const checkOpera = ua.match(/OPR\/([0-6].)/g);
+    const isOldOpera =
       checkOpera && parseInt(checkOpera[0].split('/')[1], 10) < 33;
-    var checkSafari =
+    const checkSafari =
       ua.indexOf('Safari') !== -1 && ua.indexOf('Chrome') === -1;
-    var safariVersion = ua.match(/Version\/(.*?) /);
-    var isOldSafari =
+    const safariVersion = ua.match(/Version\/(.*?) /);
+    const isOldSafari =
       checkSafari && safariVersion && parseInt(safariVersion[1], 10) < 15;
 
     this._codecs = {
@@ -417,12 +397,11 @@ class Howler {
    * Some browsers/devices will only allow audio to be played after a user interaction.
    * Attempt to automatically unlock audio on the first user interaction.
    * Concept from: http://paulbakaus.com/tutorials/html5/web-audio-on-ios/
-   * @return {Howler}
    */
   _unlockAudio() {
     // Only run this if Web Audio is supported and it hasn't already been unlocked.
     if (this._audioUnlocked || !this.ctx) {
-      return;
+      return this;
     }
 
     this.autoUnlock = false;
@@ -437,7 +416,7 @@ class Howler {
 
     // Scratch buffer for enabling iOS to dispose of web audio buffers correctly, as per:
     // http://stackoverflow.com/questions/24119684
-    const scratchBuffer = this.ctx.createBuffer(1, 1, 22050);
+    this._scratchBuffer = this.ctx.createBuffer(1, 1, 22050);
 
     // Call this method on touch start to create and play a buffer,
     // then check if the audio actually played to determine if
@@ -475,9 +454,13 @@ class Howler {
           for (var j = 0; j < ids.length; j++) {
             var sound = this._howls[i]._soundById(ids[j]);
 
-            if (sound && sound._node && !sound._node._unlocked) {
-              sound._node._unlocked = true;
-              sound._node.load();
+            if (
+              sound &&
+              sound._node &&
+              !(sound._node as HowlerAudioElement)._unlocked
+            ) {
+              (sound._node as HowlerAudioElement)._unlocked = true;
+              (sound._node as HTMLAudioElement).load();
             }
           }
         }
@@ -487,9 +470,9 @@ class Howler {
       this._autoResume();
 
       // Create an empty buffer.
-      var source = this.ctx.createBufferSource();
-      source.buffer = scratchBuffer;
-      source.connect(this.ctx.destination);
+      const source = (this.ctx as HowlerAudioContext).createBufferSource();
+      source.buffer = this._scratchBuffer;
+      source.connect((this.ctx as HowlerAudioContext).destination);
 
       // Play the empty buffer.
       if (typeof source.start === 'undefined') {
@@ -500,7 +483,7 @@ class Howler {
       }
 
       // Calling resume() on a stack initiated by user gesture is what actually unlocks the audio on Android Chrome >= 55.
-      if (typeof this.ctx.resume === 'function') {
+      if (this.ctx && typeof this.ctx.resume === 'function') {
         this.ctx.resume();
       }
 
@@ -626,7 +609,9 @@ class Howler {
 
       // Either the state gets suspended or it is interrupted.
       // Either way, we need to update the state to suspended.
-      this.ctx.suspend().then(handleSuspension, handleSuspension);
+      (this.ctx as HowlerAudioContext)
+        .suspend()
+        .then(handleSuspension, handleSuspension);
     }, 30000);
 
     return this;
@@ -677,4 +662,6 @@ class Howler {
   }
 }
 
-export default new Howler();
+const HowlerSingleton = new Howler();
+
+export default HowlerSingleton;
