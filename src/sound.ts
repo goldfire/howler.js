@@ -8,10 +8,11 @@
 import Howler from './howler';
 import Howl from './howl';
 
-interface HowlGainNode extends GainNode {
+export interface HowlGainNode extends GainNode {
   bufferSource: AudioBufferSourceNode | null;
   paused: boolean;
   volume: number;
+  currentTime: number;
 }
 
 class Sound {
@@ -34,6 +35,11 @@ class Sound {
   _panner: unknown;
 
   _rateSeek?: number;
+  _playStart: number = 0;
+  _start: number = 0;
+  _stop: number = 0;
+  _fadeTo: number | null = null;
+  _interval: number | null = null;
 
   /**
    * Setup the sound object, which each node attached to a Howl group is contained in.

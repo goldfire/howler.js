@@ -1,5 +1,6 @@
 import Howl, { HowlXHROptions } from './Howl';
 import Howler from './howler';
+import { HowlGainNode } from './sound';
 
 export const cache = {};
 
@@ -146,3 +147,7 @@ export const isHTMLAudioElement = (node: any): node is HTMLAudioElement =>
 
 export const isGainNode = (node: any): node is GainNode =>
   (node as GainNode).connect !== undefined;
+
+export const isAudioBufferSourceNode = (
+  node: any,
+): node is AudioBufferSourceNode => node instanceof AudioBufferSourceNode;
