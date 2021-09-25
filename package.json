@@ -29,9 +29,9 @@
   },
   "devDependencies": {
     "esbuild": "^0.13.2",
+    "prettier": "^2.4.1",
     "typescript": "^4.4.3",
-    "vite": "^2.5.10",
-    "prettier": "^2.4.1"
+    "vite": "^2.5.10"
   },
   "main": "dist/howler.js",
   "license": "MIT",
