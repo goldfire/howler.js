@@ -1,47 +1,72 @@
-import { setupAudioContext } from './helpers';
+import Howl from './Howl';
+
+interface HowlerInstance {
+  mute(muted: boolean): this;
+  stop(): this;
+  volume(): number;
+  volume(volume: number): this;
+  codecs(ext: string): boolean;
+  unload(): this;
+  usingWebAudio: boolean;
+  html5PoolSize: number;
+  noAudio: boolean;
+  autoUnlock: boolean;
+  autoSuspend: boolean;
+  ctx: AudioContext;
+  masterGain: GainNode;
+
+  stereo(pan: number): this;
+  pos(x: number, y: number, z: number): this | void;
+  orientation(
+    x: number,
+    y: number,
+    z: number,
+    xUp: number,
+    yUp: number,
+    zUp: number,
+  ): this | void;
+}
+
+interface HowlerAudioElement extends HTMLAudioElement {
+  _unlocked: boolean;
+}
+
+// IDEA: Maybe use TS private properties to create clearer contexts.
 
 class Howler {
+  // Public properties.
+  masterGain: GainNode | null = null;
+  noAudio = false;
+  usingWebAudio = true;
+  autoSuspend = true;
+  ctx: AudioContext | null = null;
+
+  // Set to false to disable the auto audio unlocker.
+  autoUnlock = true;
+
+  // Create a global ID counter.
+  _counter: number = 1000;
+
+  // Pool of unlocked HTML5 Audio objects.
+  _html5AudioPool: Array<HTMLAudioElement> = [];
+  html5PoolSize: number = 10;
+
+  // Internal properties
+  _codecs = {};
+  _howls: Array<Howl> = [];
+  _muted = false;
+  _volume = 1;
+  _canPlayEvent = 'canplaythrough';
+  _navigator: Navigator | null =
+    typeof window !== 'undefined' && window.navigator ? window.navigator : null;
+  _audioUnlocked: boolean = false;
+  _mobileUnloaded: boolean = false;
+
   /**
    * Create the global controller. All contained methods and properties apply
    * to all sounds that are currently playing or will be in the future.
    */
   constructor() {
-    this.init();
-  }
-
-  /**
-   * Initialize the global Howler object.
-   * @return {Howler}
-   */
-  init() {
-    // Create a global ID counter.
-    this._counter = 1000;
-
-    // Pool of unlocked HTML5 Audio objects.
-    this._html5AudioPool = [];
-    this.html5PoolSize = 10;
-
-    // Internal properties.
-    this._codecs = {};
-    this._howls = [];
-    this._muted = false;
-    this._volume = 1;
-    this._canPlayEvent = 'canplaythrough';
-    this._navigator =
-      typeof window !== 'undefined' && window.navigator
-        ? window.navigator
-        : null;
-
-    // Public properties.
-    this.masterGain = null;
-    this.noAudio = false;
-    this.usingWebAudio = true;
-    this.autoSuspend = true;
-    this.ctx = null;
-
-    // Set to false to disable the auto audio unlocker.
-    this.autoUnlock = true;
-
     // Setup the various state values for global tracking.
     this._setup();
   }
@@ -51,16 +76,16 @@ class Howler {
    * @param  {Float} vol Volume from 0.0 to 1.0.
    * @return {Howler/Float}     Returns self or current volume.
    */
-  volume(vol) {
-    vol = parseFloat(vol);
+  volume(vol: string) {
+    const volume = parseFloat(vol);
 
     // If we don't have an AudioContext created yet, run the setup.
     if (!this.ctx) {
-      setupAudioContext();
+      this._setupAudioContext();
     }
 
-    if (typeof vol !== 'undefined' && vol >= 0 && vol <= 1) {
-      this._volume = vol;
+    if (typeof volume !== 'undefined' && volume >= 0 && volume <= 1) {
+      this._volume = volume;
 
       // Don't update any of the nodes if we are muted.
       if (this._muted) {
@@ -69,7 +94,7 @@ class Howler {
 
       // When using Web Audio, we just need to adjust the master gain.
       if (this.usingWebAudio) {
-        this.masterGain.gain.setValueAtTime(vol, Howler.ctx.currentTime);
+        this.masterGain.gain.setValueAtTime(volume, this.ctx.currentTime);
       }
 
       // Loop through and change volume for all HTML5 audio nodes.
@@ -226,11 +251,73 @@ class Howler {
   }
 
   /**
+   * Setup the audio context when available, or switch to HTML5 Audio mode.
+   */
+  _setupAudioContext() {
+    // If we have already detected that Web Audio isn't supported, don't run this step again.
+    if (!this.usingWebAudio) {
+      return;
+    }
+
+    // Check if we are using Web Audio and setup the AudioContext if we are.
+    try {
+      if (typeof AudioContext !== 'undefined') {
+        this.ctx = new AudioContext();
+      } else if (typeof webkitAudioContext !== 'undefined') {
+        this.ctx = new webkitAudioContext();
+      } else {
+        this.usingWebAudio = false;
+      }
+    } catch (e) {
+      this.usingWebAudio = false;
+    }
+
+    // If the audio context creation still failed, set using web audio to false.
+    if (!this.ctx) {
+      this.usingWebAudio = false;
+    }
+
+    // Check if a webview is being used on iOS8 or earlier (rather than the browser).
+    // If it is, disable Web Audio as it causes crashing.
+    var iOS = /iP(hone|od|ad)/.test(
+      this._navigator && this._navigator.platform,
+    );
+    var appVersion =
+      this._navigator &&
+      this._navigator.appVersion.match(/OS (\d+)_(\d+)_?(\d+)?/);
+    var version = appVersion ? parseInt(appVersion[1], 10) : null;
+    if (iOS && version && version < 9) {
+      var safari = /safari/.test(
+        this._navigator && this._navigator.userAgent.toLowerCase(),
+      );
+      if (this._navigator && !safari) {
+        this.usingWebAudio = false;
+      }
+    }
+
+    // Create and expose the master GainNode when using Web Audio (useful for plugins or advanced usage).
+    if (this.usingWebAudio) {
+      this.masterGain =
+        typeof this.ctx.createGain === 'undefined'
+          ? this.ctx.createGainNode()
+          : this.ctx.createGain();
+      this.masterGain.gain.setValueAtTime(
+        this._muted ? 0 : this._volume,
+        this.ctx.currentTime,
+      );
+      this.masterGain.connect(this.ctx.destination);
+    }
+
+    // Re-run the setup on Howler.
+    this._setup();
+  }
+
+  /**
    * Check for browser support for various codecs and cache the results.
    * @return {Howler}
    */
   _setupCodecs() {
-    var audioTest = null;
+    var audioTest: HTMLAudioElement | null = null;
 
     // Must wrap in a try/catch because IE11 in server mode throws an error.
     try {
@@ -324,7 +411,6 @@ class Howler {
       return;
     }
 
-    this._audioUnlocked = false;
     this.autoUnlock = false;
 
     // Some mobile devices/platforms have distortion issues when opening/closing tabs and/or web views.
@@ -337,12 +423,12 @@ class Howler {
 
     // Scratch buffer for enabling iOS to dispose of web audio buffers correctly, as per:
     // http://stackoverflow.com/questions/24119684
-    this._scratchBuffer = this.ctx.createBuffer(1, 1, 22050);
+    const scratchBuffer = this.ctx.createBuffer(1, 1, 22050);
 
     // Call this method on touch start to create and play a buffer,
     // then check if the audio actually played to determine if
     // audio has now been unlocked on iOS, Android, etc.
-    var unlock = function (e) {
+    const unlock = (e) => {
       // Create a pool of unlocked HTML5 Audio objects that can
       // be used for playing sounds without user interaction. HTML5
       // Audio objects must be individually unlocked, as opposed
@@ -351,7 +437,7 @@ class Howler {
       // event will not fire.
       while (this._html5AudioPool.length < this.html5PoolSize) {
         try {
-          var audioNode = new Audio();
+          var audioNode = new Audio() as HowlerAudioElement;
 
           // Mark this Audio object as unlocked to ensure it can get returned
           // to the unlocked pool when released.
@@ -388,7 +474,7 @@ class Howler {
 
       // Create an empty buffer.
       var source = this.ctx.createBufferSource();
-      source.buffer = this._scratchBuffer;
+      source.buffer = scratchBuffer;
       source.connect(this.ctx.destination);
 
       // Play the empty buffer.
@@ -443,7 +529,7 @@ class Howler {
       return this._html5AudioPool.pop();
     }
 
-    //.Check if the audio is locked and throw a warning.
+    // Check if the audio is locked and throw a warning.
     var testPlay = new Audio().play();
     if (
       testPlay &&
@@ -464,7 +550,7 @@ class Howler {
    * Return an activated HTML5 Audio object to the pool.
    * @return {Howler}
    */
-  _releaseHtml5Audio(audio) {
+  _releaseHtml5Audio(audio: HowlerAudioElement) {
     // Don't add audio to the pool if we don't know if it has been unlocked.
     if (audio._unlocked) {
       this._html5AudioPool.push(audio);
@@ -483,7 +569,7 @@ class Howler {
       !this.autoSuspend ||
       !this.ctx ||
       typeof this.ctx.suspend === 'undefined' ||
-      !Howler.usingWebAudio
+      !this.usingWebAudio
     ) {
       return;
     }

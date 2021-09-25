@@ -6,33 +6,32 @@
  */
 
 import Howler from './howler';
+import Howl from './howl';
 
 class Sound {
+  _parent: Howl;
+  _muted: boolean;
+  _loop: boolean;
+  _volume: number;
+  _rate: number;
+  _seek: number = 0;
+  _paused: boolean = true;
+  _ended: boolean = true;
+  _sprite: string = '__default';
+  _id: number;
+
   /**
    * Setup the sound object, which each node attached to a Howl group is contained in.
    * @param {Object} howl The Howl parent group.
    */
-  constructor(howl) {
+  constructor(howl: Howl) {
     this._parent = howl;
-    this.init();
-  }
-
-  /**
-   * Initialize a new Sound object.
-   * @return {Sound}
-   */
-  init() {
-    var parent = this._parent;
 
     // Setup the default parameters.
-    this._muted = parent._muted;
-    this._loop = parent._loop;
-    this._volume = parent._volume;
-    this._rate = parent._rate;
-    this._seek = 0;
-    this._paused = true;
-    this._ended = true;
-    this._sprite = '__default';
+    this._muted = howl._muted;
+    this._loop = howl._loop;
+    this._volume = howl._volume;
+    this._rate = howl._rate;
 
     // Generate a unique ID for this sound.
     this._id = ++Howler._counter;

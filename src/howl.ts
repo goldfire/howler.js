@@ -1,5 +1,5 @@
 import Howler from './howler';
-import { loadBuffer, setupAudioContext } from './helpers';
+import { loadBuffer } from './helpers';
 import Sound from './sound';
 
 class Howl {
@@ -27,7 +27,7 @@ class Howl {
   init(o) {
     // If we don't have an AudioContext created yet, run the setup.
     if (!Howler.ctx) {
-      setupAudioContext();
+      Howler._setupAudioContext();
     }
 
     // Setup user-defined default properties.
