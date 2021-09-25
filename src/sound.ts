@@ -1,10 +1,3 @@
-/**
- * TODO: pass the howler instance reference to each sound that is created instead of using a global variable
- * TODO: update the sound id generator to be common across all modules.
- *
- * IDEA: Maybe use ES private properties, as they can be compiled away with esbuild + TS.
- */
-
 import Howler, { HowlerAudioElement } from './howler';
 import Howl from './howl';
 

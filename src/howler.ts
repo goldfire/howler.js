@@ -16,8 +16,6 @@ export type HowlerAudioContext = Omit<AudioContext, 'state'> & {
   state: AudioContextState | 'interrupted';
 };
 
-// IDEA: Maybe use TS private properties to create clearer contexts.
-
 class Howler {
   // Public properties.
   masterGain: GainNode | null = null;
