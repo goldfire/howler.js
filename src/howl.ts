@@ -2,12 +2,253 @@ import Howler from './howler';
 import { loadBuffer } from './helpers';
 import Sound from './sound';
 
+export type HowlCallback = (soundId: number) => void;
+export type HowlErrorCallback = (soundId: number, error: unknown) => void;
+
+export interface SoundSpriteDefinitions {
+  [name: string]: [number, number] | [number, number, boolean];
+}
+
+export interface HowlListeners {
+  /**
+   * Fires when the sound has been stopped. The first parameter is the ID of the sound.
+   */
+  onstop?: HowlCallback;
+
+  /**
+   * Fires when the sound has been paused. The first parameter is the ID of the sound.
+   */
+  onpause?: HowlCallback;
+
+  /**
+   * Fires when the sound is loaded.
+   */
+  onload?: HowlCallback;
+
+  /**
+   * Fires when the sound has been muted/unmuted. The first parameter is the ID of the sound.
+   */
+  onmute?: HowlCallback;
+
+  /**
+   * Fires when the sound's volume has changed. The first parameter is the ID of the sound.
+   */
+  onvolume?: HowlCallback;
+
+  /**
+   * Fires when the sound's playback rate has changed. The first parameter is the ID of the sound.
+   */
+  onrate?: HowlCallback;
+
+  /**
+   * Fires when the sound has been seeked. The first parameter is the ID of the sound.
+   */
+  onseek?: HowlCallback;
+
+  /**
+   * Fires when the current sound finishes fading in/out. The first parameter is the ID of the sound.
+   */
+  onfade?: HowlCallback;
+
+  /**
+   * Fires when audio has been automatically unlocked through a touch/click event.
+   */
+  onunlock?: HowlCallback;
+
+  /**
+   * Fires when the sound finishes playing (if it is looping, it'll fire at the end of each loop).
+   * The first parameter is the ID of the sound.
+   */
+  onend?: HowlCallback;
+
+  /**
+   * Fires when the sound begins playing. The first parameter is the ID of the sound.
+   */
+  onplay?: HowlCallback;
+
+  /**
+   * Fires when the sound is unable to load. The first parameter is the ID of the sound (if it exists) and the second is the error message/code.
+   */
+  onloaderror?: HowlErrorCallback;
+
+  /**
+   * Fires when the sound is unable to play. The first parameter is the ID of the sound and the second is the error message/code.
+   */
+  onplayerror?: HowlErrorCallback;
+}
+
+export interface HowlOptions extends HowlListeners {
+  /**
+   * The sources to the track(s) to be loaded for the sound (URLs or base64 data URIs). These should
+   * be in order of preference, howler.js will automatically load the first one that is compatible
+   * with the current browser. If your files have no extensions, you will need to explicitly specify
+   * the extension using the format property.
+   *
+   * @default `[]`
+   */
+  src?: string | string[];
+
+  /**
+   * The volume of the specific track, from 0.0 to 1.0.
+   *
+   * @default `1.0`
+   */
+  volume?: number;
+
+  /**
+   * Set to true to force HTML5 Audio. This should be used for large audio files so that you don't
+   * have to wait for the full file to be downloaded and decoded before playing.
+   *
+   * @default `false`
+   */
+  html5?: boolean;
+
+  /**
+   * Set to true to automatically loop the sound forever.
+   *
+   * @default `false`
+   */
+  loop?: boolean;
+
+  /**
+   * Automatically begin downloading the audio file when the Howl is defined. If using HTML5 Audio,
+   * you can set this to 'metadata' to only preload the file's metadata (to get its duration without
+   * download the entire file, for example).
+   *
+   * @default `true`
+   */
+  preload?: boolean | 'metadata';
+
+  /**
+   * Set to true to automatically start playback when sound is loaded.
+   *
+   * @default `false`
+   */
+  autoplay?: boolean;
+
+  /**
+   * Set to true to load the audio muted.
+   *
+   * @default `false`
+   */
+  mute?: boolean;
+
+  /**
+   * Define a sound sprite for the sound. The offset and duration are defined in milliseconds. A
+   * third (optional) parameter is available to set a sprite as looping. An easy way to generate
+   * compatible sound sprites is with audiosprite.
+   *
+   * @default `{}`
+   */
+  sprite?: {
+    [name: string]: [number, number] | [number, number, boolean];
+  };
+
+  /**
+   * The rate of playback. 0.5 to 4.0, with 1.0 being normal speed.
+   *
+   * @default `1.0`
+   */
+  rate?: number;
+
+  /**
+   * The size of the inactive sounds pool. Once sounds are stopped or finish playing, they are marked
+   * as ended and ready for cleanup. We keep a pool of these to recycle for improved performance.
+   * Generally this doesn't need to be changed. It is important to keep in mind that when a sound is
+   * paused, it won't be removed from the pool and will still be considered active so that it can be
+   * resumed later.
+   *
+   * @default `5`
+   */
+  pool?: number;
+
+  /**
+   * howler.js automatically detects your file format from the extension, but you may also specify a
+   * format in situations where extraction won't work (such as with a SoundCloud stream).
+   *
+   * @default `[]`
+   */
+  format?: string[];
+
+  /**
+   * When using Web Audio, howler.js uses an XHR request to load the audio files. If you need to send
+   * custom headers, set the HTTP method or enable withCredentials (see reference), include them with
+   * this parameter. Each is optional (method defaults to GET, headers default to undefined and
+   * withCredentials defaults to false).
+   */
+  xhr?: {
+    method?: string;
+    headers?: Record<string, string>;
+    withCredentials?: boolean;
+  };
+}
+
+type HowlCallbacks = Array<{ fn: HowlCallback }>;
+type HowlErrorCallbacks = Array<{ fn: HowlErrorCallback }>;
+
+type HowlEvent =
+  | 'play'
+  | 'end'
+  | 'pause'
+  | 'stop'
+  | 'mute'
+  | 'volume'
+  | 'rate'
+  | 'seek'
+  | 'fade'
+  | 'unlock';
+
+interface HowlEventHandler {
+  event: HowlEvent;
+  action: () => void;
+}
+
 class Howl {
+  // User defined properties
+  _autoplay: boolean = false;
+  _format: HowlOptions['format'];
+  _html5: HowlOptions['html5'];
+  _muted: HowlOptions['mute'];
+  _loop: HowlOptions['loop'];
+  _pool: HowlOptions['pool'];
+  _preload: HowlOptions['preload'];
+  _rate: HowlOptions['rate'];
+  _sprite: HowlOptions['sprite'];
+  _src: HowlOptions['src'];
+  _volume: HowlOptions['volume'];
+  _xhr: HowlOptions['xhr'];
+
+  // Other default properties.
+  _duration = 0;
+  _state = 'unloaded';
+  _sounds: Sound[] = [];
+  _endTimers = {};
+  _queue: HowlEventHandler[] = [];
+  _playLock = false;
+
+  _onend: HowlCallbacks = [];
+  _onfade: HowlCallbacks = [];
+  _onload: HowlCallbacks = [];
+  _onloaderror: HowlErrorCallbacks = [];
+  _onplayerror: HowlErrorCallbacks = [];
+  _onpause: HowlCallbacks = [];
+  _onplay: HowlCallbacks = [];
+  _onstop: HowlCallbacks = [];
+  _onmute: HowlCallbacks = [];
+  _onvolume: HowlCallbacks = [];
+  _onrate: HowlCallbacks = [];
+  _onseek: HowlCallbacks = [];
+  _onunlock: HowlCallbacks = [];
+  _onresume: HowlCallbacks = [];
+
+  // @ts-expect-error Not definitely assigned in constructor, likely due to using a module.
+  _webAudio: boolean;
+
   /**
    * Create an audio group controller.
    * @param {Object} o Passed in properties for this group.
    */
-  constructor(o) {
+  constructor(o: HowlOptions) {
     // Throw an error if no source is provided.
     if (!o.src || o.src.length === 0) {
       console.error(
@@ -16,27 +257,18 @@ class Howl {
       return;
     }
 
-    this.init(o);
-  }
-
-  /**
-   * Initialize a new Howl group object.
-   * @param  {Object} o Passed in properties for this group.
-   * @return {Howl}
-   */
-  init(o) {
     // If we don't have an AudioContext created yet, run the setup.
     if (!Howler.ctx) {
       Howler._setupAudioContext();
     }
 
     // Setup user-defined default properties.
-    this._autoplay = o.autoplay || false;
     this._format = typeof o.format !== 'string' ? o.format : [o.format];
     this._html5 = o.html5 || false;
     this._muted = o.mute || false;
     this._loop = o.loop || false;
     this._pool = o.pool || 5;
+
     this._preload =
       typeof o.preload === 'boolean' || o.preload === 'metadata'
         ? o.preload
@@ -47,18 +279,10 @@ class Howl {
     this._volume = o.volume !== undefined ? o.volume : 1;
     this._xhr = {
       method: o.xhr && o.xhr.method ? o.xhr.method : 'GET',
-      headers: o.xhr && o.xhr.headers ? o.xhr.headers : null,
+      headers: o.xhr && o.xhr.headers ? o.xhr.headers : undefined,
       withCredentials:
         o.xhr && o.xhr.withCredentials ? o.xhr.withCredentials : false,
     };
-
-    // Setup all other default properties.
-    this._duration = 0;
-    this._state = 'unloaded';
-    this._sounds = [];
-    this._endTimers = {};
-    this._queue = [];
-    this._playLock = false;
 
     // Setup event listeners.
     this._onend = o.onend ? [{ fn: o.onend }] : [];
@@ -91,7 +315,7 @@ class Howl {
     if (this._autoplay) {
       this._queue.push({
         event: 'play',
-        action() {
+        action: () => {
           this.play();
         },
       });
@@ -101,8 +325,6 @@ class Howl {
     if (this._preload && this._preload !== 'none') {
       this.load();
     }
-
-    return this;
   }
 
   /**
@@ -203,7 +425,7 @@ class Howl {
    * @param  {Boolean} internal Internal Use: true prevents event firing.
    * @return {Number}          Sound ID.
    */
-  play(sprite, internal) {
+  play(sprite: string | number, internal?: boolean) {
     var id = null;
 
     // Determine if a sprite, sound id or nothing was passed
@@ -267,7 +489,7 @@ class Howl {
       var soundId = sound._id;
       this._queue.push({
         event: 'play',
-        action() {
+        action: () => {
           this.play(soundId);
         },
       });
@@ -377,7 +599,7 @@ class Howl {
       }
     } else {
       // Fire this when the sound is ready to play to begin HTML5 Audio playback.
-      var playHtml5 = function () {
+      const playHtml5 = () => {
         node.currentTime = seek;
         node.muted = sound._muted || this._muted || Howler._muted || node.muted;
         node.volume = sound._volume * Howler.volume();
@@ -401,7 +623,7 @@ class Howl {
 
             // Releases the lock and executes queued actions.
             play
-              .then(function () {
+              .then(() => {
                 this._playLock = false;
                 node._unlocked = true;
                 if (!internal) {
@@ -410,7 +632,7 @@ class Howl {
                   this._loadQueue();
                 }
               })
-              .catch(function () {
+              .catch(() => {
                 this._playLock = false;
                 this._emit(
                   'playerror',
@@ -477,9 +699,11 @@ class Howl {
         node.load();
       }
 
-      // Play immediately if ready, or wait for the 'canplaythrough'e vent.
+      // Play immediately if ready, or wait for the 'canplaythrough'event.
       var loadedNoReadyState =
+        // @ts-expect-error Support old browsers
         (window && window.ejecta) ||
+        // @ts-expect-error Support old browsers
         (!node.readyState && Howler._navigator.isCocoonJS);
       if (node.readyState >= 3 || loadedNoReadyState) {
         playHtml5();
@@ -487,7 +711,7 @@ class Howl {
         this._playLock = true;
         this._state = 'loading';
 
-        var listener = function () {
+        const listener = () => {
           this._state = 'loaded';
 
           // Begin playback.
@@ -516,7 +740,7 @@ class Howl {
     if (this._state !== 'loaded' || this._playLock) {
       this._queue.push({
         event: 'pause',
-        action() {
+        action: () => {
           this.pause(id);
         },
       });
@@ -587,7 +811,7 @@ class Howl {
     if (this._state !== 'loaded' || this._playLock) {
       this._queue.push({
         event: 'stop',
-        action() {
+        action: () => {
           this.stop(id);
         },
       });
@@ -662,7 +886,7 @@ class Howl {
     if (this._state !== 'loaded' || this._playLock) {
       this._queue.push({
         event: 'mute',
-        action() {
+        action: () => {
           this.mute(muted, id);
         },
       });
@@ -750,7 +974,7 @@ class Howl {
       if (this._state !== 'loaded' || this._playLock) {
         this._queue.push({
           event: 'volume',
-          action() {
+          action: () => {
             this.volume.apply(this, args);
           },
         });
@@ -807,7 +1031,7 @@ class Howl {
     if (this._state !== 'loaded' || this._playLock) {
       this._queue.push({
         event: 'fade',
-        action() {
+        action: () => {
           this.fade(from, to, len, id);
         },
       });
@@ -1035,7 +1259,7 @@ class Howl {
       if (this._state !== 'loaded' || this._playLock) {
         this._queue.push({
           event: 'rate',
-          action() {
+          action: () => {
             this.rate.apply(this, args);
           },
         });
@@ -1148,7 +1372,7 @@ class Howl {
     ) {
       this._queue.push({
         event: 'seek',
-        action() {
+        action: () => {
           this.seek.apply(this, args);
         },
       });
@@ -1401,7 +1625,7 @@ class Howl {
    * @param  {Number}   id    (optional) Only listen to events for this sound.
    * @return {Howl}
    */
-  once(event, fn, id) {
+  once(event: string, fn: Function, id?: number) {
     // Setup the event listener.
     this.on(event, fn, id, 1);
 
@@ -1415,7 +1639,7 @@ class Howl {
    * @param  {Number} msg   Message to go with event.
    * @return {Howl}
    */
-  _emit(event, id, msg) {
+  _emit(event: string, id?: number, msg?: string) {
     var events = this['_on' + event];
 
     // Loop through event store and fire all functions.
@@ -1423,9 +1647,9 @@ class Howl {
       // Only fire the listener if the correct ID is used.
       if (!events[i].id || events[i].id === id || event === 'load') {
         setTimeout(
-          function (fn) {
+          ((fn) => {
             fn.call(this, id, msg);
-          }.bind(this, events[i].fn),
+          }).bind(this, events[i].fn),
           0,
         );
 
@@ -1448,7 +1672,7 @@ class Howl {
    * after the previous has finished executing (even if async like play).
    * @return {Howl}
    */
-  _loadQueue(event) {
+  _loadQueue(event: string) {
     if (this._queue.length > 0) {
       var task = this._queue[0];
 
@@ -1472,7 +1696,7 @@ class Howl {
    * @param  {Sound} sound The sound object to work with.
    * @return {Howl}
    */
-  _ended(sound) {
+  _ended(sound: Sound) {
     var sprite = sound._sprite;
 
     // If we are using IE and there was network latency we may be clipping

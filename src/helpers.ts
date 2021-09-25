@@ -1,3 +1,4 @@
+import Howl from './Howl';
 import Howler from './howler';
 
 const cache = {};
@@ -88,21 +89,21 @@ function safeXhrSend(xhr) {
  * @param  {ArrayBuffer} arraybuffer The audio data.
  * @param  {Howl}        self
  */
-function decodeAudioData(arraybuffer, self) {
+function decodeAudioData(arraybuffer: ArrayBuffer, self: Howl) {
   // Fire a load error if something broke.
-  var error = function () {
+  function error() {
     self._emit('loaderror', null, 'Decoding audio data failed.');
-  };
+  }
 
   // Load the sound on success.
-  var success = function (buffer) {
+  function success(buffer: AudioBuffer) {
     if (buffer && self._sounds.length > 0) {
       cache[self._src] = buffer;
       loadSound(self, buffer);
     } else {
       error();
     }
-  };
+  }
 
   // Decode the buffer into an audio source.
   if (
@@ -120,7 +121,7 @@ function decodeAudioData(arraybuffer, self) {
  * @param  {Howl} self
  * @param  {Object} buffer The decoded buffer sound source.
  */
-function loadSound(self, buffer) {
+function loadSound(self: Howl, buffer?: AudioBuffer) {
   // Set the duration.
   if (buffer && !self._duration) {
     self._duration = buffer.duration;

@@ -31,6 +31,14 @@ interface HowlerAudioElement extends HTMLAudioElement {
   _unlocked: boolean;
 }
 
+type HowlerAudioContextState = AudioContextState | 'suspending' | 'closed';
+
+type HowlerAudioContext = Omit<AudioContext, 'state'> & {
+  // In iOS Safari, the state can also be set to 'interrupted'
+  // https://developer.mozilla.org/en-US/docs/Web/API/BaseAudioContext/state#resuming_interrupted_play_states_in_ios_safari
+  state: AudioContextState | 'interrupted';
+};
+
 // IDEA: Maybe use TS private properties to create clearer contexts.
 
 class Howler {
@@ -39,7 +47,7 @@ class Howler {
   noAudio = false;
   usingWebAudio = true;
   autoSuspend = true;
-  ctx: AudioContext | null = null;
+  ctx: HowlerAudioContext | null = null;
 
   // Set to false to disable the auto audio unlocker.
   autoUnlock = true;
@@ -57,10 +65,13 @@ class Howler {
   _muted = false;
   _volume = 1;
   _canPlayEvent = 'canplaythrough';
-  _navigator: Navigator | null =
-    typeof window !== 'undefined' && window.navigator ? window.navigator : null;
+  _navigator = window.navigator;
   _audioUnlocked: boolean = false;
   _mobileUnloaded: boolean = false;
+  // IDEA: Maybe rename to `_state` to indicate that this is an internal property?
+  state: HowlerAudioContextState = 'suspended';
+  _suspendTimer: number | null = null;
+  _resumeAfterSuspend?: boolean;
 
   /**
    * Create the global controller. All contained methods and properties apply
@@ -108,13 +119,13 @@ class Howler {
             var sound = this._howls[i]._soundById(ids[j]);
 
             if (sound && sound._node) {
-              sound._node.volume = sound._volume * vol;
+              sound._node.volume = sound._volume * volume;
             }
           }
         }
       }
 
-      return this;
+      return volume;
     }
 
     return this._volume;
@@ -127,7 +138,7 @@ class Howler {
   mute(muted) {
     // If we don't have an AudioContext created yet, run the setup.
     if (!this.ctx) {
-      setupAudioContext();
+      this._setupAudioContext();
     }
 
     this._muted = muted;
@@ -189,7 +200,7 @@ class Howler {
     ) {
       this.ctx.close();
       this.ctx = null;
-      setupAudioContext();
+      this._setupAudioContext();
     }
 
     return this;
@@ -263,7 +274,9 @@ class Howler {
     try {
       if (typeof AudioContext !== 'undefined') {
         this.ctx = new AudioContext();
+        // @ts-expect-error Safari backwards compatibility
       } else if (typeof webkitAudioContext !== 'undefined') {
+        // @ts-expect-error Safari backwards compatibility
         this.ctx = new webkitAudioContext();
       } else {
         this.usingWebAudio = false;
@@ -299,7 +312,8 @@ class Howler {
     if (this.usingWebAudio) {
       this.masterGain =
         typeof this.ctx.createGain === 'undefined'
-          ? this.ctx.createGainNode()
+          ? // @ts-expect-error Support old browsers
+            this.ctx.createGainNode()
           : this.ctx.createGain();
       this.masterGain.gain.setValueAtTime(
         this._muted ? 0 : this._volume,
@@ -428,7 +442,7 @@ class Howler {
     // Call this method on touch start to create and play a buffer,
     // then check if the audio actually played to determine if
     // audio has now been unlocked on iOS, Android, etc.
-    const unlock = (e) => {
+    const unlock = () => {
       // Create a pool of unlocked HTML5 Audio objects that can
       // be used for playing sounds without user interaction. HTML5
       // Audio objects must be individually unlocked, as opposed
@@ -479,6 +493,7 @@ class Howler {
 
       // Play the empty buffer.
       if (typeof source.start === 'undefined') {
+        // @ts-expect-error .noteOn() only exists in old browsers.
         source.noteOn(0);
       } else {
         source.start(0);
@@ -490,7 +505,7 @@ class Howler {
       }
 
       // Setup a timeout to check that we are unlocked on the next event loop.
-      source.onended = function () {
+      source.onended = () => {
         source.disconnect(0);
 
         // Update the unlocked state and prevent this check from happening again.
@@ -534,6 +549,7 @@ class Howler {
     if (
       testPlay &&
       typeof Promise !== 'undefined' &&
+      // @ts-expect-error
       (testPlay instanceof Promise || typeof testPlay.then === 'function')
     ) {
       testPlay.catch(function () {
@@ -590,7 +606,7 @@ class Howler {
     }
 
     // If no sound has played after 30 seconds, suspend the context.
-    this._suspendTimer = setTimeout(function () {
+    this._suspendTimer = setTimeout(() => {
       if (!this.autoSuspend) {
         return;
       }
@@ -599,7 +615,7 @@ class Howler {
       this.state = 'suspending';
 
       // Handle updating the state of the audio context after suspending.
-      var handleSuspension = function () {
+      const handleSuspension = () => {
         this.state = 'suspended';
 
         if (this._resumeAfterSuspend) {
@@ -624,7 +640,7 @@ class Howler {
     if (
       !this.ctx ||
       typeof this.ctx.resume === 'undefined' ||
-      !Howler.usingWebAudio
+      !this.usingWebAudio
     ) {
       return;
     }
@@ -640,7 +656,7 @@ class Howler {
       this.state === 'suspended' ||
       (this.state === 'running' && this.ctx.state === 'interrupted')
     ) {
-      this.ctx.resume().then(function () {
+      this.ctx.resume().then(() => {
         this.state = 'running';
 
         // Emit to all Howls that the audio has resumed.
