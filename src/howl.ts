@@ -762,8 +762,9 @@ class Howl {
   /**
    * Pause playback and save current position.
    * @param id The sound ID (empty to pause all in group).
+   * @param skipEmit If true, the `pause` event won't be emitted.
    */
-  pause(id: number) {
+  pause(id: number, skipEmit?: boolean) {
     // If the sound hasn't loaded or a play() promise is pending, add it to the load queue to pause when capable.
     if (this._state !== 'loaded' || this._playLock) {
       this._queue.push({
@@ -832,8 +833,8 @@ class Howl {
         }
       }
 
-      // Fire the pause event, unless `true` is passed as the 2nd argument.
-      if (!arguments[1]) {
+      // Fire the pause event, unless skipEmit is `true`
+      if (!skipEmit) {
         this._emit('pause', sound ? sound._id : null);
       }
     }
@@ -1298,11 +1299,10 @@ class Howl {
    *   rate(id) -> Returns the sound id's current playback rate.
    *   rate(rate) -> Sets the playback rate of all sounds in this Howl group.
    *   rate(rate, id) -> Sets the playback rate of passed sound id.
-   * @return {Howl/Number} Returns this or the current playback rate.
+   * @return Returns this or the current playback rate.
    */
-  rate() {
-    var args = arguments;
-    var rate, id;
+  rate(...args) {
+    let rate, id;
 
     // Determine the values based on arguments.
     if (args.length === 0) {
@@ -1323,7 +1323,7 @@ class Howl {
     }
 
     // Update the playback rate or return the current value.
-    var sound;
+    let sound;
     if (typeof rate === 'number') {
       // If the sound hasn't loaded, add it to the load queue to change playback rate when capable.
       if (this._state !== 'loaded' || this._playLock) {
@@ -1370,12 +1370,12 @@ class Howl {
           }
 
           // Reset the timers.
-          var seek = this.seek(id[i]);
-          var duration =
+          const seek = this.seek(id[i]) as number;
+          const duration =
             (this._sprite[sound._sprite][0] + this._sprite[sound._sprite][1]) /
               1000 -
             seek;
-          var timeout = (duration * 1000) / Math.abs(sound._rate);
+          const timeout = (duration * 1000) / Math.abs(sound._rate);
 
           // Start a new end timer if sound is already playing.
           if (this._endTimers[id[i]] || !sound._paused) {
@@ -1406,8 +1406,7 @@ class Howl {
    * @return Returns this or the current seek position.
    */
   seek(...args) {
-    let seek: number | undefined = undefined,
-      id: number | undefined = undefined;
+    let seek, id;
 
     // Determine the values based on arguments.
     if (args.length === 0) {
