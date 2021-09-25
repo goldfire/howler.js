@@ -24,7 +24,7 @@
   "scripts": {
     "test": "vite",
     "test:network": "vite --host",
-    "build": "VERSION=`printf 'v' && node -e 'console.log(require(\"./package.json\").version)'` && sed -i '' '2s/.*/ *  howler.js '\"$VERSION\"'/' src/howler.core.js && sed -i '' '4s/.*/ *  howler.js '\"$VERSION\"'/' src/plugins/howler.spatial.js && uglifyjs --preamble \"/*! howler.js $VERSION | (c) 2013-2020, James Simpson of GoldFire Studios | MIT License | howlerjs.com */\" src/howler.core.js -c -m --screw-ie8 -o dist/howler.core.min.js && uglifyjs --preamble \"/*! howler.js $VERSION | Spatial Plugin | (c) 2013-2020, James Simpson of GoldFire Studios | MIT License | howlerjs.com */\" src/plugins/howler.spatial.js -c -m --screw-ie8 -o dist/howler.spatial.min.js && awk 'FNR==1{echo \"\"}1' dist/howler.core.min.js dist/howler.spatial.min.js | sed '3s~.*~/*! Spatial Plugin */~' | perl -pe 'chomp if eof' > dist/howler.min.js && awk '(NR>1 && FNR==1){printf (\"\\n\\n\")};1' src/howler.core.js src/plugins/howler.spatial.js > dist/howler.js",
+    "build": "node esbuild.js",
     "release": "VERSION=`printf 'v' && node -e 'console.log(require(\"./package.json\").version)'` && git tag $VERSION && git push && git push origin $VERSION && npm publish"
   },
   "devDependencies": {
@@ -33,14 +33,17 @@
     "typescript": "^4.4.3",
     "vite": "^2.5.10"
   },
+  "type": "module",
   "main": "dist/howler.js",
   "license": "MIT",
   "files": [
-    "src",
     "dist/howler.js",
     "dist/howler.min.js",
     "dist/howler.core.min.js",
     "dist/howler.spatial.min.js",
     "LICENSE.md"
-  ]
+  ],
+  "dependencies": {
+    "fs-extra": "^10.0.0"
+  }
 }

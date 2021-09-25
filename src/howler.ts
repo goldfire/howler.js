@@ -1,4 +1,4 @@
-import Howl from './Howl';
+import Howl from './howl';
 
 export interface HowlerAudioElement extends HTMLAudioElement {
   _unlocked: boolean;

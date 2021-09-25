@@ -1,4 +1,4 @@
-import Howl, { HowlXHROptions } from './Howl';
+import Howl, { HowlXHROptions } from './howl';
 import Howler, { HowlerAudioContext } from './howler';
 
 export const cache = {};

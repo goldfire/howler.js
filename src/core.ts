@@ -7,7 +7,7 @@
  *
  *  MIT License
  */
-import Howler from './Howler';
-import Howl from './Howl';
+import Howler from './howler';
+import Howl from './howl';
 
 export { Howler, Howl };
