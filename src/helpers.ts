@@ -1,7 +1,7 @@
 import Howl from './Howl';
 import Howler from './howler';
 
-const cache = {};
+export const cache = {};
 
 /**
  * Buffer a sound from URL, Data URI or cache and decode to audio source (Web Audio API).
@@ -139,3 +139,9 @@ function loadSound(self: Howl, buffer?: AudioBuffer) {
     self._loadQueue();
   }
 }
+
+export const isHTMLAudioElement = (node: any): node is HTMLAudioElement =>
+  (node as HTMLAudioElement).playbackRate !== undefined;
+
+export const isGainNode = (node: any): node is GainNode =>
+  (node as GainNode).connect !== undefined;

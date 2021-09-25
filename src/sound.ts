@@ -8,6 +8,12 @@
 import Howler from './howler';
 import Howl from './howl';
 
+interface HowlGainNode extends GainNode {
+  bufferSource: AudioBufferSourceNode | null;
+  paused: boolean;
+  volume: number;
+}
+
 class Sound {
   _parent: Howl;
   _muted: boolean;
@@ -20,10 +26,12 @@ class Sound {
   _sprite: string = '__default';
   _id: number;
 
-  _node: GainNode | HTMLAudioElement;
-  _errorFn?: EventListener;
-  _loadFn?: EventListener;
-  _endFn?: EventListener;
+  _node: HowlGainNode | HTMLAudioElement;
+  _errorFn: EventListener;
+  _loadFn: EventListener;
+  _endFn: EventListener;
+  // TODO: Add better type when adding the spatial audio plugin.
+  _panner: unknown;
 
   _rateSeek?: number;
 
@@ -66,10 +74,10 @@ class Sound {
           ? // @ts-expect-error Support old browsers
             Howler.ctx.createGainNode()
           : Howler.ctx.createGain()
-      ) as GainNode;
+      ) as HowlGainNode;
       this._node.gain.setValueAtTime(volume, Howler.ctx.currentTime);
       this._node.paused = true;
-      this._node.connect(Howler.masterGain);
+      this._node.connect(Howler.masterGain as GainNode);
     } else if (!Howler.noAudio) {
       // Get an unlocked Audio object from the pool.
       this._node = Howler._obtainHtml5Audio() as HTMLAudioElement;

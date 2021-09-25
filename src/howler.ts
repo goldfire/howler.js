@@ -47,7 +47,7 @@ class Howler {
   noAudio = false;
   usingWebAudio = true;
   autoSuspend = true;
-  ctx: HowlerAudioContext | null = null;
+  ctx: HowlerAudioContext;
 
   // Set to false to disable the auto audio unlocker.
   autoUnlock = true;

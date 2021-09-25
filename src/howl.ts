@@ -1,5 +1,5 @@
 import Howler from './howler';
-import { loadBuffer } from './helpers';
+import { loadBuffer, cache } from './helpers';
 import Sound from './sound';
 
 export type HowlCallback = (soundId: number) => void;
@@ -610,7 +610,7 @@ class Howl {
       const playHtml5 = () => {
         node.currentTime = seek;
         node.muted = sound._muted || this._muted || Howler._muted || node.muted;
-        node.volume = sound._volume * Howler.volume();
+        node.volume = sound._volume * (Howler.volume() as number);
         node.playbackRate = sound._rate;
 
         // Some browsers will throw an error if this is called without user interaction.
@@ -1872,7 +1872,7 @@ class Howl {
    */
   _getSoundIds(id: number) {
     if (typeof id === 'undefined') {
-      var ids = [];
+      var ids: number[] = [];
       for (var i = 0; i < this._sounds.length; i++) {
         ids.push(this._sounds[i]._id);
       }
@@ -1888,7 +1888,7 @@ class Howl {
    * @param  {Sound} sound The sound object to work with.
    * @return {Howl}
    */
-  _refreshBuffer(sound) {
+  _refreshBuffer(sound: Sound) {
     // Setup the buffer source for playback.
     sound._node.bufferSource = Howler.ctx.createBufferSource();
     sound._node.bufferSource.buffer = cache[this._src];
