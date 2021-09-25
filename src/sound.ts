@@ -28,8 +28,8 @@ class Sound {
     this._parent = howl;
 
     // Setup the default parameters.
-    this._muted = howl._muted;
-    this._loop = howl._loop;
+    this._muted = Boolean(howl._muted);
+    this._loop = Boolean(howl._loop);
     this._volume = howl._volume;
     this._rate = howl._rate;
 
@@ -56,7 +56,8 @@ class Sound {
       // Create the gain node for controlling volume (the source will connect to this).
       this._node =
         typeof Howler.ctx.createGain === 'undefined'
-          ? Howler.ctx.createGainNode()
+          ? // @ts-expect-error Support old browsers
+            Howler.ctx.createGainNode()
           : Howler.ctx.createGain();
       this._node.gain.setValueAtTime(volume, Howler.ctx.currentTime);
       this._node.paused = true;

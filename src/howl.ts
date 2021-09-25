@@ -196,7 +196,10 @@ type HowlEvent =
   | 'rate'
   | 'seek'
   | 'fade'
-  | 'unlock';
+  | 'unlock'
+  | 'load'
+  | 'loaderror'
+  | 'playerror';
 
 interface HowlEventHandler {
   event: HowlEvent;
@@ -207,15 +210,15 @@ class Howl {
   // User defined properties
   _autoplay: boolean = false;
   _format: HowlOptions['format'];
-  _html5: HowlOptions['html5'];
-  _muted: HowlOptions['mute'];
-  _loop: HowlOptions['loop'];
-  _pool: HowlOptions['pool'];
-  _preload: HowlOptions['preload'];
-  _rate: HowlOptions['rate'];
+  _html5: boolean = false;
+  _muted: boolean = false;
+  _loop: boolean = false;
+  _pool: number = 5;
+  _preload: boolean | 'metadata' = true;
+  _rate: number = 1;
   _sprite: HowlOptions['sprite'];
   _src: HowlOptions['src'];
-  _volume: HowlOptions['volume'];
+  _volume: number = 1;
   _xhr: HowlOptions['xhr'];
 
   // Other default properties.
@@ -322,7 +325,7 @@ class Howl {
     }
 
     // Load the source file unless otherwise specified.
-    if (this._preload && this._preload !== 'none') {
+    if (this._preload) {
       this.load();
     }
   }
@@ -425,8 +428,8 @@ class Howl {
    * @param  {Boolean} internal Internal Use: true prevents event firing.
    * @return {Number}          Sound ID.
    */
-  play(sprite: string | number, internal?: boolean) {
-    var id = null;
+  play(sprite?: string | number, internal?: boolean) {
+    var id: number | null = null;
 
     // Determine if a sprite, sound id or nothing was passed
     if (typeof sprite === 'number') {
@@ -1672,7 +1675,7 @@ class Howl {
    * after the previous has finished executing (even if async like play).
    * @return {Howl}
    */
-  _loadQueue(event: string) {
+  _loadQueue(event?: string) {
     if (this._queue.length > 0) {
       var task = this._queue[0];
 
