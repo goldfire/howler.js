@@ -61,11 +61,11 @@ class Howler {
 
   /**
    * Get/set the global volume for all sounds.
-   * @param  {Float} vol Volume from 0.0 to 1.0.
-   * @return {Howler/Float}     Returns self or current volume.
+   * @param vol Volume from 0.0 to 1.0.
+   * @return Returns self or current volume.
    */
-  volume(vol?: string) {
-    const volume = typeof vol === 'string' ? parseFloat(vol) : undefined;
+  volume(vol?: number | string) {
+    const volume = parseFloat(vol as string);
 
     // If we don't have an AudioContext created yet, run the setup.
     if (!this.ctx) {
@@ -164,7 +164,6 @@ class Howler {
 
   /**
    * Unload and destroy all currently loaded Howl objects.
-   * @return {Howler}
    */
   unload() {
     for (var i = this._howls.length - 1; i >= 0; i--) {
@@ -187,7 +186,7 @@ class Howler {
 
   /**
    * Check for codec support of specific extension.
-   * @param  {String} ext Audio file extention.
+   * @param ext Audio file extention.
    */
   codecs(ext: string) {
     return this._codecs[ext.replace(/^x-/, '')];
@@ -195,7 +194,6 @@ class Howler {
 
   /**
    * Setup various state values for global tracking.
-   * @return {Howler}
    */
   _setup() {
     // Keeps track of the suspend/resume state of the AudioContext.
@@ -306,7 +304,6 @@ class Howler {
 
   /**
    * Check for browser support for various codecs and cache the results.
-   * @return {Howler}
    */
   _setupCodecs() {
     let audioTest: HTMLAudioElement | null = null;
@@ -517,7 +514,7 @@ class Howler {
   /**
    * Get an unlocked HTML5 Audio object from the pool. If none are left,
    * return a new Audio object and throw a warning.
-   * @return {Audio} HTML5 Audio object.
+   * @return HTML5 Audio object.
    */
   _obtainHtml5Audio() {
     // Return the next object from the pool if one exists.
@@ -545,7 +542,6 @@ class Howler {
 
   /**
    * Return an activated HTML5 Audio object to the pool.
-   * @return {Howler}
    */
   _releaseHtml5Audio(audio: HowlerAudioElement) {
     // Don't add audio to the pool if we don't know if it has been unlocked.
@@ -559,7 +555,6 @@ class Howler {
   /**
    * Automatically suspend the Web Audio AudioContext after no sound has played for 30 seconds.
    * This saves processing/energy and fixes various browser-specific bugs with audio getting stuck.
-   * @return {Howler}
    */
   _autoSuspend() {
     if (
@@ -617,7 +612,6 @@ class Howler {
 
   /**
    * Automatically resume the Web Audio AudioContext when a new sound is played.
-   * @return {Howler}
    */
   _autoResume() {
     if (
