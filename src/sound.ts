@@ -27,9 +27,9 @@ class Sound {
   _id: number;
 
   _node: HowlGainNode | HTMLAudioElement;
-  _errorFn: EventListener;
-  _loadFn: EventListener;
-  _endFn: EventListener;
+  _errorFn: EventListener = () => {};
+  _loadFn: EventListener = () => {};
+  _endFn: EventListener = () => {};
   // TODO: Add better type when adding the spatial audio plugin.
   _panner: unknown;
 
@@ -54,6 +54,19 @@ class Sound {
     // Add itself to the parent's pool.
     this._parent._sounds.push(this);
 
+    if (this._parent._webAudio) {
+      // Create the gain node for controlling volume (the source will connect to this).
+      this._node = (
+        typeof Howler.ctx.createGain === 'undefined'
+          ? // @ts-expect-error Support old browsers
+            Howler.ctx.createGainNode()
+          : Howler.ctx.createGain()
+      ) as HowlGainNode;
+    } else {
+      // Get an unlocked Audio object from the pool.
+      this._node = Howler._obtainHtml5Audio() as HTMLAudioElement;
+    }
+
     // Create the new node.
     this.create();
   }
@@ -68,20 +81,13 @@ class Sound {
       Howler._muted || this._muted || this._parent._muted ? 0 : this._volume;
 
     if (parent._webAudio) {
-      // Create the gain node for controlling volume (the source will connect to this).
-      this._node = (
-        typeof Howler.ctx.createGain === 'undefined'
-          ? // @ts-expect-error Support old browsers
-            Howler.ctx.createGainNode()
-          : Howler.ctx.createGain()
-      ) as HowlGainNode;
-      this._node.gain.setValueAtTime(volume, Howler.ctx.currentTime);
-      this._node.paused = true;
-      this._node.connect(Howler.masterGain as GainNode);
+      (this._node as HowlGainNode).gain.setValueAtTime(
+        volume,
+        Howler.ctx.currentTime,
+      );
+      (this._node as HowlGainNode).paused = true;
+      (this._node as HowlGainNode).connect(Howler.masterGain as GainNode);
     } else if (!Howler.noAudio) {
-      // Get an unlocked Audio object from the pool.
-      this._node = Howler._obtainHtml5Audio() as HTMLAudioElement;
-
       // Listen for errors (http://dev.w3.org/html5/spec-author-view/spec.html#mediaerror).
       this._errorFn = this._errorListener.bind(this);
       this._node.addEventListener('error', this._errorFn, false);
@@ -96,13 +102,13 @@ class Sound {
       this._node.addEventListener('ended', this._endFn, false);
 
       // Setup the new audio node.
-      this._node.src = parent._src as string;
-      this._node.preload =
+      (this._node as HTMLAudioElement).src = parent._src as string;
+      (this._node as HTMLAudioElement).preload =
         parent._preload === true ? 'auto' : (parent._preload as string);
       this._node.volume = volume * (Howler.volume() as number);
 
       // Begin loading the source.
-      this._node.load();
+      (this._node as HTMLAudioElement).load();
     }
 
     return this;
@@ -140,7 +146,9 @@ class Sound {
     this._parent._emit(
       'loaderror',
       this._id,
-      this._node.error ? this._node.error.code : 0,
+      (this._node as HTMLAudioElement).error instanceof MediaError
+        ? ((this._node as HTMLAudioElement).error as MediaError).code
+        : 0,
     );
 
     // Clear the event listener.
@@ -154,7 +162,8 @@ class Sound {
     var parent = this._parent;
 
     // Round up the duration to account for the lower precision in HTML5 Audio.
-    parent._duration = Math.ceil(this._node.duration * 10) / 10;
+    parent._duration =
+      Math.ceil((this._node as HTMLAudioElement).duration * 10) / 10;
 
     // Setup a sprite if none is defined.
     if (Object.keys(parent._sprite).length === 0) {
@@ -181,7 +190,8 @@ class Sound {
     if (parent._duration === Infinity) {
       // Update the parent duration to match the real audio duration.
       // Round up the duration to account for the lower precision in HTML5 Audio.
-      parent._duration = Math.ceil(this._node.duration * 10) / 10;
+      parent._duration =
+        Math.ceil((this._node as HTMLAudioElement).duration * 10) / 10;
 
       // Update the sprite that corresponds to the real duration.
       if (parent._sprite.__default[1] === Infinity) {

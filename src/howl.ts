@@ -1647,7 +1647,7 @@ class Howl {
    * @param  {Number} msg   Message to go with event.
    * @return {Howl}
    */
-  _emit(event: string, id?: number | null, msg?: string) {
+  _emit(event: string, id?: number | null, msg?: string | number) {
     var events = this['_on' + event];
 
     // Loop through event store and fire all functions.
