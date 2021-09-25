@@ -37,7 +37,7 @@ class Sound {
 
   /**
    * Setup the sound object, which each node attached to a Howl group is contained in.
-   * @param {Object} howl The Howl parent group.
+   * @param howl The Howl parent group.
    */
   constructor(howl: Howl) {
     this._parent = howl;
@@ -73,7 +73,6 @@ class Sound {
 
   /**
    * Create and setup a new sound object, whether HTML5 Audio or Web Audio.
-   * @return {Sound}
    */
   create() {
     var parent = this._parent;
@@ -116,7 +115,6 @@ class Sound {
 
   /**
    * Reset the parameters of this sound to the original state (for recycle).
-   * @return {Sound}
    */
   reset() {
     var parent = this._parent;
@@ -159,7 +157,7 @@ class Sound {
    * HTML5 Audio canplaythrough listener callback.
    */
   _loadListener() {
-    var parent = this._parent;
+    const parent = this._parent;
 
     // Round up the duration to account for the lower precision in HTML5 Audio.
     parent._duration =
@@ -184,7 +182,7 @@ class Sound {
    * HTML5 Audio ended listener callback.
    */
   _endListener() {
-    var parent = this._parent;
+    const parent = this._parent;
 
     // Only handle the `ended`` event if the duration is Infinity.
     if (parent._duration === Infinity) {

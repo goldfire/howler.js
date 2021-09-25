@@ -9,6 +9,12 @@ export interface SoundSpriteDefinitions {
   [name: string]: [number, number] | [number, number, boolean];
 }
 
+export interface HowlXHROptions {
+  method?: string;
+  headers?: Record<string, string>;
+  withCredentials?: boolean;
+}
+
 export interface HowlListeners {
   /**
    * Fires when the sound has been stopped. The first parameter is the ID of the sound.
@@ -174,11 +180,7 @@ export interface HowlOptions extends HowlListeners {
    * this parameter. Each is optional (method defaults to GET, headers default to undefined and
    * withCredentials defaults to false).
    */
-  xhr?: {
-    method?: string;
-    headers?: Record<string, string>;
-    withCredentials?: boolean;
-  };
+  xhr?: HowlXHROptions;
 }
 
 type HowlCallbacks = Array<{ fn: HowlCallback }>;

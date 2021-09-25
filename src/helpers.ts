@@ -1,14 +1,13 @@
-import Howl from './Howl';
+import Howl, { HowlXHROptions } from './Howl';
 import Howler from './howler';
 
 export const cache = {};
 
 /**
  * Buffer a sound from URL, Data URI or cache and decode to audio source (Web Audio API).
- * @param  {Howl} self
  */
-export function loadBuffer(self) {
-  var url = self._src;
+export function loadBuffer(self: Howl) {
+  var url = self._src as string;
 
   // Check if the buffer has already been cached and use it instead.
   if (cache[url]) {
@@ -33,18 +32,19 @@ export function loadBuffer(self) {
   } else {
     // Load the buffer from the URL.
     var xhr = new XMLHttpRequest();
-    xhr.open(self._xhr.method, url, true);
-    xhr.withCredentials = self._xhr.withCredentials;
+    xhr.open((self._xhr as HowlXHROptions).method as string, url, true);
+    xhr.withCredentials = (self._xhr as HowlXHROptions)
+      .withCredentials as boolean;
     xhr.responseType = 'arraybuffer';
 
     // Apply any custom headers to the request.
-    if (self._xhr.headers) {
-      Object.keys(self._xhr.headers).forEach(function (key) {
-        xhr.setRequestHeader(key, self._xhr.headers[key]);
+    if (self._xhr as HowlXHROptions) {
+      Object.keys(self._xhr as HowlXHROptions).forEach(function (key) {
+        xhr.setRequestHeader(key, (self._xhr as HowlXHROptions)[key]);
       });
     }
 
-    xhr.onload = function () {
+    xhr.onload = () => {
       // Make sure we get a successful response back.
       var code = (xhr.status + '')[0];
       if (code !== '0' && code !== '2' && code !== '3') {
@@ -58,7 +58,7 @@ export function loadBuffer(self) {
 
       decodeAudioData(xhr.response, self);
     };
-    xhr.onerror = function () {
+    xhr.onerror = () => {
       // If there is an error, switch to HTML5 Audio.
       if (self._webAudio) {
         self._html5 = true;
@@ -74,20 +74,20 @@ export function loadBuffer(self) {
 
 /**
  * Send the XHR request wrapped in a try/catch.
- * @param  {Object} xhr XHR to send.
+ * @param xhr XHR to send.
  */
-function safeXhrSend(xhr) {
+function safeXhrSend(xhr: XMLHttpRequest) {
   try {
     xhr.send();
   } catch (e) {
-    xhr.onerror();
+    console.error('XHR Request failed: ', e);
   }
 }
 
 /**
  * Decode audio data from an array buffer.
- * @param  {ArrayBuffer} arraybuffer The audio data.
- * @param  {Howl}        self
+ * @param arraybuffer The audio data.
+ * @param self
  */
 function decodeAudioData(arraybuffer: ArrayBuffer, self: Howl) {
   // Fire a load error if something broke.
@@ -98,7 +98,7 @@ function decodeAudioData(arraybuffer: ArrayBuffer, self: Howl) {
   // Load the sound on success.
   function success(buffer: AudioBuffer) {
     if (buffer && self._sounds.length > 0) {
-      cache[self._src] = buffer;
+      cache[self._src as string] = buffer;
       loadSound(self, buffer);
     } else {
       error();
@@ -118,8 +118,8 @@ function decodeAudioData(arraybuffer: ArrayBuffer, self: Howl) {
 
 /**
  * Sound is now loaded, so finish setting everything up and fire the loaded event.
- * @param  {Howl} self
- * @param  {Object} buffer The decoded buffer sound source.
+ * @param self
+ * @param buffer The decoded buffer sound source.
  */
 function loadSound(self: Howl, buffer?: AudioBuffer) {
   // Set the duration.
@@ -140,6 +140,7 @@ function loadSound(self: Howl, buffer?: AudioBuffer) {
   }
 }
 
+// NOTE: Maybe remove these
 export const isHTMLAudioElement = (node: any): node is HTMLAudioElement =>
   (node as HTMLAudioElement).playbackRate !== undefined;
 
