@@ -285,17 +285,19 @@ class Howler {
     }
 
     // Create and expose the master GainNode when using Web Audio (useful for plugins or advanced usage).
-    if (this.usingWebAudio && this.masterGain && this.ctx) {
+    if (this.usingWebAudio) {
       this.masterGain =
-        typeof this.ctx.createGain === 'undefined'
+        typeof (this.ctx as HowlerAudioContext).createGain === 'undefined'
           ? // @ts-expect-error Support old browsers
-            this.ctx.createGainNode()
-          : this.ctx.createGain();
+            (this.ctx as HowlerAudioContext).createGainNode()
+          : (this.ctx as HowlerAudioContext).createGain();
       (this.masterGain as GainNode).gain.setValueAtTime(
         this._muted ? 0 : this._volume,
-        this.ctx.currentTime,
+        (this.ctx as HowlerAudioContext).currentTime,
       );
-      (this.masterGain as GainNode).connect(this.ctx.destination);
+      (this.masterGain as GainNode).connect(
+        (this.ctx as HowlerAudioContext).destination,
+      );
     }
 
     // Re-run the setup on Howler.

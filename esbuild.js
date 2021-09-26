@@ -17,6 +17,8 @@ const distDir = resolve(outDir);
 
 await emptyDir(distDir);
 
+// TODO: setup watch mode script for development
+
 esbuild
   .build({
     entryPoints: ['src/core.ts'],
