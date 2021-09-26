@@ -236,7 +236,7 @@ const tests = [
   },
 
   (fn) => {
-    var sprite = sound2.play('one');
+    const sprite = sound2.play('one');
     sound2.loop(true, sprite);
 
     label.innerHTML = 'LOOP SPRITE';

@@ -36,6 +36,11 @@ esbuild
     // Build declaration files with TSC since they aren't built by esbuild.
     execSync('npx tsc');
 
+    // TODO: output minimal package.json with
+    // 1) export map for all possible entry points into the library
+    // 2) type: "module" to use esm
+    // 3) type definition path for built-in TS support
+
     const buildTime = ((performance.now() - startTime) / 1000).toLocaleString(
       'en-US',
       {
