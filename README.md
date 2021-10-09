@@ -92,7 +92,7 @@ const {Howl, Howler} = require('howler');
 
 Included distribution files:
 
-* **howler**: This is the default and fully bundled source the includes `howler.core` and `howler.spatial`. It inclues all functionality that howler comes with.
+* **howler**: This is the default and fully bundled source the includes `howler.core` and `howler.spatial`. It includes all functionality that howler comes with.
 * **howler.core**: This includes only the core functionality that aims to create parity between Web Audio and HTML5 Audio. It doesn't include any of the spatial/stereo audio functionality.
 * **howler.spatial**: This is a plugin that adds spatial/stereo audio functionality. It requires `howler.core` to operate as it is simply an add-on to the core.
 
