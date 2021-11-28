@@ -2167,6 +2167,10 @@
       var self = this;
       var isIOS = Howler._navigator && Howler._navigator.vendor.indexOf('Apple') >= 0;
 
+      if (!node.bufferSource) {
+        return self;
+      }
+
       if (Howler._scratchBuffer && node.bufferSource) {
         node.bufferSource.onended = null;
         node.bufferSource.disconnect(0);
