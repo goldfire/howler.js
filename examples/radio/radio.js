@@ -117,7 +117,7 @@ var radio = new Radio([
   {
     freq: '81.4',
     title: "BBC Radio 1",
-    src: 'http://bbcmedia.ic.llnwd.net/stream/bbcmedia_radio1_mf_q',
+    src: 'https://stream.live.vc.bbcmedia.co.uk/bbc_radio_one',
     howl: null
   },
   {
