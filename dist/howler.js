@@ -594,6 +594,8 @@
         method: o.xhr && o.xhr.method ? o.xhr.method : 'GET',
         headers: o.xhr && o.xhr.headers ? o.xhr.headers : null,
         withCredentials: o.xhr && o.xhr.withCredentials ? o.xhr.withCredentials : false,
+        // adding onprogress setting for XHR fetching
+        onprogress: o.xhr && o.xhr.onprogress ? o.xhr.onprogress : null,
       };
 
       // Setup all other default properties.
@@ -2167,6 +2169,10 @@
       var self = this;
       var isIOS = Howler._navigator && Howler._navigator.vendor.indexOf('Apple') >= 0;
 
+      if (!node.bufferSource) {
+        return self;
+      }
+
       if (Howler._scratchBuffer && node.bufferSource) {
         node.bufferSource.onended = null;
         node.bufferSource.disconnect(0);
@@ -2405,6 +2411,9 @@
       xhr.open(self._xhr.method, url, true);
       xhr.withCredentials = self._xhr.withCredentials;
       xhr.responseType = 'arraybuffer';
+
+      
+      self._xhr.onprogress!==null ? xhr.addEventListener("progress",self._xhr.onprogress) : null;
 
       // Apply any custom headers to the request.
       if (self._xhr.headers) {
@@ -3099,18 +3108,9 @@
           panningModel: typeof o.panningModel !== 'undefined' ? o.panningModel : pa.panningModel
         };
 
-        // Update the panner values or create a new panner if none exists.
+        // Create a new panner node if one doesn't already exist.
         var panner = sound._panner;
-        if (panner) {
-          panner.coneInnerAngle = pa.coneInnerAngle;
-          panner.coneOuterAngle = pa.coneOuterAngle;
-          panner.coneOuterGain = pa.coneOuterGain;
-          panner.distanceModel = pa.distanceModel;
-          panner.maxDistance = pa.maxDistance;
-          panner.refDistance = pa.refDistance;
-          panner.rolloffFactor = pa.rolloffFactor;
-          panner.panningModel = pa.panningModel;
-        } else {
+        if (!panner) {
           // Make sure we have a position to setup the node with.
           if (!sound._pos) {
             sound._pos = self._pos || [0, 0, -0.5];
@@ -3118,7 +3118,18 @@
 
           // Create a new panner node.
           setupPanner(sound, 'spatial');
+          panner = sound._panner
         }
+
+        // Update the panner values or create a new panner if none exists.
+        panner.coneInnerAngle = pa.coneInnerAngle;
+        panner.coneOuterAngle = pa.coneOuterAngle;
+        panner.coneOuterGain = pa.coneOuterGain;
+        panner.distanceModel = pa.distanceModel;
+        panner.maxDistance = pa.maxDistance;
+        panner.refDistance = pa.refDistance;
+        panner.rolloffFactor = pa.rolloffFactor;
+        panner.panningModel = pa.panningModel;
       }
     }
 
