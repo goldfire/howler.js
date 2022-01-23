@@ -1,0 +1,26 @@
+name: 📚 Documentation
+description: Report an error or area that needs clarification.
+labels: ["docs"]
+body:
+  - type: checkboxes
+    attributes:
+      label: "Documentation Is:"
+      options:
+        - label: Missing
+        - label: Confusing
+        - label: Incorrect
+        - label: Other
+
+  - type: textarea
+    attributes:
+      label: Describe Issue
+      description: Describe what the issue is in detail, and link to the current section if applicable.
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Suggested Improvement
+      description: How do you think it could be improved?
+    validations:
+      required: true

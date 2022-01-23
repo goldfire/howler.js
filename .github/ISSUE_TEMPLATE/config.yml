@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Technical Help
+    url: https://stackoverflow.com/questions/tagged/howler.js
+    about: Need help or support? Head to https://stackoverflow.com/questions/tagged/howler.js.
+  - name: Support and Discussion
+    url: https://github.com/goldfire/howler.js/discussions
+    about: Please use the forum if you have questions or need help.
