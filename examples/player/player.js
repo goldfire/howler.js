@@ -186,7 +186,7 @@ Player.prototype = {
     var self = this;
 
     // Update the global volume (affecting all Howls).
-    Howler.volume(val);
+    Howler.volume(val * 4);
 
     // Update the display on the slider.
     var barWidth = (val * 90) / 100;
@@ -378,7 +378,7 @@ var resize = function() {
   // Update the position of the slider.
   var sound = player.playlist[player.index].howl;
   if (sound) {
-    var vol = sound.volume();
+    var vol = sound.volume() / 4;
     var barWidth = (vol * 0.9);
     sliderBtn.style.left = (window.innerWidth * barWidth + window.innerWidth * 0.05 - 25) + 'px';
   }

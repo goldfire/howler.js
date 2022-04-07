@@ -75,7 +75,8 @@
         setupAudioContext();
       }
 
-      if (typeof vol !== 'undefined' && vol >= 0 && vol <= 1) {
+      // Raise cap from 1 to 20 (this should probably be smaller in reality)
+      if (typeof vol !== 'undefined' && vol >= 0 && vol <= 20) {
         self._volume = vol;
 
         // Don't update any of the nodes if we are muted.
@@ -85,9 +86,13 @@
 
         // When using Web Audio, we just need to adjust the master gain.
         if (self.usingWebAudio) {
+          console.log('setting master gain to', vol);
           self.masterGain.gain.setValueAtTime(vol, Howler.ctx.currentTime);
         }
 
+        // Because we are now playing all HTML5 nodes through the master gain node, we don't need to set their individual volumes
+        return self;
+        
         // Loop through and change volume for all HTML5 audio nodes.
         for (var i=0; i<self._howls.length; i++) {
           if (!self._howls[i]._webAudio) {
@@ -899,7 +904,7 @@
         var playHtml5 = function() {
           node.currentTime = seek;
           node.muted = sound._muted || self._muted || Howler._muted || node.muted;
-          node.volume = sound._volume * Howler.volume();
+          node.volume = 1; //sound._volume * Howler.volume();
           node.playbackRate = sound._rate;
 
           // Some browsers will throw an error if this is called without user interaction.
@@ -1270,7 +1275,7 @@
             if (self._webAudio && sound._node && !sound._muted) {
               sound._node.gain.setValueAtTime(vol, Howler.ctx.currentTime);
             } else if (sound._node && !sound._muted) {
-              sound._node.volume = vol * Howler.volume();
+              sound._node.volume = 1; //vol * Howler.volume();
             }
 
             self._emit('volume', sound._id);
@@ -2256,6 +2261,10 @@
         // Get an unlocked Audio object from the pool.
         self._node = Howler._obtainHtml5Audio();
 
+        // We want to be able to boost the audio beyond 100% volume, so connect the HTML source to the WebAudio master gain node and play through that
+        var source = Howler.ctx.createMediaElementSource(self._node);
+        source.connect(Howler.masterGain);
+
         // Listen for errors (http://dev.w3.org/html5/spec-author-view/spec.html#mediaerror).
         self._errorFn = self._errorListener.bind(self);
         self._node.addEventListener('error', self._errorFn, false);
@@ -2272,7 +2281,7 @@
         // Setup the new audio node.
         self._node.src = parent._src;
         self._node.preload = parent._preload === true ? 'auto' : parent._preload;
-        self._node.volume = volume * Howler.volume();
+        self._node.volume = 1; //volume * Howler.volume();
 
         // Begin loading the source.
         self._node.load();
