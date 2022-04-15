@@ -1,0 +1,15 @@
+name: ✨ Feature Request
+description: Suggest a new idea or feature.
+labels: ["feature"]
+body:
+  - type: textarea
+    attributes:
+      label: Feature Proposal
+      description: What are you trying to accomplish? Please provide context about why this is needed for the core library and useful for broad use-cases.
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Possible Implementation
+      description: If you have ideas for how this could be implemented (whether code-wise or, API, etc), provide those details here.

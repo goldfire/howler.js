@@ -1,0 +1,50 @@
+name: 🐞 Bug Report
+description: Report a reproducible bug.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Need help or support? Please don't open an issue!
+        Head to [Stack Overflow](https://stackoverflow.com/questions/tagged/howler.js) or [Discussions](https://github.com/goldfire/howler.js/discussions).
+
+  - type: textarea
+    attributes:
+      label: The Problem
+      description: Describe the issue you are experiencing here, to communicate to the maintainers. Tell us what you were trying to do and what happened. Provide a clear and concise description of what the problem is.
+    validations:
+      required: true
+
+  - type: input
+    attributes:
+      label: Reproducible Example
+      description: If possible, please provide the URL to a reproducible example of the issue (using something like CodePen, JSFiddle, etc).
+  
+  - type: textarea
+    attributes:
+      label: Reproduction Steps
+      description: What steps are required to reproduce the issue you are reporting?
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Possible Solution
+      description: If you have suggestions on a fix for the bug.
+
+  - type: textarea
+    attributes:
+      label: Context
+      description: How has this issue affected you? What are you trying to accomplish? Providing context helps to determine the best real-world solution.
+
+  - type: input
+    attributes:
+      label: Howler.js Version
+      description: Which version of `howler.js` are you using?
+      placeholder: "v0.0.0"
+    validations:
+      required: true
+
+  - type: input
+    attributes:
+      label: Affected Browser(s)/Versiuon(s)
