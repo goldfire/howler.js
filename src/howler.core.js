@@ -549,7 +549,7 @@
      * play without stopping and buffering additional data.
      * @return {Howler}
      */
-    _setEagerPlayback: function() {
+    _enableEagerPlayback: function() {
       var self = this;
 
       if (self._canPlayEvent === 'canplaythrough') {
@@ -641,7 +641,7 @@
       self._webAudio = Howler.usingWebAudio && !self._html5;
 
       if (Howler.eagerPlayback) {
-        Howler._setEagerPlayback();
+        Howler._enableEagerPlayback();
       }
 
       // Automatically try to enable audio.
