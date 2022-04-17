@@ -1,6 +1,7 @@
 // Set global options from query params
 function parseValueFromEntry(entry) {
-  var [key, value] = entry;
+  var key = entry[0];
+  var value = entry[1];
   var parsedValue = value;
 
   if (value.toLowerCase() === 'true') {
@@ -14,7 +15,10 @@ function parseValueFromEntry(entry) {
   return [key, parsedValue];
 }
 
-function setGlobalOptions([key, value]) {
+function setGlobalOptions(entry) {
+  var key = entry[0];
+  var value = entry[1];
+
   if (Howler.hasOwnProperty(key)) {
     Howler[key] = value;
   }
@@ -23,8 +27,8 @@ function setGlobalOptions([key, value]) {
 window.location.search
   .slice(1)
   .split('&')
-  .filter(([key]) => key)
-  .map(pair => pair.split('='))
+  .filter(function(entry) { return entry[0]; })
+  .map(function(pair) { return pair.split('='); })
   .map(parseValueFromEntry)
   .forEach(setGlobalOptions);
 

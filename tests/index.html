@@ -7,11 +7,39 @@
 </head>
 <body>
 <div id="container">
+  <h6 id="globalOptionsHeader">Global Options:</h6>
   <form id="globalOptions">
-    <h6>Global Options:</h6>
+    <div class="option">
+      <input type="checkbox" id="usingWebAudio" name="usingWebAudio">
+      <label for="usingWebAudio">usingWebAudio</label>
+    </div>
+    <div class="option">
+      <input type="checkbox" id="noAudio" name="noAudio">
+      <label for="noAudio">noAudio</label>
+    </div>
+    <div class="option">
+      <input type="checkbox" id="autoUnlock" name="autoUnlock" checked>
+      <label for="autoUnlock">autoUnlock</label>
+    </div>
+    <div class="option">
+      <input type="number" id="html5PoolSize" name="html5PoolSize" min="1" max="10" value="10" style="width:2rem">
+      <label for="html5PoolSize">html5PoolSize</label>
+    </div>
+    <div class="option">
+      <input type="checkbox" id="autoSuspend" name="autoSuspend" checked>
+      <label for="autoSuspend">autoSuspend</label>
+    </div>
     <div class="option">
       <input type="checkbox" id="eagerPlayback" name="eagerPlayback">
-      <label for="eagerPlayback">Eager Playback</label>
+      <label for="eagerPlayback">eagerPlayback</label>
+    </div>
+    <div class="option">
+      <input type="checkbox" id="ctx" name="ctx">
+      <label for="ctx">ctx</label>
+    </div>
+    <div class="option">
+      <input type="checkbox" id="masterGain" name="masterGain">
+      <label for="masterGain">masterGain</label>
     </div>
   </form>
   <button class="button" id="webaudio">RUN WEB AUDIO TESTS</button>
@@ -21,10 +49,21 @@
 
 <script>
   function navigateToTest(testLocation) {
-    var globalOptionsEntries = new FormData(document.getElementById('globalOptions'));
-    var globalOptionsQueryString = [...globalOptionsEntries.keys()].map(key => `${key}=true`).join('&');
+    var formElements = document.getElementById('globalOptions').elements;
+    var globalOptionsElements = Array.prototype.slice.call(formElements, 0);
+    var globalOptions = globalOptionsElements.map(function(el) {
+      if (el.type === 'checkbox') {
+        return el.name + '=' + el.checked;
+      }
+
+      if (el.type === 'number' && el.value) {
+        var value = Math.max(el.min, Math.min(el.max, el.value))
+        return el.name + '=' + value;
+      }
+    });
+    var globalOptionsQueryString = globalOptions.filter(Boolean).join('&');
     window.location = globalOptionsQueryString.length
-      ? `${testLocation}?${globalOptionsQueryString}`
+      ? testLocation + '?' + globalOptionsQueryString
       : testLocation;
   }
 

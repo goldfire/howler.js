@@ -89,17 +89,22 @@ body {
   align-items: center;
 }
 
-#globalOptions {
-  margin-bottom: 2rem;
+#globalOptionsHeader {
+  font-size: 3vw;
+  margin: 0 0 1rem;
 }
 
-#globalOptions h6 {
-  font-size: 4vw;
-  margin: 0 0 1rem;
+#globalOptions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+  margin: 0 2rem 3rem;
 }
 
 .option {
   font-size: 2vw;
+  margin-right: 3rem;
 }
 
 label {
