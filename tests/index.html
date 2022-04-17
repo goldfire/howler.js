@@ -6,24 +6,39 @@
   <link rel="stylesheet" href="./css/styles.css">
 </head>
 <body>
-  <div id="container">
-    <button class="button" id="webaudio">RUN WEB AUDIO TESTS</button>
-    <button class="button" id="html5">RUN HTML5 TESTS</button>
-    <button class="button" id="spatial">RUN SPATIAL TESTS</button>
-  </div>
+<div id="container">
+  <form id="globalOptions">
+    <h6>Global Options:</h6>
+    <div class="option">
+      <input type="checkbox" id="eagerPlayback" name="eagerPlayback">
+      <label for="eagerPlayback">Eager Playback</label>
+    </div>
+  </form>
+  <button class="button" id="webaudio">RUN WEB AUDIO TESTS</button>
+  <button class="button" id="html5">RUN HTML5 TESTS</button>
+  <button class="button" id="spatial">RUN SPATIAL TESTS</button>
+</div>
 
-  <script>
-    document.getElementById('webaudio').onclick = function() {
-      window.location = 'core.webaudio.html';
-    };
+<script>
+  function navigateToTest(testLocation) {
+    var globalOptionsEntries = new FormData(document.getElementById('globalOptions'));
+    var globalOptionsQueryString = [...globalOptionsEntries.keys()].map(key => `${key}=true`).join('&');
+    window.location = globalOptionsQueryString.length
+      ? `${testLocation}?${globalOptionsQueryString}`
+      : testLocation;
+  }
 
-    document.getElementById('html5').onclick = function() {
-      window.location = 'core.html5audio.html';
-    };
+  document.getElementById('webaudio').onclick = function() {
+    navigateToTest('core.webaudio.html');
+  };
 
-    document.getElementById('spatial').onclick = function() {
-      window.location = 'spatial.html';
-    };
-  </script>
+  document.getElementById('html5').onclick = function() {
+    navigateToTest('core.html5audio.html');
+  };
+
+  document.getElementById('spatial').onclick = function() {
+    navigateToTest('spatial.html');
+  };
+</script>
 </body>
 </html>

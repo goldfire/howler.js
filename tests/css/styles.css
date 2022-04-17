@@ -1,6 +1,6 @@
 html {
   width: 100%;
-  height: 100%;  
+  height: 100%;
   overflow: hidden;
   padding: 0;
   margin: 0;
@@ -87,6 +87,23 @@ body {
   -webkit-align-items: center;
   -ms-flex-align: center;
   align-items: center;
+}
+
+#globalOptions {
+  margin-bottom: 2rem;
+}
+
+#globalOptions h6 {
+  font-size: 4vw;
+  margin: 0 0 1rem;
+}
+
+.option {
+  font-size: 2vw;
+}
+
+label {
+  vertical-align: middle;
 }
 
 @media screen and (max-height: 400px) {

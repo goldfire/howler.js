@@ -1,3 +1,33 @@
+// Set global options from query params
+function parseValueFromEntry(entry) {
+  var [key, value] = entry;
+  var parsedValue = value;
+
+  if (value.toLowerCase() === 'true') {
+    parsedValue = true;
+  } else if (value.toLowerCase() === 'false') {
+    parsedValue = false;
+  } else if (!isNaN(value)) {
+    parsedValue = parseFloat(value);
+  }
+
+  return [key, parsedValue];
+}
+
+function setGlobalOptions([key, value]) {
+  if (Howler.hasOwnProperty(key)) {
+    Howler[key] = value;
+  }
+}
+
+window.location.search
+  .slice(1)
+  .split('&')
+  .filter(([key]) => key)
+  .map(pair => pair.split('='))
+  .map(parseValueFromEntry)
+  .forEach(setGlobalOptions);
+
 // Cache the label for later use.
 var label = document.getElementById('label');
 var start = document.getElementById('start');
@@ -30,11 +60,13 @@ sound1.once('load', function() {
 // Define the tests to run.
 var id;
 var tests = [
-   function(fn) {
-    id = sound1.play();
+  function(fn) {
+    sound1.once('play', function() {
+      label.innerHTML = 'PLAYING';
+      setTimeout(fn, 2000);
+    });
 
-    label.innerHTML = 'PLAYING';
-    setTimeout(fn, 2000);
+    id = sound1.play();
   },
 
   function(fn) {
