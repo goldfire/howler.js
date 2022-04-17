@@ -51,6 +51,7 @@
       self.usingWebAudio = true;
       self.autoSuspend = true;
       self.ctx = null;
+      self.eagerPlayback = false;
 
       // Set to false to disable the auto audio unlocker.
       self.autoUnlock = true;
@@ -63,8 +64,8 @@
 
     /**
      * Get/set the global volume for all sounds.
-     * @param  {Float} vol Volume from 0.0 to 1.0.
-     * @return {Howler/Float}     Returns self or current volume.
+     * @param  {float} vol Volume from 0.0 to 1.0.
+     * @return {Howler/float}     Returns self or current volume.
      */
     volume: function(vol) {
       var self = this || Howler;
@@ -540,6 +541,22 @@
       }
 
       return self;
+    },
+
+    /**
+     * Use `canplay` event for determining when playback can begin. In contrast with the `canplaythrough` event,
+     * `canplay` is fired when enough data has been loaded to begin playing the media, but not necessarily enough to
+     * play without stopping and buffering additional data.
+     * @return {Howler}
+     */
+    _setEagerPlayback: function() {
+      var self = this;
+
+      if (self._canPlayEvent === 'canplaythrough') {
+        self._canPlayEvent = 'canplay';
+      }
+
+      return self;
     }
   };
 
@@ -622,6 +639,10 @@
 
       // Web Audio or HTML5 Audio?
       self._webAudio = Howler.usingWebAudio && !self._html5;
+
+      if (Howler.eagerPlayback) {
+        Howler._setEagerPlayback();
+      }
 
       // Automatically try to enable audio.
       if (typeof Howler.ctx !== 'undefined' && Howler.ctx && Howler.autoUnlock) {
@@ -974,7 +995,7 @@
           node.load();
         }
 
-        // Play immediately if ready, or wait for the 'canplaythrough'e vent.
+        // Play immediately if ready, or wait for the '_canPlayEvent' event.
         var loadedNoReadyState = (window && window.ejecta) || (!node.readyState && Howler._navigator.isCocoonJS);
         if (node.readyState >= 3 || loadedNoReadyState) {
           playHtml5();
@@ -984,7 +1005,7 @@
 
           var listener = function() {
             self._state = 'loaded';
-            
+
             // Begin playback.
             playHtml5();
 
@@ -2260,7 +2281,7 @@
         self._errorFn = self._errorListener.bind(self);
         self._node.addEventListener('error', self._errorFn, false);
 
-        // Listen for 'canplaythrough' event to let us know the sound is ready.
+        // Listen for '_canPlayEvent' event to let us know the sound is ready.
         self._loadFn = self._loadListener.bind(self);
         self._node.addEventListener(Howler._canPlayEvent, self._loadFn, false);
 
