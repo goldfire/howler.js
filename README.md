@@ -380,9 +380,9 @@ Each HTML5 Audio object must be unlocked individually, so we keep a global pool 
 Automatically suspends the Web Audio AudioContext after 30 seconds of inactivity to decrease processing and energy usage. Automatically resumes upon new playback. Set this property to `false` to disable this behavior.
 #### eagerPlayback `Boolean` `false`
 When enabled, allows playback to begin before the browser has estimated that enough data has loaded in order to play the sound to its end, without having to stop and buffer for more content.
-#### ctx `Boolean` *`Web Audio Only`*
+#### ctx `AudioContext` `null` *`Web Audio Only`*
 Exposes the `AudioContext` with Web Audio API.
-#### masterGain `Boolean` *`Web Audio Only`*
+#### masterGain `GainNode` `null` *`Web Audio Only`*
 Exposes the master `GainNode` with Web Audio API. This can be useful for writing plugins or advanced usage.
 
 
