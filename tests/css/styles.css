@@ -103,12 +103,28 @@ body {
 }
 
 .option {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-justify-content: space-between;
+  -webkit-box-pack: justify;
+  -ms-flex-pack: distribute;
+  justify-content: space-between;
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+  align-items: center;
+  margin: 0 2rem 1rem 0;
   font-size: 2vw;
-  margin-right: 3rem;
 }
 
-label {
-  vertical-align: middle;
+.option > * {
+  margin-bottom: 0;
+}
+
+.option > label {
+  margin-right: 0.5rem;
 }
 
 @media screen and (max-height: 400px) {
