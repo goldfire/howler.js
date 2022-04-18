@@ -918,7 +918,8 @@
       } else {
         // Fire this when the sound is ready to play to begin HTML5 Audio playback.
         var playHtml5 = function() {
-          // When `eagerPlayback` is enabled, setting `currentTime` to the same value prevents the play promise from ever resolving.
+          // When `eagerPlayback` is enabled, setting `currentTime` to the same value prevents the
+          // play promise from ever resolving in Chromium-based browsers.
           if (node.currentTime !== seek) {
             node.currentTime = seek;
           }
