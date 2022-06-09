@@ -211,7 +211,7 @@ Set to `true` to force HTML5 Audio. This should be used for large audio files so
 #### loop `Boolean` `false`
 Set to `true` to automatically loop the sound forever.
 #### preload `Boolean|String` `true`
-Automatically begin downloading the audio file when the `Howl` is defined. If using HTML5 Audio, you can set this to `'metadata'` to only preload the file's metadata (to get its duration without download the entire file, for example). 
+Automatically begin downloading the audio file when the `Howl` is defined. If using HTML5 Audio, you can set this to `'metadata'` to only preload the file's metadata (to get its duration without download the entire file, for example), or to `'full'` to download the whole file first before starting streaming.
 #### autoplay `Boolean` `false`
 Set to `true` to automatically start playback when sound is loaded.
 #### mute `Boolean` `false`
