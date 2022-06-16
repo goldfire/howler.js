@@ -2233,6 +2233,7 @@
       if (parent._webAudio) {
         // Create the gain node for controlling volume (the source will connect to this).
         self._node = (typeof Howler.ctx.createGain === 'undefined') ? Howler.ctx.createGainNode() : Howler.ctx.createGain();
+        // ISP-14494 adding crossorigin attribute to prevent browser issues
         self._node.setAttribute('crossorigin', '');
         self._node.gain.setValueAtTime(volume, Howler.ctx.currentTime);
         self._node.paused = true;
@@ -2258,6 +2259,7 @@
         self._node.src = parent._src;
         self._node.preload = parent._preload === true ? 'auto' : parent._preload;
         self._node.volume = volume * Howler.volume();
+        // ISP-14494 adding crossorigin attribute to prevent browser issues
         self._node.setAttribute('crossorigin', '');
 
         // Begin loading the source.
