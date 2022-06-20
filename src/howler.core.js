@@ -1636,8 +1636,11 @@
           sound._ended = false;
           self._clearTimer(id);
 
+          // CSP-6512: Fix: change sound._node.currentTime on each call the seek method with 1 argument
+          var duration = sound._node.duration || self.duration();
+
           // Update the seek position for HTML5 Audio.
-          if (!self._webAudio && sound._node && !isNaN(sound._node.duration)) {
+          if (!self._webAudio && sound._node && !isNaN(duration)) {
             sound._node.currentTime = seek;
           }
 
