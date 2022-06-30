@@ -2556,16 +2556,6 @@
     Howler._setup();
   };
 
-  // Add support for AMD (Asynchronous Module Definition) libraries such as require.js.
-  if (typeof define === 'function' && define.amd) {
-    define([], function() {
-      return {
-        Howler: Howler,
-        Howl: Howl
-      };
-    });
-  }
-
   // Add support for CommonJS libraries such as browserify.
   if (typeof exports !== 'undefined') {
     exports.Howler = Howler;
