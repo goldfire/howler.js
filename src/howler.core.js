@@ -1061,14 +1061,16 @@
           if (sound._node) {
             if (self._webAudio) {
               // Make sure the sound has been created.
-              if (!self._isMediaStream && !sound._node.bufferSource) {
+              if (!sound._node.bufferSource) {
                 continue;
               }
 
-              if (typeof sound._node.bufferSource.stop === 'undefined') {
-                sound._node.bufferSource.noteOff(0);
-              } else {
-                sound._node.bufferSource.stop(0);
+              if (!self._isMediaStream) {
+                if (typeof sound._node.bufferSource.stop === 'undefined') {
+                  sound._node.bufferSource.noteOff(0);
+                } else {
+                  sound._node.bufferSource.stop(0);
+                }
               }
 
               // Clean up the buffer source.
@@ -1133,10 +1135,12 @@
             if (self._webAudio) {
               // Make sure the sound's AudioBufferSourceNode has been created.
               if (sound._node.bufferSource) {
-                if (typeof sound._node.bufferSource.stop === 'undefined') {
-                  sound._node.bufferSource.noteOff(0);
-                } else {
-                  sound._node.bufferSource.stop(0);
+                if (!self._isMediaStream) {
+                  if (typeof sound._node.bufferSource.stop === 'undefined') {
+                    sound._node.bufferSource.noteOff(0);
+                  } else {
+                    sound._node.bufferSource.stop(0);
+                  }
                 }
 
                 // Clean up the buffer source.
@@ -2159,6 +2163,29 @@
       if (self._isMediaStream) {
         // Special case for streams. Make a MediaStreamSource and set it as the
         // bufferSource.
+
+        // XXX There is a Chromium bug
+        // (https://bugs.chromium.org/p/chromium/issues/detail?id=933677) where
+        // remote MediaStreams don't play unless they are assigned to a media
+        // element. Workaround:
+        var ua = Howler._navigator ? Howler._navigator.userAgent : '';
+        if (ua.indexOf('Chrome') !== -1) {
+          var tmpAudio = new Audio();
+
+          var tmpAudioCallback = function() {
+            if (tmpAudio) {
+              tmpAudio.removeEventListener('error', tmpAudioCallback);
+              tmpAudio.removeEventListener('canplaythrough', tmpAudioCallback);
+              tmpAudio = null;
+            }
+          };
+
+          tmpAudio.muted = true;
+          tmpAudio.addEventListener('error', tmpAudioCallback);
+          tmpAudio.addEventListener('canplaythrough', tmpAudioCallback);
+          tmpAudio.srcObject = self._src;
+        }
+
         sound._node.bufferSource = Howler.ctx.createMediaStreamSource(self._src);
       } else {
         // Setup the buffer source for playback.
