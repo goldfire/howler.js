@@ -678,7 +678,13 @@
         // Sound object needs to be created
         if (isMediaStream(src)) {
           self._isMediaStream = true;
+          self._src = src;
+          self._duration = Infinity;
+          self._sprite = {__default: [0, Infinity]};
           new Sound(self);
+          self._state = 'loaded';
+          self._emit('load');
+          self._loadQueue();
           return self;
         }
 
@@ -873,11 +879,13 @@
           node.gain.setValueAtTime(vol, Howler.ctx.currentTime);
           sound._playStart = Howler.ctx.currentTime;
 
-          // Play the sound using the supported method.
-          if (typeof node.bufferSource.start === 'undefined') {
-            sound._loop ? node.bufferSource.noteGrainOn(0, seek, 86400) : node.bufferSource.noteGrainOn(0, seek, duration);
-          } else {
-            sound._loop ? node.bufferSource.start(0, seek, 86400) : node.bufferSource.start(0, seek, duration);
+          if (!self._isMediaStream) {
+            // Play the sound using the supported method.
+            if (typeof node.bufferSource.start === 'undefined') {
+              sound._loop ? node.bufferSource.noteGrainOn(0, seek, 86400) : node.bufferSource.noteGrainOn(0, seek, duration);
+            } else {
+              sound._loop ? node.bufferSource.start(0, seek, 86400) : node.bufferSource.start(0, seek, duration);
+            }
           }
 
           // Start a new timer if none is present.
@@ -2148,9 +2156,15 @@
     _refreshBuffer: function(sound) {
       var self = this;
 
-      // Setup the buffer source for playback.
-      sound._node.bufferSource = Howler.ctx.createBufferSource();
-      sound._node.bufferSource.buffer = cache[self._src];
+      if (self._isMediaStream) {
+        // Special case for streams. Make a MediaStreamSource and set it as the
+        // bufferSource.
+        sound._node.bufferSource = Howler.ctx.createMediaStreamSource(self._src);
+      } else {
+        // Setup the buffer source for playback.
+        sound._node.bufferSource = Howler.ctx.createBufferSource();
+        sound._node.bufferSource.buffer = cache[self._src];
+      }
 
       // Connect to the correct node.
       if (sound._panner) {
@@ -2159,13 +2173,17 @@
         sound._node.bufferSource.connect(sound._node);
       }
 
-      // Setup looping and playback rate.
-      sound._node.bufferSource.loop = sound._loop;
-      if (sound._loop) {
-        sound._node.bufferSource.loopStart = sound._start || 0;
-        sound._node.bufferSource.loopEnd = sound._stop || 0;
+      // MediaStreams can't have custom playback rates or loop, so don't set
+      // that up
+      if (!self._isMediaStream) {
+        // Setup looping and playback rate.
+        sound._node.bufferSource.loop = sound._loop;
+        if (sound._loop) {
+          sound._node.bufferSource.loopStart = sound._start || 0;
+          sound._node.bufferSource.loopEnd = sound._stop || 0;
+        }
+        sound._node.bufferSource.playbackRate.setValueAtTime(sound._rate, Howler.ctx.currentTime);
       }
-      sound._node.bufferSource.playbackRate.setValueAtTime(sound._rate, Howler.ctx.currentTime);
 
       return self;
     },
@@ -2179,7 +2197,7 @@
       var self = this;
       var isIOS = Howler._navigator && Howler._navigator.vendor.indexOf('Apple') >= 0;
 
-      if (self._isMediaStream || !node.bufferSource) {
+      if (!node.bufferSource) {
         return self;
       }
 
