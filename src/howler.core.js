@@ -1809,7 +1809,7 @@
       // Delete this sound from the cache (if no other Howl is using it).
       var remCache = true;
       for (i=0; i<Howler._howls.length; i++) {
-        if (Howler._howls[i]._src === self._src || self._src.indexOf(Howler._howls[i]._src) >= 0) {
+        if (Howler._howls[i]._src === self._src || (!self._isMediaStream && self._src.indexOf(Howler._howls[i]._src) >= 0)) {
           remCache = false;
           break;
         }
