@@ -8,3 +8,4 @@ Support the ongoing development of howler.js and get your logo on our README wit
 * [James Simpson](https://github.com/goldfire)
 * [Spark Dev Network](https://github.com/SparkDevNetwork)
 * [Angelo RC](https://github.com/angelorc)
+* [cacherich](https://github.com/cacherich)
