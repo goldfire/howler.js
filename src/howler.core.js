@@ -589,6 +589,7 @@
       self._rate = o.rate || 1;
       self._sprite = o.sprite || {};
       self._src = (typeof o.src !== 'string') ? o.src : [o.src];
+      self._arraybuffer = o.arraybuffer || null;
       self._volume = o.volume !== undefined ? o.volume : 1;
       self._xhr = {
         method: o.xhr && o.xhr.method ? o.xhr.method : 'GET',
@@ -2382,6 +2383,7 @@
    */
   var loadBuffer = function(self) {
     var url = self._src;
+    var arraybuffer = self._arraybuffer;
 
     // Check if the buffer has already been cached and use it instead.
     if (cache[url]) {
@@ -2391,6 +2393,12 @@
       // Load the sound into this Howl.
       loadSound(self);
 
+      return;
+    }
+
+    if(arraybuffer !== null)
+    {
+      decodeAudioData(arraybuffer, self);
       return;
     }
 

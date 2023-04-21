@@ -589,6 +589,7 @@
       self._rate = o.rate || 1;
       self._sprite = o.sprite || {};
       self._src = (typeof o.src !== 'string') ? o.src : [o.src];
+      self._arraybuffer = o.arraybuffer || null;
       self._volume = o.volume !== undefined ? o.volume : 1;
       self._xhr = {
         method: o.xhr && o.xhr.method ? o.xhr.method : 'GET',
@@ -2167,6 +2168,10 @@
       var self = this;
       var isIOS = Howler._navigator && Howler._navigator.vendor.indexOf('Apple') >= 0;
 
+      if (!node.bufferSource) {
+        return self;
+      }
+
       if (Howler._scratchBuffer && node.bufferSource) {
         node.bufferSource.onended = null;
         node.bufferSource.disconnect(0);
@@ -2378,6 +2383,7 @@
    */
   var loadBuffer = function(self) {
     var url = self._src;
+    var arraybuffer = self._arraybuffer;
 
     // Check if the buffer has already been cached and use it instead.
     if (cache[url]) {
@@ -2387,6 +2393,12 @@
       // Load the sound into this Howl.
       loadSound(self);
 
+      return;
+    }
+
+    if(arraybuffer !== null)
+    {
+      decodeAudioData(arraybuffer, self);
       return;
     }
 
@@ -3099,18 +3111,9 @@
           panningModel: typeof o.panningModel !== 'undefined' ? o.panningModel : pa.panningModel
         };
 
-        // Update the panner values or create a new panner if none exists.
+        // Create a new panner node if one doesn't already exist.
         var panner = sound._panner;
-        if (panner) {
-          panner.coneInnerAngle = pa.coneInnerAngle;
-          panner.coneOuterAngle = pa.coneOuterAngle;
-          panner.coneOuterGain = pa.coneOuterGain;
-          panner.distanceModel = pa.distanceModel;
-          panner.maxDistance = pa.maxDistance;
-          panner.refDistance = pa.refDistance;
-          panner.rolloffFactor = pa.rolloffFactor;
-          panner.panningModel = pa.panningModel;
-        } else {
+        if (!panner) {
           // Make sure we have a position to setup the node with.
           if (!sound._pos) {
             sound._pos = self._pos || [0, 0, -0.5];
@@ -3118,7 +3121,18 @@
 
           // Create a new panner node.
           setupPanner(sound, 'spatial');
+          panner = sound._panner
         }
+
+        // Update the panner values or create a new panner if none exists.
+        panner.coneInnerAngle = pa.coneInnerAngle;
+        panner.coneOuterAngle = pa.coneOuterAngle;
+        panner.coneOuterGain = pa.coneOuterGain;
+        panner.distanceModel = pa.distanceModel;
+        panner.maxDistance = pa.maxDistance;
+        panner.refDistance = pa.refDistance;
+        panner.rolloffFactor = pa.rolloffFactor;
+        panner.panningModel = pa.panningModel;
       }
     }
 
