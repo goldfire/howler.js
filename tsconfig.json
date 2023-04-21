@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "target": "es2018",
+    "lib": ["es2018", "dom"],
+    "strict": true,
+    "noImplicitAny": false,
+    "esModuleInterop": true,
+    "allowJs": true,
+    "moduleResolution": "node",
+    "outDir": "dist",
+    "module": "esnext",
+    "resolveJsonModule": true,
+    "emitDeclarationOnly": true
+  },
+  "include": ["src/*.ts"]
+}
