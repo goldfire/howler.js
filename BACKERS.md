@@ -7,5 +7,5 @@ Support the ongoing development of howler.js and get your logo on our README wit
 ## Backers [[add your name](https://github.com/sponsors/goldfire)]
 * [James Simpson](https://github.com/goldfire)
 * [Spark Dev Network](https://github.com/SparkDevNetwork)
-* [Angelo RC](https://github.com/angelorc)
 * [cacherich](https://github.com/cacherich)
+* [Kumospace](https://github.com/kumospace)
