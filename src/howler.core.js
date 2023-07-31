@@ -265,7 +265,7 @@
 
       // Opera version <33 has mixed MP3 support, so we need to check for and block it.
       var ua = self._navigator ? self._navigator.userAgent : '';
-      var checkOpera = ua.match(/OPR\/([0-6].)/g);
+      var checkOpera = ua.match(/OPR\/(\d+)/g);
       var isOldOpera = (checkOpera && parseInt(checkOpera[0].split('/')[1], 10) < 33);
       var checkSafari = ua.indexOf('Safari') !== -1 && ua.indexOf('Chrome') === -1;
       var safariVersion = ua.match(/Version\/(.*?) /);
