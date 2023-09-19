@@ -2326,22 +2326,52 @@
       var self = this;
       var parent = self._parent;
 
-      // Round up the duration to account for the lower precision in HTML5 Audio.
-      parent._duration = Math.ceil(self._node.duration * 10) / 10;
+      var loadJob = function() {
+        // Round up the duration to account for the lower precision in HTML5 Audio.
+        parent._duration = Math.ceil(self._node.duration * 10) / 10;
 
-      // Setup a sprite if none is defined.
-      if (Object.keys(parent._sprite).length === 0) {
-        parent._sprite = {__default: [0, parent._duration * 1000]};
+        // Setup a sprite if none is defined.
+        if (Object.keys(parent._sprite).length === 0) {
+          parent._sprite = {__default: [0, parent._duration * 1000]};
+        }
+
+        if (parent._state !== 'loaded') {
+          parent._state = 'loaded';
+          parent._emit('load');
+          parent._loadQueue(); 
+        }
+
+        // Clear the event listener.
+        self._node.removeEventListener(Howler._canPlayEvent, self._loadFn, false); 
       }
 
-      if (parent._state !== 'loaded') {
-        parent._state = 'loaded';
-        parent._emit('load');
-        parent._loadQueue();
+      // If the duration is already got, fire the event immediately.
+      if (self._node.duration) {
+        loadJob();
+        return;
       }
 
-      // Clear the event listener.
-      self._node.removeEventListener(Howler._canPlayEvent, self._loadFn, false);
+      // In some edge cases, the duration can only be obtained after playing
+      // try to obtain it a few times
+      var maxRetry = 20;
+      var retryTime = 0;
+
+      var timer = setInterval(function() {
+        ++retryTime;
+
+        if (retryTime === 1) {
+          self._node.play();
+          self._node.muted = true;
+        }
+        if (self._node.duration || retryTime > maxRetry) {
+          self._node.pause();
+          self._node.currentTime = 0;
+          self._node.muted = false;
+          clearInterval(timer);
+
+          loadJob();
+        };
+      }, 6);
     },
 
     /**
