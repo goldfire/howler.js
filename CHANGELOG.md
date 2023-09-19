@@ -1,3 +1,8 @@
+## 2.2.3 (September 20, 2023)
+- `FIXED` Invalid regex detection of Opera versions 100+ ([#1676](https://github.com/goldfire/howler.js/pull/1676)).
+- `FIXED` The `pannerAttr` method wouldn't set the values the first time it was called ([#1497](https://github.com/goldfire/howler.js/issues/1497)).
+- `FIXED` Error when refreshing the buffer on a sound that has already been unloaded ([#1508](https://github.com/goldfire/howler.js/issues/1508)).
+
 ## 2.2.3 (June 30, 2021)
 - `FIXED` Fatal error in Chrome for iOS ([#1491](https://github.com/goldfire/howler.js/issues/1491)).
 
