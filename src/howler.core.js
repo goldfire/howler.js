@@ -588,7 +588,7 @@
       self._preload = (typeof o.preload === 'boolean' || o.preload === 'metadata') ? o.preload : true;
       self._rate = o.rate || 1;
       self._sprite = o.sprite || {};
-      self._src = (typeof o.src !== 'string') ? o.src : [o.src];
+      self._src = (typeof o.src !== 'string' && !isMediaStream(o.src)) ? o.src : [o.src];
       self._volume = o.volume !== undefined ? o.volume : 1;
       self._xhr = {
         method: o.xhr && o.xhr.method ? o.xhr.method : 'GET',
@@ -603,6 +603,7 @@
       self._endTimers = {};
       self._queue = [];
       self._playLock = false;
+      self._isMediaStream = false;
 
       // Setup event listeners.
       self._onend = o.onend ? [{fn: o.onend}] : [];
@@ -664,13 +665,28 @@
       }
 
       // Make sure our source is in an array.
-      if (typeof self._src === 'string') {
+      if (typeof self._src === 'string' || isMediaStream(self._src)) {
         self._src = [self._src];
       }
 
       // Loop through the sources and pick the first one that is compatible.
       for (var i=0; i<self._src.length; i++) {
         var ext, str;
+        var src = self._src[i];
+
+        // Handle special case for MediaStreams; they are already loaded, only a
+        // Sound object needs to be created
+        if (isMediaStream(src)) {
+          self._isMediaStream = true;
+          self._src = src;
+          self._duration = Infinity;
+          self._sprite = {__default: [0, Infinity]};
+          new Sound(self);
+          self._state = 'loaded';
+          self._emit('load');
+          self._loadQueue();
+          return self;
+        }
 
         if (self._format && self._format[i]) {
           // If an extension was specified, use that instead.
@@ -701,7 +717,7 @@
 
         // Check if this extension is available.
         if (ext && Howler.codecs(ext)) {
-          url = self._src[i];
+          url = src;
           break;
         }
       }
@@ -863,11 +879,13 @@
           node.gain.setValueAtTime(vol, Howler.ctx.currentTime);
           sound._playStart = Howler.ctx.currentTime;
 
-          // Play the sound using the supported method.
-          if (typeof node.bufferSource.start === 'undefined') {
-            sound._loop ? node.bufferSource.noteGrainOn(0, seek, 86400) : node.bufferSource.noteGrainOn(0, seek, duration);
-          } else {
-            sound._loop ? node.bufferSource.start(0, seek, 86400) : node.bufferSource.start(0, seek, duration);
+          if (!self._isMediaStream) {
+            // Play the sound using the supported method.
+            if (typeof node.bufferSource.start === 'undefined') {
+              sound._loop ? node.bufferSource.noteGrainOn(0, seek, 86400) : node.bufferSource.noteGrainOn(0, seek, duration);
+            } else {
+              sound._loop ? node.bufferSource.start(0, seek, 86400) : node.bufferSource.start(0, seek, duration);
+            }
           }
 
           // Start a new timer if none is present.
@@ -1047,10 +1065,12 @@
                 continue;
               }
 
-              if (typeof sound._node.bufferSource.stop === 'undefined') {
-                sound._node.bufferSource.noteOff(0);
-              } else {
-                sound._node.bufferSource.stop(0);
+              if (!self._isMediaStream) {
+                if (typeof sound._node.bufferSource.stop === 'undefined') {
+                  sound._node.bufferSource.noteOff(0);
+                } else {
+                  sound._node.bufferSource.stop(0);
+                }
               }
 
               // Clean up the buffer source.
@@ -1115,10 +1135,12 @@
             if (self._webAudio) {
               // Make sure the sound's AudioBufferSourceNode has been created.
               if (sound._node.bufferSource) {
-                if (typeof sound._node.bufferSource.stop === 'undefined') {
-                  sound._node.bufferSource.noteOff(0);
-                } else {
-                  sound._node.bufferSource.stop(0);
+                if (!self._isMediaStream) {
+                  if (typeof sound._node.bufferSource.stop === 'undefined') {
+                    sound._node.bufferSource.noteOff(0);
+                  } else {
+                    sound._node.bufferSource.stop(0);
+                  }
                 }
 
                 // Clean up the buffer source.
@@ -1129,7 +1151,7 @@
               sound._node.pause();
 
               // If this is a live stream, stop download once the audio is stopped.
-              if (sound._node.duration === Infinity) {
+              if (!self._isMediaStream && sound._node.duration === Infinity) {
                 self._clearSound(sound._node);
               }
             }
@@ -1758,7 +1780,9 @@
         // Remove the source or disconnect.
         if (!self._webAudio) {
           // Set the source to 0-second silence to stop any downloading (except in IE).
-          self._clearSound(sounds[i]._node);
+          if (!self._isMediaStream) {
+            self._clearSound(sounds[i]._node);
+          }
 
           // Remove any event listeners.
           sounds[i]._node.removeEventListener('error', sounds[i]._errorFn, false);
@@ -1785,7 +1809,7 @@
       // Delete this sound from the cache (if no other Howl is using it).
       var remCache = true;
       for (i=0; i<Howler._howls.length; i++) {
-        if (Howler._howls[i]._src === self._src || self._src.indexOf(Howler._howls[i]._src) >= 0) {
+        if (Howler._howls[i]._src === self._src || (!self._isMediaStream && self._src.indexOf(Howler._howls[i]._src) >= 0)) {
           remCache = false;
           break;
         }
@@ -2136,9 +2160,38 @@
     _refreshBuffer: function(sound) {
       var self = this;
 
-      // Setup the buffer source for playback.
-      sound._node.bufferSource = Howler.ctx.createBufferSource();
-      sound._node.bufferSource.buffer = cache[self._src];
+      if (self._isMediaStream) {
+        // Special case for streams. Make a MediaStreamSource and set it as the
+        // bufferSource.
+
+        // XXX There is a Chromium bug
+        // (https://bugs.chromium.org/p/chromium/issues/detail?id=933677) where
+        // remote MediaStreams don't play unless they are assigned to a media
+        // element. Workaround:
+        var ua = Howler._navigator ? Howler._navigator.userAgent : '';
+        if (ua.indexOf('Chrome') !== -1) {
+          var tmpAudio = new Audio();
+
+          var tmpAudioCallback = function() {
+            if (tmpAudio) {
+              tmpAudio.removeEventListener('error', tmpAudioCallback);
+              tmpAudio.removeEventListener('canplaythrough', tmpAudioCallback);
+              tmpAudio = null;
+            }
+          };
+
+          tmpAudio.muted = true;
+          tmpAudio.addEventListener('error', tmpAudioCallback);
+          tmpAudio.addEventListener('canplaythrough', tmpAudioCallback);
+          tmpAudio.srcObject = self._src;
+        }
+
+        sound._node.bufferSource = Howler.ctx.createMediaStreamSource(self._src);
+      } else {
+        // Setup the buffer source for playback.
+        sound._node.bufferSource = Howler.ctx.createBufferSource();
+        sound._node.bufferSource.buffer = cache[self._src];
+      }
 
       // Connect to the correct node.
       if (sound._panner) {
@@ -2147,13 +2200,17 @@
         sound._node.bufferSource.connect(sound._node);
       }
 
-      // Setup looping and playback rate.
-      sound._node.bufferSource.loop = sound._loop;
-      if (sound._loop) {
-        sound._node.bufferSource.loopStart = sound._start || 0;
-        sound._node.bufferSource.loopEnd = sound._stop || 0;
+      // MediaStreams can't have custom playback rates or loop, so don't set
+      // that up
+      if (!self._isMediaStream) {
+        // Setup looping and playback rate.
+        sound._node.bufferSource.loop = sound._loop;
+        if (sound._loop) {
+          sound._node.bufferSource.loopStart = sound._start || 0;
+          sound._node.bufferSource.loopEnd = sound._stop || 0;
+        }
+        sound._node.bufferSource.playbackRate.setValueAtTime(sound._rate, Howler.ctx.currentTime);
       }
-      sound._node.bufferSource.playbackRate.setValueAtTime(sound._rate, Howler.ctx.currentTime);
 
       return self;
     },
@@ -2270,7 +2327,12 @@
         self._node.addEventListener('ended', self._endFn, false);
 
         // Setup the new audio node.
-        self._node.src = parent._src;
+        if (parent._isMediaStream) {
+          self._node.srcObject = parent._src;
+        } else {
+          self._node.src = parent._src;
+        }
+
         self._node.preload = parent._preload === true ? 'auto' : parent._preload;
         self._node.volume = volume * Howler.volume();
 
@@ -2375,6 +2437,7 @@
   /***************************************************************************/
 
   var cache = {};
+  var mediaStreamsSupported = 'MediaStream' in globalThis;
 
   /**
    * Buffer a sound from URL, Data URI or cache and decode to audio source (Web Audio API).
@@ -2555,6 +2618,16 @@
     // Re-run the setup on Howler.
     Howler._setup();
   };
+
+  /**
+   * Helper function for checking whether a source is a MediaStream. Doesn't
+   * throw an error when MediaStreams aren't supported.
+   * @param   {String | MediaStream | Array<String | MediaStream>}  src The source to check
+   * @return  {Boolean} Returns true if the source is a MediaStream instance
+   */
+  var isMediaStream = function(src) {
+    return mediaStreamsSupported && src instanceof MediaStream;
+  }
 
   // Add support for AMD (Asynchronous Module Definition) libraries such as require.js.
   if (typeof define === 'function' && define.amd) {
