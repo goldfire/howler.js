@@ -6,24 +6,70 @@
   <link rel="stylesheet" href="./css/styles.css">
 </head>
 <body>
-  <div id="container">
-    <button class="button" id="webaudio">RUN WEB AUDIO TESTS</button>
-    <button class="button" id="html5">RUN HTML5 TESTS</button>
-    <button class="button" id="spatial">RUN SPATIAL TESTS</button>
-  </div>
+<div id="container">
+  <h6 id="globalOptionsHeader">Global Options:</h6>
+  <form id="globalOptions">
+    <div class="option">
+      <label for="usingWebAudio">usingWebAudio:</label>
+      <input type="checkbox" id="usingWebAudio" name="usingWebAudio" checked>
+    </div>
+    <div class="option">
+      <label for="noAudio">noAudio:</label>
+      <input type="checkbox" id="noAudio" name="noAudio">
+    </div>
+    <div class="option">
+      <label for="autoUnlock">autoUnlock:</label>
+      <input type="checkbox" id="autoUnlock" name="autoUnlock" checked>
+    </div>
+    <div class="option">
+      <label for="html5PoolSize">html5PoolSize:</label>
+      <input type="number" id="html5PoolSize" name="html5PoolSize" min="1" max="10" value="10" style="width:2rem">
+    </div>
+    <div class="option">
+      <label for="autoSuspend">autoSuspend:</label>
+      <input type="checkbox" id="autoSuspend" name="autoSuspend" checked>
+    </div>
+    <div class="option">
+      <label for="eagerPlayback">eagerPlayback:</label>
+      <input type="checkbox" id="eagerPlayback" name="eagerPlayback">
+    </div>
+  </form>
+  <button class="button" id="webaudio">RUN WEB AUDIO TESTS</button>
+  <button class="button" id="html5">RUN HTML5 TESTS</button>
+  <button class="button" id="spatial">RUN SPATIAL TESTS</button>
+</div>
 
-  <script>
-    document.getElementById('webaudio').onclick = function() {
-      window.location = 'core.webaudio.html';
-    };
+<script>
+  function navigateToTest(testLocation) {
+    var formElements = document.getElementById('globalOptions').elements;
+    var globalOptionsElements = Array.prototype.slice.call(formElements, 0);
+    var globalOptions = globalOptionsElements.map(function(el) {
+      if (el.type === 'checkbox') {
+        return el.name + '=' + el.checked;
+      }
 
-    document.getElementById('html5').onclick = function() {
-      window.location = 'core.html5audio.html';
-    };
+      if (el.type === 'number' && el.value) {
+        var value = Math.max(el.min, Math.min(el.max, el.value))
+        return el.name + '=' + value;
+      }
+    });
+    var globalOptionsQueryString = globalOptions.filter(Boolean).join('&');
+    window.location = globalOptionsQueryString.length
+      ? testLocation + '?' + globalOptionsQueryString
+      : testLocation;
+  }
 
-    document.getElementById('spatial').onclick = function() {
-      window.location = 'spatial.html';
-    };
-  </script>
+  document.getElementById('webaudio').onclick = function() {
+    navigateToTest('core.webaudio.html');
+  };
+
+  document.getElementById('html5').onclick = function() {
+    navigateToTest('core.html5audio.html');
+  };
+
+  document.getElementById('spatial').onclick = function() {
+    navigateToTest('spatial.html');
+  };
+</script>
 </body>
 </html>

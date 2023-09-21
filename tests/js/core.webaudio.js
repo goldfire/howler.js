@@ -33,7 +33,7 @@ var tests = [
       label.innerHTML = 'PLAYING';
       setTimeout(fn, 2000);
     });
-    
+
     id = sound1.play();
   },
 

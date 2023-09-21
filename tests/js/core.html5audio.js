@@ -30,11 +30,13 @@ sound1.once('load', function() {
 // Define the tests to run.
 var id;
 var tests = [
-   function(fn) {
-    id = sound1.play();
+  function(fn) {
+    sound1.once('play', function() {
+      label.innerHTML = 'PLAYING';
+      setTimeout(fn, 2000);
+    });
 
-    label.innerHTML = 'PLAYING';
-    setTimeout(fn, 2000);
+    id = sound1.play();
   },
 
   function(fn) {
