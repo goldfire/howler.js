@@ -1084,7 +1084,7 @@
         self._queue.push({
           event: 'stop',
           action: function() {
-            self.stop(id);
+            self.stop(id, internal);
           }
         });
 
