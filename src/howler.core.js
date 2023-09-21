@@ -1649,7 +1649,7 @@
           self._clearTimer(id);
 
           // Update the seek position for HTML5 Audio.
-          if (!self._webAudio && sound._node && !isNaN(sound._node.duration)) {
+          if (!self._webAudio && sound._node) {
             sound._node.currentTime = seek;
           }
 
