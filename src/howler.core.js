@@ -38,7 +38,7 @@
       self.html5PoolSize = 10;
 
       // Internal properties.
-      self._codecs = {};
+      self._codecs = null;
       self._howls = [];
       self._muted = false;
       self._volume = 1;
@@ -187,11 +187,15 @@
 
     /**
      * Check for codec support of specific extension.
-     * @param  {String} ext Audio file extention.
-     * @return {Boolean}
+     * @param  {String} ext Audio file extension.
+     * @return {Boolean|undefined}
      */
     codecs: function(ext) {
-      return (this || Howler)._codecs[ext.replace(/^x-/, '')];
+      var self = this || Howler;
+
+      if (self._codecs) {
+        return self._codecs[ext.replace(/^x-/, '')];
+      }
     },
 
     /**
@@ -234,8 +238,8 @@
         }
       } catch (e) {}
 
-      // Check for supported codecs.
-      if (!self.noAudio) {
+      // Cache list of supported codecs once.
+      if (!self.noAudio && !self._codecs) {
         self._setupCodecs();
       }
 
@@ -262,6 +266,7 @@
       }
 
       var mpegTest = audioTest.canPlayType('audio/mpeg;').replace(/^no$/, '');
+      var hlsTest = audioTest.canPlayType('application/vnd.apple.mpegurl').replace(/^no$/, '');
 
       // Opera version <33 has mixed MP3 support, so we need to check for and block it.
       var ua = self._navigator ? self._navigator.userAgent : '';
@@ -272,6 +277,8 @@
       var isOldSafari = (checkSafari && safariVersion && parseInt(safariVersion[1], 10) < 15);
 
       self._codecs = {
+        m3u: !!hlsTest,
+        m3u8: !!hlsTest,
         mp3: !!(!isOldOpera && (mpegTest || audioTest.canPlayType('audio/mp3;').replace(/^no$/, ''))),
         mpeg: !!mpegTest,
         opus: !!audioTest.canPlayType('audio/ogg; codecs="opus"').replace(/^no$/, ''),
@@ -984,7 +991,7 @@
 
           var listener = function() {
             self._state = 'loaded';
-            
+
             // Begin playback.
             playHtml5();
 
