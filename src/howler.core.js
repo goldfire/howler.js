@@ -1,5 +1,5 @@
 /*!
- *  howler-rbc.js v2.2.4
+ *  howler.js v2.2.4
  *  howlerjs.com
  *
  *  (c) 2013-2020, James Simpson of GoldFire Studios
@@ -521,7 +521,7 @@
       if (self.state === 'running' && self.ctx.state !== 'interrupted' && self._suspendTimer) {
         clearTimeout(self._suspendTimer);
         self._suspendTimer = null;
-      } else if (self.state === 'suspended' || self.state === 'running' && self.ctx.state === 'interrupted') {
+      } else if (self.state === 'suspended' || self.state === 'running' || self.state === 'suspending') {
         self.ctx.resume().then(function() {
           self.state = 'running';
 
@@ -535,8 +535,6 @@
           clearTimeout(self._suspendTimer);
           self._suspendTimer = null;
         }
-      } else if (self.state === 'suspending') {
-        self._resumeAfterSuspend = true;
       }
 
       return self;
@@ -984,7 +982,7 @@
 
           var listener = function() {
             self._state = 'loaded';
-            
+
             // Begin playback.
             playHtml5();
 
