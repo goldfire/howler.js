@@ -19,7 +19,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git://github.com/goldfire/howler.js.git"
+    "url": "git://github.com/sofatutor/howler.js.git"
   },
   "main": "dist/howler.js",
   "license": "MIT",

@@ -1,5 +1,5 @@
 {
-  "name": "howler",
+  "name": "@sofatutor/howler",
   "version": "2.2.4",
   "description": "Javascript audio library for the modern web.",
   "homepage": "https://howlerjs.com",
