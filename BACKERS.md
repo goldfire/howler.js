@@ -9,3 +9,4 @@ Support the ongoing development of howler.js and get your logo on our README wit
 * [Spark Dev Network](https://github.com/SparkDevNetwork)
 * [cacherich](https://github.com/cacherich)
 * [Kumospace](https://github.com/kumospace)
+* [Microsoft](https://github.com/microsoft)
