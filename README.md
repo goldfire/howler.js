@@ -87,6 +87,10 @@ import {Howl, Howler} from 'howler';
 ```
 
 ```javascript
+import "./node_modules/howler/dist/howler.js"; // ES6 without module bundler
+```
+
+```javascript
 const {Howl, Howler} = require('howler');
 ```
 
@@ -179,9 +183,27 @@ sound.fade(1, 0, 1000, id1);
 sound.rate(1.5, id2);
 ```
 
-##### ES6:
+##### ES6 (with module bundler):
 ```javascript
+
 import {Howl, Howler} from 'howler';
+
+// Setup the new Howl.
+const sound = new Howl({
+  src: ['sound.webm', 'sound.mp3']
+});
+
+// Play the sound.
+sound.play();
+
+// Change global volume.
+Howler.volume(0.5);
+```
+
+##### ES6 (no bundler, using npm path):
+```javascript
+
+import "./node_modules/howler/dist/howler.js";
 
 // Setup the new Howl.
 const sound = new Howl({
