@@ -127,7 +127,7 @@ Player.prototype = {
     // Get the Howl we want to manipulate.
     var sound = self.playlist[self.index].howl;
 
-    // Puase the sound.
+    // Pause the sound.
     sound.pause();
 
     // Show the play button.
