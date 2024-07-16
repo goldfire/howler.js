@@ -315,6 +315,11 @@
       if (!self._mobileUnloaded && self.ctx.sampleRate !== 44100) {
         self._mobileUnloaded = true;
         self.unload();
+        
+        // In some cases, the unload method results in a null context
+        if (!self.ctx) {
+          return;
+        }
       }
 
       // Scratch buffer for enabling iOS to dispose of web audio buffers correctly, as per:
