@@ -608,6 +608,7 @@
       self._onend = o.onend ? [{fn: o.onend}] : [];
       self._onfade = o.onfade ? [{fn: o.onfade}] : [];
       self._onload = o.onload ? [{fn: o.onload}] : [];
+      self._onloadheaders = o.onloadheaders ? [{fn: o.onloadheaders}] : [];
       self._onloaderror = o.onloaderror ? [{fn: o.onloaderror}] : [];
       self._onplayerror = o.onplayerror ? [{fn: o.onplayerror}] : [];
       self._onpause = o.onpause ? [{fn: o.onpause}] : [];
@@ -2424,7 +2425,8 @@
           self._emit('loaderror', null, 'Failed loading audio file with status: ' + xhr.status + '.');
           return;
         }
-
+        // send a ccopy of the headers we got from teh network request back as a callback.
+        self._emit('loadheaders', xhr.getAllResponseHeaders());
         decodeAudioData(xhr.response, self);
       };
       xhr.onerror = function() {
