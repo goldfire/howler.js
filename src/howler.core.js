@@ -359,7 +359,9 @@
 
               if (sound && sound._node && !sound._node._unlocked) {
                 sound._node._unlocked = true;
+                var currentTime = sound._node.currentTime;
                 sound._node.load();
+                sound._node.currentTime = currentTime;
               }
             }
           }
