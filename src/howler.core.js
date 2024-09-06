@@ -422,9 +422,13 @@
     _obtainHtml5Audio: function() {
       var self = this || Howler;
 
+      //Gets an existing audio element
+      let audioelement = document.getElementsByTagName('audio')[0];
+
       // Return the next object from the pool if one exists.
       if (self._html5AudioPool.length) {
-        return self._html5AudioPool.pop();
+        //If exists a object alredy on DOM, it is better to manipulate him
+        return (audioelement !== undefined) ? audioelement : self._html5AudioPool.pop();
       }
 
       //.Check if the audio is locked and throw a warning.
@@ -435,7 +439,7 @@
         });
       }
 
-      return new Audio();
+      return (audioelement !== undefined) ? audioelement : self._html5AudioPool.pop();
     },
 
     /**
