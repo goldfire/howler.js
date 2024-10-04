@@ -610,6 +610,7 @@
       self._onload = o.onload ? [{fn: o.onload}] : [];
       self._onloaderror = o.onloaderror ? [{fn: o.onloaderror}] : [];
       self._onplayerror = o.onplayerror ? [{fn: o.onplayerror}] : [];
+      self._onloadprogress = o.onloadprogress ? [{fn: o.onloadprogress}] : [];
       self._onpause = o.onpause ? [{fn: o.onpause}] : [];
       self._onplay = o.onplay ? [{fn: o.onplay}] : [];
       self._onstop = o.onstop ? [{fn: o.onstop}] : [];
@@ -2436,6 +2437,9 @@
           delete cache[url];
           self.load();
         }
+      };
+      xhr.onprogress = function(event) {
+        self._emit('loadprogress', event)
       };
       safeXhrSend(xhr);
     }
