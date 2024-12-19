@@ -885,7 +885,7 @@
 
         if (Howler.state === 'running' && Howler.ctx.state !== 'interrupted') {
           playWebAudio();
-        } else {
+        } else if (!self._playLock) {
           self._playLock = true;
 
           // Wait for the audio context to resume before playing.
