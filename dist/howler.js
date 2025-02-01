@@ -610,6 +610,7 @@
       self._onload = o.onload ? [{fn: o.onload}] : [];
       self._onloaderror = o.onloaderror ? [{fn: o.onloaderror}] : [];
       self._onplayerror = o.onplayerror ? [{fn: o.onplayerror}] : [];
+      self._onstalled = o.onstalled ? [{fn: o.onstalled}] : [];
       self._onpause = o.onpause ? [{fn: o.onpause}] : [];
       self._onplay = o.onplay ? [{fn: o.onplay}] : [];
       self._onstop = o.onstop ? [{fn: o.onstop}] : [];
@@ -984,7 +985,7 @@
 
           var listener = function() {
             self._state = 'loaded';
-            
+
             // Begin playback.
             playHtml5();
 
@@ -2260,6 +2261,9 @@
         self._errorFn = self._errorListener.bind(self);
         self._node.addEventListener('error', self._errorFn, false);
 
+        self._stalledFn = self._stalledListener.bind(self);
+        self._node.addEventListener('stalled', self._stalledFn, false);
+
         // Listen for 'canplaythrough' event to let us know the sound is ready.
         self._loadFn = self._loadListener.bind(self);
         self._node.addEventListener(Howler._canPlayEvent, self._loadFn, false);
@@ -2317,6 +2321,16 @@
 
       // Clear the event listener.
       self._node.removeEventListener('error', self._errorFn, false);
+    },
+
+    _stalledListener: function() {
+      var self = this;
+
+      // Fire an error event and pass back the code.
+      self._parent._emit('stalled', self._id);
+
+      // Clear the event listener.
+      self._node.removeEventListener('stalled', self._stalledFn, false);
     },
 
     /**
