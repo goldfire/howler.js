@@ -977,7 +977,8 @@
         // Play immediately if ready, or wait for the 'canplaythrough'e vent.
         var loadedNoReadyState = (window && window.ejecta) || (!node.readyState && Howler._navigator.isCocoonJS);
         if (node.readyState >= 3 || loadedNoReadyState) {
-          playHtml5();
+          // when play() is called just after pause(), there is a race causing audio node to pause immediately after play on iOS
+          setTimeout(playHtml5, 0);
         } else {
           self._playLock = true;
           self._state = 'loading';
