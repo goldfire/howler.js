@@ -532,10 +532,7 @@
             self._howls[i]._emit('resume');
           }
         }).catch(function(err) {
-          // Handle AudioContext resume errors gracefully.
           console.warn('AudioContext resume failed:', err.name + ':', err.message);
-          
-          // Keep state as suspended since resume failed.
           self.state = 'suspended';
           
           // Emit resume error event to all Howls so they can handle it appropriately.
