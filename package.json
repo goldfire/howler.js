@@ -1,6 +1,6 @@
 {
   "name": "howler",
-  "version": "2.2.4",
+  "version": "3.0.0-alpha.1",
   "description": "Javascript audio library for the modern web.",
   "homepage": "https://howlerjs.com",
   "type": "module",
@@ -27,8 +27,8 @@
     "release": "npm run build && git add dist && git commit -m 'build: update dist files' && npm publish"
   },
   "devDependencies": {
-    "tsdown": "^0.16.6",
-    "typescript": "^5.9.3"
+    "tsdown": "~0.16.6",
+    "typescript": "~5.9.3"
   },
   "main": "dist/index.js",
   "module": "dist/index.js",
