@@ -1,13 +1,15 @@
+import { Howl } from 'howler';
+
 // Cache the label for later use.
-var label = document.getElementById('label');
-var start = document.getElementById('start');
+const label = document.getElementById('label');
+const start = document.getElementById('start');
 
 // Setup the sounds to be used.
-var sound1 = new Howl({
+const sound1 = new Howl({
   src: ['audio/sound1.webm', 'audio/sound1.mp3']
 });
 
-var sound2 = new Howl({
+const sound2 = new Howl({
   src: ['audio/sound2.webm', 'audio/sound2.mp3'],
   sprite: {
     one: [0, 450],

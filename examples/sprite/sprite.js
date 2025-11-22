@@ -8,8 +8,10 @@
  *  MIT License
  */
 
+import { Howl } from 'howler';
+
 // Cache references to DOM elements.
-var elms = ['waveform', 'sprite0', 'sprite1', 'sprite2', 'sprite3', 'sprite4', 'sprite5'];
+const elms = ['waveform', 'sprite0', 'sprite1', 'sprite2', 'sprite3', 'sprite4', 'sprite5'];
 elms.forEach(function(elm) {
   window[elm] = document.getElementById(elm);
 });

@@ -4,14 +4,20 @@
   <meta charset="utf-8">
   <title>Howler.js Spatial Plugin Tests</title>
   <link rel="stylesheet" href="./css/styles.css">
+  <script type="importmap">
+  {
+    "imports": {
+      "howler": "../dist/howler.mjs",
+      "howler/plugins/spatial": "../dist/plugins/spatial.mjs"
+    }
+  }
+  </script>
 </head>
 <body>
   <div id="container">
     <div id="label"></div>
     <button class="button" id="start" disabled>LOADING...</button>
   </div>
-  <script src="../src/howler.core.js"></script>
-  <script src="../src/plugins/howler.spatial.js"></script>
-  <script src="./js/spatial.js"></script>
+  <script type="module" src="./js/spatial.js"></script>
 </body>
 </html>

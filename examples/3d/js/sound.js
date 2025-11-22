@@ -10,12 +10,14 @@
 
 'use strict';
 
+import { SpatialHowl } from 'howler/plugins/spatial';
+
 /**
  * Setup and control all of the game's audio.
  */
-var Sound = function() {
-  // Setup the shared Howl.
-  this.sound = new Howl({
+export var Sound = function() {
+  // Setup the shared SpatialHowl.
+  this.sound = new SpatialHowl({
     src: ['./assets/sprite.webm', './assets/sprite.mp3'],
     sprite: {
       lightning: [2000, 4147],

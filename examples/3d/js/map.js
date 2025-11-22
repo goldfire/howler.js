@@ -14,7 +14,7 @@
  * Generates the map and calculates the casting of arrays for the camera to display on screen.
  * @param {Number} size Grid size of the map to use.
  */
-var Map = function(size) {
+export var Map = function(size) {
   this.size = size;
   this.grid = new Array(size * size);
   this.skybox = new Texture('./assets/skybox.jpg', 4096, 1024);

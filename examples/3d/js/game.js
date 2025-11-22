@@ -10,6 +10,12 @@
 
 'use strict';
 
+import { Sound } from './sound.js';
+import { Player } from './player.js';
+import { Controls } from './controls.js';
+import { Map } from './map.js';
+import { Camera } from './camera.js';
+
 // Cache some commonly used values.
 var circle = Math.PI * 2;
 var isMobile = /iPhone|iPad|iPod|Android|BlackBerry|BB10|Silk/i.test(navigator.userAgent);
@@ -28,7 +34,7 @@ var Game = function() {
   this.controls = new Controls();
   this.map = new Map(25);
   this.camera = new Camera(isMobile ? 256 : 512);
-  
+
   requestAnimationFrame(this.tick.bind(this));
 };
 Game.prototype = {

@@ -13,7 +13,7 @@
 /**
  * Defines and handles the various controls.
  */
-var Controls = function() {
+export var Controls = function() {
   // Define our control key codes and states.
   this.codes = {
     // Arrows

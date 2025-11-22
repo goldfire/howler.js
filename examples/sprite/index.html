@@ -1,45 +1,54 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="user-scalable=no">
-  <title>Howler.js Audio Sprite Visual</title>
-  <link rel="stylesheet" href="./styles.css">
-</head>
-<body>
-  <!-- Top Info -->
-  <div class="instructions">
-    <span class="title">Audio Sprite Visual</span><br>
-    <span class="description">Click a section of the waveform to play the sprite.</span>
-  </div>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="user-scalable=no" />
+        <title>Howler.js Audio Sprite Visual</title>
+        <link rel="stylesheet" href="./styles.css" />
+        <script type="importmap">
+            {
+                "imports": {
+                    "howler": "../../dist/index.js",
+                    "howler/plugins/spatial": "../../dist/plugins/spatial.js"
+                }
+            }
+        </script>
+    </head>
+    <body>
+        <!-- Top Info -->
+        <div class="instructions">
+            <span class="title">Audio Sprite Visual</span><br />
+            <span class="description"
+                >Click a section of the waveform to play the sprite.</span
+            >
+        </div>
 
-  <!-- Waveform -->
-  <div id="waveform"></div>
+        <!-- Waveform -->
+        <div id="waveform"></div>
 
-  <!-- Sprite Click Areas -->
-  <div class="sprites">
-    <div id="sprite0" class="sprite">
-      <div class="sprite-label">one</div>
-    </div>
-    <div id="sprite1" class="sprite">
-      <div class="sprite-label">two</div>
-    </div>
-    <div id="sprite2" class="sprite">
-      <div class="sprite-label">three</div>
-    </div>
-    <div id="sprite3" class="sprite">
-      <div class="sprite-label">four</div>
-    </div>
-    <div id="sprite4" class="sprite">
-      <div class="sprite-label">five</div>
-    </div>
-    <div id="sprite5" class="sprite">
-      <div class="sprite-label">beat</div>
-    </div>
-  </div>
+        <!-- Sprite Click Areas -->
+        <div class="sprites">
+            <div id="sprite0" class="sprite">
+                <div class="sprite-label">one</div>
+            </div>
+            <div id="sprite1" class="sprite">
+                <div class="sprite-label">two</div>
+            </div>
+            <div id="sprite2" class="sprite">
+                <div class="sprite-label">three</div>
+            </div>
+            <div id="sprite3" class="sprite">
+                <div class="sprite-label">four</div>
+            </div>
+            <div id="sprite4" class="sprite">
+                <div class="sprite-label">five</div>
+            </div>
+            <div id="sprite5" class="sprite">
+                <div class="sprite-label">beat</div>
+            </div>
+        </div>
 
-  <!-- Scripts -->
-  <script src="../../src/howler.core.js"></script>
-  <script src="./sprite.js"></script>
-</body>
+        <!-- Scripts -->
+        <script type="module" src="./sprite.js"></script>
+    </body>
 </html>

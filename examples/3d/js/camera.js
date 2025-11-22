@@ -14,7 +14,7 @@
  * Camera that draws everything you see on the screen from the player's perspective.
  * @param {Number} resolution Resolution to render at (higher has better quality, but lower performance).
  */
-var Camera = function(resolution) {
+export var Camera = function(resolution) {
   this.width = canvas.width = window.innerWidth;
   this.height = canvas.height = window.innerHeight;
   this.resolution = resolution;

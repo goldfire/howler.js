@@ -17,7 +17,7 @@
  * @param {Number} dir   Direction they are facing in radians.
  * @param {Number} speed Speed they walk at.
  */
-var Player = function(x, y, dir, speed) {
+export var Player = function(x, y, dir, speed) {
   this.x = x;
   this.y = y;
   this.dir = dir;
