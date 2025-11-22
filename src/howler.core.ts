@@ -11,7 +11,7 @@
 import { cache, EventListener, HowlOptions, QueueItem } from './types';
 
 // Import helper functions
-import { loadBuffer, setupAudioContext, isOldOpera, isOldSafari, isAppleVendor, isIE } from './helpers';
+import { isAppleVendor, isIE, isOldOpera, isOldSafari, loadBuffer, setupAudioContext } from './helpers';
 
 // Import plugin manager
 import { globalPluginManager, HowlerPlugin } from './plugins';
@@ -189,6 +189,15 @@ export class HowlerGlobal {
   removePlugin(plugin: HowlerPlugin): HowlerGlobal {
     globalPluginManager.unregister(plugin.name);
     return this;
+  }
+
+  /**
+   * Check if a plugin is registered
+   * @param pluginName - The name of the plugin to check
+   * @returns true if the plugin is registered, false otherwise
+   */
+  hasPlugin(pluginName: string): boolean {
+    return globalPluginManager.isRegistered(pluginName);
   }
 
   _setup(): HowlerGlobal {

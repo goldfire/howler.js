@@ -86,7 +86,6 @@ export interface RegisteredPlugin {
  */
 export class PluginManager {
   private plugins: Map<string, RegisteredPlugin> = new Map();
-  private hookHistory: Map<string, string[]> = new Map();
   private howlerInstance: HowlerGlobal | null = null;
 
   /**
@@ -115,6 +114,15 @@ export class PluginManager {
         hooks.onRegister();
       } catch (error: unknown) {
         console.error(`Error during onRegister for plugin "${plugin.name}":`, error);
+      }
+    }
+
+    // If Howler is already initialized, execute onHowlerInit hook for this plugin
+    if (this.howlerInstance && hooks.onHowlerInit) {
+      try {
+        hooks.onHowlerInit(this.howlerInstance);
+      } catch (error: unknown) {
+        console.error(`Error during onHowlerInit for plugin "${plugin.name}":`, error);
       }
     }
   }
@@ -151,10 +159,18 @@ export class PluginManager {
 
   /**
    * Set the Howler instance reference for late-registered plugins
+   * Also executes onHowlerInit hooks for any plugins already registered
    * @internal
    */
   setHowlerInstance(howler: HowlerGlobal): void {
     this.howlerInstance = howler;
+    
+    // Execute onHowlerInit hooks for all registered plugins
+    this._executeHooks('onHowlerInit', (hooks) => {
+      if (hooks.onHowlerInit) {
+        hooks.onHowlerInit(howler);
+      }
+    });
   }
 
   /**

@@ -9,8 +9,9 @@
  */
 
 import type { Howl } from '../howler.core';
-import { cache } from '../types';
 import { Howler } from '../howler.core';
+import { globalPluginManager } from '../plugins';
+import { cache } from '../types';
 
 export const loadBuffer = (self: Howl) => {
   const url = self._src as string;
@@ -107,5 +108,8 @@ export const loadSound = (self: Howl, buffer?: AudioBuffer) => {
     self._state = 'loaded';
     self._emit('load');
     self._loadQueue();
+
+    // Execute plugin hooks
+    globalPluginManager.executeHowlLoad(self);
   }
 };

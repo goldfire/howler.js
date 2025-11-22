@@ -6,4 +6,8 @@
 export { SpatialAudioPlugin } from './spatial-plugin';
 
 // Export spatial types for TypeScript support
-export type { SpatialAudioState, SpatialHowler, SpatialHowl } from './spatial-plugin';
+export type {
+  SpatialAudioState, SpatialHowl, SpatialHowler, SpatialHowlOptions, SpatialHowlState,
+  SpatialSoundState
+} from './spatial-plugin';
+
