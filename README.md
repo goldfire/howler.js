@@ -23,14 +23,18 @@ Follow on Twitter for howler.js and development-related discussion: [@GoldFireSt
 * As light as 7kb gzipped
 
 ### Browser Compatibility
-Tested in the following browsers/versions:
-* Google Chrome 7.0+
-* Internet Explorer 9.0+
-* Firefox 4.0+
-* Safari 5.1.4+
-* Mobile Safari 6.0+ (after user input)
-* Opera 12.0+
-* Microsoft Edge
+
+Howler.js v3.0+ requires ES Module support. The library works in all modern browsers that support ES modules:
+
+* Google Chrome 61.0+
+* Firefox 67.0+
+* Safari 11.1+
+* Edge 79.0+
+* Opera 48.0+
+* Mobile Safari 11.0+
+* Android Chrome 61.0+
+
+**Legacy Browser Support**: For older browsers without native ES module support, use the provided `es-module-shims` polyfill. All test and example files include this polyfill for maximum compatibility. For even older browser support (IE9+), use Howler.js v2.x which uses CommonJS/UMD format.
 
 ### Live Demos
 * [Audio Player](https://howlerjs.com/#player)
@@ -80,21 +84,161 @@ In the browser:
 </script>
 ```
 
-As a dependency:
+As an ES Module (ESM):
 
 ```javascript
-import {Howl, Howler} from 'howler';
+import { Howl, Howler } from 'howler';
+import { SpatialAudioPlugin } from 'howler/plugins/spatial';
 ```
 
-```javascript
-const {Howl, Howler} = require('howler');
+Howler.js v3.0+ is distributed exclusively as ES Modules. For CommonJS support, use v2.x.
+
+Distribution files:
+
+* **Main entry point** (`howler`): Core Howler.js library
+  * `dist/index.js` - Main entry point with Howler, Howl, Sound classes
+  * `dist/howler.core.js` - Core audio implementation
+  * `dist/index.d.ts` - TypeScript type definitions
+* **Spatial plugin entry point** (`howler/plugins/spatial`): Spatial audio plugin
+  * `dist/plugins/spatial.js` - Spatial audio plugin with 3D positioning support
+  * `dist/plugins/spatial-plugin.js` - SpatialAudioPlugin implementation
+  * `dist/plugins/spatial.d.ts` - Spatial plugin type definitions
+* **Plugin System** (`howler`): Hook-based plugin architecture
+  * `dist/plugins/plugin.js` - PluginManager and HowlerPlugin base class
+
+**Note**: Howler.js v3.0+ is built entirely in TypeScript and distributed as ES Modules only, enabling better tree-shaking and code splitting. The plugin system allows safe extension without prototype mutation.
+
+### Plugin System
+
+Howler.js v3.0+ includes a modern, hook-based plugin architecture that allows you to extend functionality safely and composably.
+
+#### Architecture Overview
+
+The plugin system is built around:
+- **HowlerPlugin**: Base class for creating plugins
+- **PluginManager**: Manages plugin registration and lifecycle
+- **Plugin Hooks**: Well-defined lifecycle events for plugins to hook into
+
+#### Creating a Plugin
+
+Plugins extend `HowlerPlugin` and implement hooks:
+
+```typescript
+import { HowlerPlugin, type PluginHooks } from 'howler';
+import type { HowlerGlobal, Howl } from 'howler';
+
+export class MyPlugin extends HowlerPlugin {
+  readonly name = 'my-plugin';
+
+  getHooks(): PluginHooks {
+    return {
+      onHowlerInit: (howler: HowlerGlobal) => {
+        console.log('Howler initialized');
+      },
+      onHowlCreate: (howl: Howl, options) => {
+        console.log('Howl instance created', howl);
+      },
+    };
+  }
+}
 ```
 
-Included distribution files:
+#### Using Plugins
 
-* **howler**: This is the default and fully bundled source that includes `howler.core` and `howler.spatial`. It includes all functionality that howler comes with.
-* **howler.core**: This includes only the core functionality that aims to create parity between Web Audio and HTML5 Audio. It doesn't include any of the spatial/stereo audio functionality.
-* **howler.spatial**: This is a plugin that adds spatial/stereo audio functionality. It requires `howler.core` to operate as it is simply an add-on to the core.
+Register plugins with the global plugin manager:
+
+```typescript
+import { globalPluginManager, Howl } from 'howler';
+import { SpatialAudioPlugin } from 'howler/plugins/spatial';
+
+// Register the spatial audio plugin
+globalPluginManager.register(new SpatialAudioPlugin());
+
+// Now use Howler as normal - plugin hooks execute automatically
+const sound = new Howl({
+  src: ['audio.mp3'],
+  pos: [0, 0, 0],  // Spatial audio options available
+});
+
+// Use spatial methods
+sound.pos(10, 5, 0);
+Howler.stereo(0.5);
+```
+
+#### Managing Plugins
+
+```typescript
+import { globalPluginManager } from 'howler';
+
+// Check if plugin is registered
+if (globalPluginManager.isRegistered('spatial-audio')) {
+  console.log('Spatial audio is available');
+}
+
+// Disable a plugin temporarily
+globalPluginManager.disable('spatial-audio');
+
+// Re-enable it
+globalPluginManager.enable('spatial-audio');
+
+// Unregister a plugin
+globalPluginManager.unregister('spatial-audio');
+```
+
+#### Available Plugins
+
+##### Spatial Audio Plugin
+
+Adds 3D spatial audio and stereo panning support:
+
+```typescript
+import { globalPluginManager } from 'howler';
+import { SpatialAudioPlugin } from 'howler/plugins/spatial';
+
+globalPluginManager.register(new SpatialAudioPlugin());
+
+const sound = new Howl({
+  src: ['audio.mp3'],
+  pos: [0, 0, 0],              // 3D position
+  stereo: 0,                   // Stereo pan (-1 to 1)
+  orientation: [1, 0, 0],      // Direction the sound is facing
+  coneInnerAngle: 360,         // Cone parameters
+  distanceModel: 'inverse',    // Distance attenuation model
+});
+
+// Set listener position (where the "ear" is)
+Howler.pos(0, 0, 0);
+
+// Set listener orientation (which way they're facing)
+Howler.orientation(0, 0, -1, 0, 1, 0);
+
+// Set sound position (where the sound is in 3D space)
+sound.pos(10, 5, 0);
+
+// Apply stereo panning
+sound.stereo(0.5);
+
+// Configure panner attributes
+sound.pannerAttr({
+  distanceModel: 'inverse',
+  maxDistance: 10000,
+  refDistance: 1,
+  rolloffFactor: 1,
+  panningModel: 'HRTF'
+});
+```
+
+#### Plugin Lifecycle Hooks
+
+Available hooks that plugins can implement:
+
+- `onRegister()` - Called when plugin is registered
+- `onHowlerInit(howler)` - Called when Howler global is initialized
+- `onHowlCreate(howl, options)` - Called when a Howl instance is created
+- `onSoundCreate(sound, parent)` - Called when a Sound instance is created
+- `onHowlLoad(howl)` - Called when a Howl instance loads
+- `onHowlDestroy(howl)` - Called when a Howl instance is destroyed
+- `onUnregister()` - Called when plugin is unregistered (cleanup)
 
 
 ### Examples
