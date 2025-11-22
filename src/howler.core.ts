@@ -40,63 +40,55 @@ export class HowlerGlobal {
   _mobileUnloaded?: boolean;
 
   constructor() {
-    this.init();
-  }
+    // Initialize all properties (explicit initialization ensures correct values)
+    this._counter = 1000;
+    this._html5AudioPool = [];
+    this.html5PoolSize = 10;
+    this._codecs = {};
+    this._howls = [];
+    this._muted = false;
+    this._volume = 1;
+    this._canPlayEvent = 'canplaythrough';
+    this._navigator = typeof window !== 'undefined' && window.navigator ? window.navigator : null;
+    this.masterGain = null;
+    this.noAudio = false;
+    this.usingWebAudio = true;
+    this.autoSuspend = true;
+    this.ctx = null;
+    this.autoUnlock = true;
 
-  init(): HowlerGlobal {
-    const self = this;
-
-    self._counter = 1000;
-    self._html5AudioPool = [];
-    self.html5PoolSize = 10;
-    self._codecs = {};
-    self._howls = [];
-    self._muted = false;
-    self._volume = 1;
-    self._canPlayEvent = 'canplaythrough';
-    self._navigator = typeof window !== 'undefined' && window.navigator ? window.navigator : null;
-
-    self.masterGain = null;
-    self.noAudio = false;
-    self.usingWebAudio = true;
-    self.autoSuspend = true;
-    self.ctx = null;
-    self.autoUnlock = true;
-
-    self._setup();
+    // Setup Howler (codecs, audio context, etc.)
+    this._setup();
 
     // Register the Howler instance with the plugin manager
-    // This allows plugins registered after initialization to access it via onRegister
-    globalPluginManager.setHowlerInstance(self);
-
-    return self;
+    // This triggers onHowlerInit hooks for any plugins already registered
+    globalPluginManager.setHowlerInstance(this);
   }
 
   volume(vol?: number): number | HowlerGlobal {
-    const self = this;
     if (vol !== undefined) {
       vol = parseFloat(vol as any);
 
-      if (!self.ctx) {
+      if (!this.ctx) {
         setupAudioContext();
       }
 
       if (typeof vol === 'number' && vol >= 0 && vol <= 1) {
-        self._volume = vol;
+        this._volume = vol;
 
-        if (self._muted) {
-          return self;
+        if (this._muted) {
+          return this;
         }
 
-        if (self.usingWebAudio) {
-          self.masterGain!.gain.setValueAtTime(vol, Howler.ctx!.currentTime);
+        if (this.usingWebAudio) {
+          this.masterGain!.gain.setValueAtTime(vol, Howler.ctx!.currentTime);
         }
 
-        for (let i = 0; i < self._howls.length; i++) {
-          if (!self._howls[i]._webAudio) {
-            const ids = self._howls[i]._getSoundIds();
+        for (let i = 0; i < this._howls.length; i++) {
+          if (!this._howls[i]._webAudio) {
+            const ids = this._howls[i]._getSoundIds();
             for (let j = 0; j < ids.length; j++) {
-              const sound = self._howls[i]._soundById(ids[j]);
+              const sound = this._howls[i]._soundById(ids[j]);
               if (sound && sound._node) {
                 sound._node.volume = sound._volume * vol;
               }
@@ -104,31 +96,29 @@ export class HowlerGlobal {
           }
         }
 
-        return self;
+        return this;
       }
     }
 
-    return self._volume;
+    return this._volume;
   }
 
   mute(muted: boolean): HowlerGlobal {
-    const self = this;
-
-    if (!self.ctx) {
+    if (!this.ctx) {
       setupAudioContext();
     }
 
-    self._muted = muted;
+    this._muted = muted;
 
-    if (self.usingWebAudio) {
-      self.masterGain!.gain.setValueAtTime(muted ? 0 : self._volume, Howler.ctx!.currentTime);
+    if (this.usingWebAudio) {
+      this.masterGain!.gain.setValueAtTime(muted ? 0 : this._volume, Howler.ctx!.currentTime);
     }
 
-    for (let i = 0; i < self._howls.length; i++) {
-      if (!self._howls[i]._webAudio) {
-        const ids = self._howls[i]._getSoundIds();
+    for (let i = 0; i < this._howls.length; i++) {
+      if (!this._howls[i]._webAudio) {
+        const ids = this._howls[i]._getSoundIds();
         for (let j = 0; j < ids.length; j++) {
-          const sound = self._howls[i]._soundById(ids[j]);
+          const sound = this._howls[i]._soundById(ids[j]);
           if (sound && sound._node) {
             sound._node.muted = muted ? true : sound._muted;
           }
@@ -136,33 +126,29 @@ export class HowlerGlobal {
       }
     }
 
-    return self;
+    return this;
   }
 
   stop(): HowlerGlobal {
-    const self = this;
-
-    for (let i = 0; i < self._howls.length; i++) {
-      self._howls[i].stop();
+    for (let i = 0; i < this._howls.length; i++) {
+      this._howls[i].stop();
     }
 
-    return self;
+    return this;
   }
 
   unload(): HowlerGlobal {
-    const self = this;
-
-    for (let i = self._howls.length - 1; i >= 0; i--) {
-      self._howls[i].unload();
+    for (let i = this._howls.length - 1; i >= 0; i--) {
+      this._howls[i].unload();
     }
 
-    if (self.usingWebAudio && self.ctx && typeof self.ctx.close !== 'undefined') {
-      self.ctx.close();
-      self.ctx = null;
+    if (this.usingWebAudio && this.ctx && typeof this.ctx.close !== 'undefined') {
+      this.ctx.close();
+      this.ctx = null;
       setupAudioContext();
     }
 
-    return self;
+    return this;
   }
 
   codecs(ext: string): boolean {
@@ -201,59 +187,56 @@ export class HowlerGlobal {
   }
 
   _setup(): HowlerGlobal {
-    const self = this;
+    this.state = this.ctx ? this.ctx.state || 'suspended' : 'suspended';
+    this._autoSuspend();
 
-    self.state = self.ctx ? self.ctx.state || 'suspended' : 'suspended';
-    self._autoSuspend();
-
-    if (!self.usingWebAudio) {
+    if (!this.usingWebAudio) {
       if (typeof window.Audio !== 'undefined') {
         try {
           const test = new window.Audio();
           if (typeof test.oncanplaythrough === 'undefined') {
-            self._canPlayEvent = 'canplay';
+            this._canPlayEvent = 'canplay';
           }
         } catch (e) {
-          self.noAudio = true;
+          this.noAudio = true;
         }
       } else {
-        self.noAudio = true;
+        this.noAudio = true;
       }
     }
 
     try {
       const test = new window.Audio();
       if (test.muted) {
-        self.noAudio = true;
+        this.noAudio = true;
       }
     } catch (e) {}
 
-    if (!self.noAudio) {
-      self._setupCodecs();
+    if (!this.noAudio) {
+      this._setupCodecs();
     }
 
-    return self;
+    return this;
   }
 
   _setupCodecs(): HowlerGlobal {
-    const self = this;
     let audioTest: any = null;
 
     try {
       audioTest = typeof window.Audio !== 'undefined' ? new window.Audio() : null;
     } catch (err) {
-      return self;
+      return this;
     }
 
     if (!audioTest || typeof audioTest.canPlayType !== 'function') {
-      return self;
+      return this;
     }
 
     const mpegTest = audioTest.canPlayType('audio/mpeg;').replace(/^no$/, '');
-    const oldOpera = isOldOpera(self._navigator);
-    const oldSafari = isOldSafari(self._navigator);
+    const oldOpera = isOldOpera(this._navigator);
+    const oldSafari = isOldSafari(this._navigator);
 
-    self._codecs = {
+    this._codecs = {
       mp3: !!(!oldOpera && (mpegTest || audioTest.canPlayType('audio/mp3;').replace(/^no$/, ''))),
       mpeg: !!mpegTest,
       opus: !!audioTest.canPlayType('audio/ogg; codecs="opus"').replace(/^no$/, ''),
@@ -271,43 +254,41 @@ export class HowlerGlobal {
       flac: !!(audioTest.canPlayType('audio/x-flac;') || audioTest.canPlayType('audio/flac;')).replace(/^no$/, '')
     };
 
-    return self;
+    return this;
   }
 
   _unlockAudio(): void {
-    const self = this;
-
-    if (self._audioUnlocked || !self.ctx) {
+    if (this._audioUnlocked || !this.ctx) {
       return;
     }
 
-    self._audioUnlocked = false;
-    self.autoUnlock = false;
+    this._audioUnlocked = false;
+    this.autoUnlock = false;
 
-    if (!self._mobileUnloaded && self.ctx.sampleRate !== 44100) {
-      self._mobileUnloaded = true;
-      self.unload();
+    if (!this._mobileUnloaded && this.ctx.sampleRate !== 44100) {
+      this._mobileUnloaded = true;
+      this.unload();
     }
 
-    self._scratchBuffer = self.ctx.createBuffer(1, 1, 22050);
+    this._scratchBuffer = this.ctx.createBuffer(1, 1, 22050);
 
     const unlock = () => {
-      while (self._html5AudioPool.length < self.html5PoolSize) {
+      while (this._html5AudioPool.length < this.html5PoolSize) {
         try {
           const audioNode = new (window as any).Audio();
           audioNode._unlocked = true;
-          self._releaseHtml5Audio(audioNode);
+          this._releaseHtml5Audio(audioNode);
         } catch (e) {
-          self.noAudio = true;
+          this.noAudio = true;
           break;
         }
       }
 
-      for (let i = 0; i < self._howls.length; i++) {
-        if (!self._howls[i]._webAudio) {
-          const ids = self._howls[i]._getSoundIds();
+      for (let i = 0; i < this._howls.length; i++) {
+        if (!this._howls[i]._webAudio) {
+          const ids = this._howls[i]._getSoundIds();
           for (let j = 0; j < ids.length; j++) {
-            const sound = self._howls[i]._soundById(ids[j]);
+            const sound = this._howls[i]._soundById(ids[j]);
             if (sound && sound._node && !(sound._node as any)._unlocked) {
               (sound._node as any)._unlocked = true;
               sound._node.load();
@@ -316,11 +297,11 @@ export class HowlerGlobal {
         }
       }
 
-      self._autoResume();
+      this._autoResume();
 
-      const source = self.ctx!.createBufferSource();
-      source.buffer = self._scratchBuffer;
-      source.connect(self.ctx!.destination);
+      const source = this.ctx!.createBufferSource();
+      source.buffer = this._scratchBuffer;
+      source.connect(this.ctx!.destination);
 
       if (typeof source.start === 'undefined') {
         (source as any).noteOn(0);
@@ -328,21 +309,21 @@ export class HowlerGlobal {
         source.start(0);
       }
 
-      if (typeof self.ctx!.resume === 'function') {
-        self.ctx!.resume();
+      if (typeof this.ctx!.resume === 'function') {
+        this.ctx!.resume();
       }
 
       source.onended = () => {
         source.disconnect(0);
-        self._audioUnlocked = true;
+        this._audioUnlocked = true;
 
         document.removeEventListener('touchstart', unlock, true);
         document.removeEventListener('touchend', unlock, true);
         document.removeEventListener('click', unlock, true);
         document.removeEventListener('keydown', unlock, true);
 
-        for (let i = 0; i < self._howls.length; i++) {
-          self._howls[i]._emit('unlock');
+        for (let i = 0; i < this._howls.length; i++) {
+          this._howls[i]._emit('unlock');
         }
       };
     };
@@ -354,10 +335,8 @@ export class HowlerGlobal {
   }
 
   _obtainHtml5Audio(): HTMLAudioElement {
-    const self = this;
-
-    if (self._html5AudioPool.length) {
-      return self._html5AudioPool.pop()!;
+    if (this._html5AudioPool.length) {
+      return this._html5AudioPool.pop()!;
     }
 
     const testPlay = new (window as any).Audio().play();
@@ -371,82 +350,76 @@ export class HowlerGlobal {
   }
 
   _releaseHtml5Audio(audio: any): HowlerGlobal {
-    const self = this;
-
     if (audio._unlocked) {
-      self._html5AudioPool.push(audio);
+      this._html5AudioPool.push(audio);
     }
 
-    return self;
+    return this;
   }
 
   _autoSuspend(): void {
-    const self = this;
-
-    if (!self.autoSuspend || !self.ctx || typeof self.ctx.suspend === 'undefined' || !Howler.usingWebAudio) {
+    if (!this.autoSuspend || !this.ctx || typeof this.ctx.suspend === 'undefined' || !Howler.usingWebAudio) {
       return;
     }
 
-    for (let i = 0; i < self._howls.length; i++) {
-      if (self._howls[i]._webAudio) {
-        for (let j = 0; j < self._howls[i]._sounds.length; j++) {
-          if (!self._howls[i]._sounds[j]._paused) {
+    for (let i = 0; i < this._howls.length; i++) {
+      if (this._howls[i]._webAudio) {
+        for (let j = 0; j < this._howls[i]._sounds.length; j++) {
+          if (!this._howls[i]._sounds[j]._paused) {
             return;
           }
         }
       }
     }
 
-    if (self._suspendTimer) {
-      clearTimeout(self._suspendTimer);
+    if (this._suspendTimer) {
+      clearTimeout(this._suspendTimer);
     }
 
-    self._suspendTimer = setTimeout(() => {
-      if (!self.autoSuspend) {
+    this._suspendTimer = setTimeout(() => {
+      if (!this.autoSuspend) {
         return;
       }
 
-      self._suspendTimer = null;
-      self.state = 'suspending';
+      this._suspendTimer = null;
+      this.state = 'suspending';
 
       const handleSuspension = () => {
-        self.state = 'suspended';
+        this.state = 'suspended';
 
-        if (self._resumeAfterSuspend) {
-          delete self._resumeAfterSuspend;
-          self._autoResume();
+        if (this._resumeAfterSuspend) {
+          delete this._resumeAfterSuspend;
+          this._autoResume();
         }
       };
 
-      self.ctx!.suspend().then(handleSuspension, handleSuspension);
+      this.ctx!.suspend().then(handleSuspension, handleSuspension);
     }, 30000);
   }
 
   _autoResume(): void {
-    const self = this;
-
-    if (!self.ctx || typeof self.ctx.resume === 'undefined' || !Howler.usingWebAudio) {
+    if (!this.ctx || typeof this.ctx.resume === 'undefined' || !Howler.usingWebAudio) {
       return;
     }
 
-    if (self.state === 'running' && self.ctx.state !== 'interrupted' && self._suspendTimer) {
-      clearTimeout(self._suspendTimer);
-      self._suspendTimer = null;
-    } else if (self.state === 'suspended' || (self.state === 'running' && self.ctx.state === 'interrupted')) {
-      self.ctx.resume().then(() => {
-        self.state = 'running';
+    if (this.state === 'running' && this.ctx.state !== 'interrupted' && this._suspendTimer) {
+      clearTimeout(this._suspendTimer);
+      this._suspendTimer = null;
+    } else if (this.state === 'suspended' || (this.state === 'running' && this.ctx.state === 'interrupted')) {
+      this.ctx.resume().then(() => {
+        this.state = 'running';
 
-        for (let i = 0; i < self._howls.length; i++) {
-          self._howls[i]._emit('resume');
+        for (let i = 0; i < this._howls.length; i++) {
+          this._howls[i]._emit('resume');
         }
       });
 
-      if (self._suspendTimer) {
-        clearTimeout(self._suspendTimer);
-        self._suspendTimer = null;
+      if (this._suspendTimer) {
+        clearTimeout(this._suspendTimer);
+        this._suspendTimer = null;
       }
-    } else if (self.state === 'suspending') {
-      self._resumeAfterSuspend = true;
+    } else if (this.state === 'suspending') {
+      this._resumeAfterSuspend = true;
     }
   }
 }
@@ -483,95 +456,95 @@ class Sound {
   }
 
   init(): Sound {
-    const self = this;
-    const parent = self._parent;
+    
+    const parent = this._parent;
 
-    self._muted = parent._muted;
-    self._loop = parent._loop;
-    self._volume = parent._volume;
-    self._rate = parent._rate;
-    self._seek = 0;
-    self._paused = true;
-    self._ended = true;
-    self._sprite = '__default';
+    this._muted = parent._muted;
+    this._loop = parent._loop;
+    this._volume = parent._volume;
+    this._rate = parent._rate;
+    this._seek = 0;
+    this._paused = true;
+    this._ended = true;
+    this._sprite = '__default';
 
-    self._id = ++Howler._counter;
+    this._id = ++Howler._counter;
 
-    parent._sounds.push(self);
+    parent._sounds.push(this);
 
-    self.create();
+    this.create();
 
     // Execute plugin hooks
-    globalPluginManager.executeSoundCreate(self, parent);
+    globalPluginManager.executeSoundCreate(this, parent);
 
-    return self;
+    return this;
   }
 
   create(): Sound {
-    const self = this;
-    const parent = self._parent;
-    const volume = Howler._muted || self._muted || parent._muted ? 0 : self._volume;
+    
+    const parent = this._parent;
+    const volume = Howler._muted || this._muted || parent._muted ? 0 : this._volume;
 
     if (parent._webAudio) {
-      self._node = typeof Howler.ctx!.createGain === 'undefined' ? Howler.ctx!.createGainNode() : Howler.ctx!.createGain();
-      self._node.gain.setValueAtTime(volume, Howler.ctx!.currentTime);
-      self._node.paused = true;
-      self._node.connect(Howler.masterGain);
+      this._node = typeof Howler.ctx!.createGain === 'undefined' ? Howler.ctx!.createGainNode() : Howler.ctx!.createGain();
+      this._node.gain.setValueAtTime(volume, Howler.ctx!.currentTime);
+      this._node.paused = true;
+      this._node.connect(Howler.masterGain);
     } else if (!Howler.noAudio) {
-      self._node = Howler._obtainHtml5Audio();
+      this._node = Howler._obtainHtml5Audio();
 
-      self._errorFn = self._errorListener.bind(self);
-      self._node.addEventListener('error', self._errorFn, false);
+      this._errorFn = this._errorListener.bind(this);
+      this._node.addEventListener('error', this._errorFn, false);
 
-      self._loadFn = self._loadListener.bind(self);
-      self._node.addEventListener(Howler._canPlayEvent, self._loadFn, false);
+      this._loadFn = this._loadListener.bind(this);
+      this._node.addEventListener(Howler._canPlayEvent, this._loadFn, false);
 
-      self._endFn = self._endListener.bind(self);
-      self._node.addEventListener('ended', self._endFn, false);
+      this._endFn = this._endListener.bind(this);
+      this._node.addEventListener('ended', this._endFn, false);
 
-      self._node.src = parent._src;
-      self._node.preload = parent._preload === true ? 'auto' : parent._preload;
+      this._node.src = parent._src;
+      this._node.preload = parent._preload === true ? 'auto' : parent._preload;
       const volumeOrHowler = Howler.volume();
       if (typeof volumeOrHowler === 'number') {
-        self._node.volume = volume * volumeOrHowler;
+        this._node.volume = volume * volumeOrHowler;
       }
 
-      self._node.load();
+      this._node.load();
     }
 
-    return self;
+    return this;
   }
 
   reset(): Sound {
-    const self = this;
-    const parent = self._parent;
+    
+    const parent = this._parent;
 
-    self._muted = parent._muted;
-    self._loop = parent._loop;
-    self._volume = parent._volume;
-    self._rate = parent._rate;
-    self._seek = 0;
-    self._rateSeek = 0;
-    self._paused = true;
-    self._ended = true;
-    self._sprite = '__default';
+    this._muted = parent._muted;
+    this._loop = parent._loop;
+    this._volume = parent._volume;
+    this._rate = parent._rate;
+    this._seek = 0;
+    this._rateSeek = 0;
+    this._paused = true;
+    this._ended = true;
+    this._sprite = '__default';
 
-    self._id = ++Howler._counter;
+    this._id = ++Howler._counter;
 
-    return self;
+    return this;
   }
 
   _errorListener(): void {
-    const self = this;
-    self._parent._emit('loaderror', self._id, self._node.error ? self._node.error.code : 0);
-    self._node.removeEventListener('error', self._errorFn, false);
+    
+    this._parent._emit('loaderror', this._id, this._node.error ? this._node.error.code : 0);
+    this._node.removeEventListener('error', this._errorFn, false);
   }
 
   _loadListener(): void {
-    const self = this;
-    const parent = self._parent;
+    
+    const parent = this._parent;
 
-    parent._duration = Math.ceil(self._node.duration * 10) / 10;
+    parent._duration = Math.ceil(this._node.duration * 10) / 10;
 
     if (Object.keys(parent._sprite).length === 0) {
       parent._sprite = { __default: [0, parent._duration * 1000] };
@@ -586,24 +559,24 @@ class Sound {
       globalPluginManager.executeHowlLoad(parent);
     }
 
-    self._node.removeEventListener(Howler._canPlayEvent, self._loadFn, false);
+    this._node.removeEventListener(Howler._canPlayEvent, this._loadFn, false);
   }
 
   _endListener(): void {
-    const self = this;
-    const parent = self._parent;
+    
+    const parent = this._parent;
 
     if (parent._duration === Infinity) {
-      parent._duration = Math.ceil(self._node.duration * 10) / 10;
+      parent._duration = Math.ceil(this._node.duration * 10) / 10;
 
       if (parent._sprite.__default[1] === Infinity) {
         parent._sprite.__default[1] = parent._duration * 1000;
       }
 
-      parent._ended(self);
+      parent._ended(this);
     }
 
-    self._node.removeEventListener('ended', self._endFn, false);
+    this._node.removeEventListener('ended', this._endFn, false);
   }
 }
 
@@ -652,100 +625,97 @@ class Howl {
   }
 
   init(o: HowlOptions): Howl {
-    const self = this;
-
     if (!Howler.ctx) {
       setupAudioContext();
     }
 
-    self._autoplay = o.autoplay || false;
-    self._format = typeof o.format !== 'string' ? o.format || [] : [o.format];
-    self._html5 = o.html5 || false;
-    self._muted = o.mute || false;
-    self._loop = o.loop || false;
-    self._pool = o.pool || 5;
-    self._preload = typeof o.preload === 'boolean' || o.preload === 'metadata' ? o.preload : true;
-    self._rate = o.rate || 1;
-    self._sprite = o.sprite || {};
-    self._src = typeof o.src !== 'string' ? o.src : [o.src];
-    self._volume = o.volume !== undefined ? o.volume : 1;
-    self._xhr = {
+    this._autoplay = o.autoplay || false;
+    this._format = typeof o.format !== 'string' ? o.format || [] : [o.format];
+    this._html5 = o.html5 || false;
+    this._muted = o.mute || false;
+    this._loop = o.loop || false;
+    this._pool = o.pool || 5;
+    this._preload = typeof o.preload === 'boolean' || o.preload === 'metadata' ? o.preload : true;
+    this._rate = o.rate || 1;
+    this._sprite = o.sprite || {};
+    this._src = typeof o.src !== 'string' ? o.src : [o.src];
+    this._volume = o.volume !== undefined ? o.volume : 1;
+    this._xhr = {
       method: o.xhr && o.xhr.method ? o.xhr.method : 'GET',
       headers: o.xhr && o.xhr.headers ? o.xhr.headers : undefined,
       withCredentials: o.xhr && o.xhr.withCredentials ? o.xhr.withCredentials : false
     };
 
-    self._duration = 0;
-    self._state = 'unloaded';
-    self._sounds = [];
-    self._endTimers = {};
-    self._queue = [];
-    self._playLock = false;
+    this._duration = 0;
+    this._state = 'unloaded';
+    this._sounds = [];
+    this._endTimers = {};
+    this._queue = [];
+    this._playLock = false;
 
-    self._onend = o.onend ? [{ fn: o.onend }] : [];
-    self._onfade = o.onfade ? [{ fn: o.onfade }] : [];
-    self._onload = o.onload ? [{ fn: o.onload }] : [];
-    self._onloaderror = o.onloaderror ? [{ fn: o.onloaderror }] : [];
-    self._onplayerror = o.onplayerror ? [{ fn: o.onplayerror }] : [];
-    self._onpause = o.onpause ? [{ fn: o.onpause }] : [];
-    self._onplay = o.onplay ? [{ fn: o.onplay }] : [];
-    self._onstop = o.onstop ? [{ fn: o.onstop }] : [];
-    self._onmute = o.onmute ? [{ fn: o.onmute }] : [];
-    self._onvolume = o.onvolume ? [{ fn: o.onvolume }] : [];
-    self._onrate = o.onrate ? [{ fn: o.onrate }] : [];
-    self._onseek = o.onseek ? [{ fn: o.onseek }] : [];
-    self._onunlock = o.onunlock ? [{ fn: o.onunlock }] : [];
-    self._onresume = [];
+    this._onend = o.onend ? [{ fn: o.onend }] : [];
+    this._onfade = o.onfade ? [{ fn: o.onfade }] : [];
+    this._onload = o.onload ? [{ fn: o.onload }] : [];
+    this._onloaderror = o.onloaderror ? [{ fn: o.onloaderror }] : [];
+    this._onplayerror = o.onplayerror ? [{ fn: o.onplayerror }] : [];
+    this._onpause = o.onpause ? [{ fn: o.onpause }] : [];
+    this._onplay = o.onplay ? [{ fn: o.onplay }] : [];
+    this._onstop = o.onstop ? [{ fn: o.onstop }] : [];
+    this._onmute = o.onmute ? [{ fn: o.onmute }] : [];
+    this._onvolume = o.onvolume ? [{ fn: o.onvolume }] : [];
+    this._onrate = o.onrate ? [{ fn: o.onrate }] : [];
+    this._onseek = o.onseek ? [{ fn: o.onseek }] : [];
+    this._onunlock = o.onunlock ? [{ fn: o.onunlock }] : [];
+    this._onresume = [];
 
-    self._webAudio = Howler.usingWebAudio && !self._html5;
+    this._webAudio = Howler.usingWebAudio && !this._html5;
 
     if (typeof Howler.ctx !== 'undefined' && Howler.ctx && Howler.autoUnlock) {
       Howler._unlockAudio();
     }
 
-    Howler._howls.push(self);
+    Howler._howls.push(this);
 
     // Execute plugin hooks
-    globalPluginManager.executeHowlCreate(self, o);
+    globalPluginManager.executeHowlCreate(this, o);
 
-    if (self._autoplay) {
-      self._queue.push({
+    if (this._autoplay) {
+      this._queue.push({
         event: 'play',
         action: () => {
-          self.play();
+          this.play();
         }
       });
     }
 
-    if (self._preload && self._preload !== 'none') {
-      self.load();
+    if (this._preload && this._preload !== 'none') {
+      this.load();
     }
 
-    return self;
+    return this;
   }
 
   load(): Howl {
-    const self = this;
     let url: string | null = null;
 
     if (Howler.noAudio) {
-      self._emit('loaderror', null, 'No audio support.');
-      return self;
+      this._emit('loaderror', null, 'No audio support.');
+      return this;
     }
 
-    if (typeof self._src === 'string') {
-      self._src = [self._src];
+    if (typeof this._src === 'string') {
+      this._src = [this._src];
     }
 
-    for (let i = 0; i < (self._src as string[]).length; i++) {
+    for (let i = 0; i < (this._src as string[]).length; i++) {
       let ext: string | null;
-      const str = (self._src as string[])[i];
+      const str = (this._src as string[])[i];
 
-      if (self._format && self._format[i]) {
-        ext = self._format[i];
+      if (this._format && this._format[i]) {
+        ext = this._format[i];
       } else {
         if (typeof str !== 'string') {
-          self._emit('loaderror', null, 'Non-string found in selected audio sources - ignoring.');
+          this._emit('loaderror', null, 'Non-string found in selected audio sources - ignoring.');
           continue;
         }
 
@@ -762,51 +732,51 @@ class Howl {
       }
 
       if (ext && Howler.codecs(ext)) {
-        url = (self._src as string[])[i];
+        url = (this._src as string[])[i];
         break;
       }
     }
 
     if (!url) {
-      self._emit('loaderror', null, 'No codec support for selected audio sources.');
-      return self;
+      this._emit('loaderror', null, 'No codec support for selected audio sources.');
+      return this;
     }
 
-    self._src = url;
-    self._state = 'loading';
+    this._src = url;
+    this._state = 'loading';
 
     if (typeof window !== 'undefined' && window.location.protocol === 'https:' && url.slice(0, 5) === 'http:') {
-      self._html5 = true;
-      self._webAudio = false;
+      this._html5 = true;
+      this._webAudio = false;
     }
 
-    new Sound(self);
+    new Sound(this);
 
-    if (self._webAudio) {
-      loadBuffer(self);
+    if (this._webAudio) {
+      loadBuffer(this);
     }
 
-    return self;
+    return this;
   }
 
   play(sprite?: string | number, internal?: boolean): number | null {
-    const self = this;
+    
     let id: number | null = null;
 
     if (typeof sprite === 'number') {
       id = sprite;
       sprite = undefined;
-    } else if (typeof sprite === 'string' && self._state === 'loaded' && !self._sprite[sprite]) {
+    } else if (typeof sprite === 'string' && this._state === 'loaded' && !this._sprite[sprite]) {
       return null;
     } else if (typeof sprite === 'undefined') {
       sprite = '__default';
 
-      if (!self._playLock) {
+      if (!this._playLock) {
         let num = 0;
-        for (let i = 0; i < self._sounds.length; i++) {
-          if (self._sounds[i]._paused && !self._sounds[i]._ended) {
+        for (let i = 0; i < this._sounds.length; i++) {
+          if (this._sounds[i]._paused && !this._sounds[i]._ended) {
             num++;
-            id = self._sounds[i]._id;
+            id = this._sounds[i]._id;
           }
         }
 
@@ -818,7 +788,7 @@ class Howl {
       }
     }
 
-    const sound = id ? self._soundById(id) : self._inactiveSound();
+    const sound = id ? this._soundById(id) : this._inactiveSound();
 
     if (!sound) {
       return null;
@@ -828,15 +798,15 @@ class Howl {
       sprite = sound._sprite || '__default';
     }
 
-    if (self._state !== 'loaded') {
+    if (this._state !== 'loaded') {
       sound._sprite = sprite;
       sound._ended = false;
 
       const soundId = sound._id;
-      self._queue.push({
+      this._queue.push({
         event: 'play',
         action: () => {
-          self.play(soundId);
+          this.play(soundId);
         }
       });
 
@@ -845,21 +815,21 @@ class Howl {
 
     if (id && !sound._paused) {
       if (!internal) {
-        self._loadQueue('play');
+        this._loadQueue('play');
       }
 
       return sound._id;
     }
 
-    if (self._webAudio) {
+    if (this._webAudio) {
       Howler._autoResume();
     }
 
-    const seek = Math.max(0, sound._seek > 0 ? sound._seek : self._sprite[sprite!][0] / 1000);
-    const duration = Math.max(0, (self._sprite[sprite!][0] + self._sprite[sprite!][1]) / 1000 - seek);
+    const seek = Math.max(0, sound._seek > 0 ? sound._seek : this._sprite[sprite!][0] / 1000);
+    const duration = Math.max(0, (this._sprite[sprite!][0] + this._sprite[sprite!][1]) / 1000 - seek);
     const timeout = (duration * 1000) / Math.abs(sound._rate);
-    const start = self._sprite[sprite!][0] / 1000;
-    const stop = (self._sprite[sprite!][0] + self._sprite[sprite!][1]) / 1000;
+    const start = this._sprite[sprite!][0] / 1000;
+    const stop = (this._sprite[sprite!][0] + this._sprite[sprite!][1]) / 1000;
     sound._sprite = sprite!;
 
     sound._ended = false;
@@ -869,23 +839,23 @@ class Howl {
       sound._seek = seek;
       sound._start = start;
       sound._stop = stop;
-      sound._loop = !!(sound._loop || self._sprite[sprite!][2]);
+      sound._loop = !!(sound._loop || this._sprite[sprite!][2]);
     };
 
     if (seek >= stop) {
-      self._ended(sound);
+      this._ended(sound);
       return sound._id;
     }
 
     const node = sound._node;
 
-    if (self._webAudio) {
+    if (this._webAudio) {
       const playWebAudio = () => {
-        self._playLock = false;
+        this._playLock = false;
         setParams();
-        self._refreshBuffer(sound);
+        this._refreshBuffer(sound);
 
-        const vol = sound._muted || self._muted ? 0 : sound._volume;
+        const vol = sound._muted || this._muted ? 0 : sound._volume;
         node.gain.setValueAtTime(vol, Howler.ctx!.currentTime);
         sound._playStart = Howler.ctx!.currentTime;
 
@@ -896,13 +866,13 @@ class Howl {
         }
 
         if (timeout !== Infinity) {
-          self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
+          this._endTimers[sound._id] = setTimeout(this._ended.bind(this, sound), timeout);
         }
 
         if (!internal) {
           setTimeout(() => {
-            self._emit('play', sound._id);
-            self._loadQueue();
+            this._emit('play', sound._id);
+            this._loadQueue();
           }, 0);
         }
       };
@@ -910,14 +880,14 @@ class Howl {
       if (Howler.state === 'running' && Howler.ctx!.state !== 'interrupted') {
         playWebAudio();
       } else {
-        self._playLock = true;
-        self.once('resume', playWebAudio);
-        self._clearTimer(sound._id);
+        this._playLock = true;
+        this.once('resume', playWebAudio);
+        this._clearTimer(sound._id);
       }
     } else {
       const playHtml5 = () => {
         node.currentTime = seek;
-        node.muted = sound._muted || self._muted || Howler._muted || node.muted;
+        node.muted = sound._muted || this._muted || Howler._muted || node.muted;
         const volume = Howler.volume();
         node.volume = sound._volume * (typeof volume === 'number' ? volume : 1);
         node.playbackRate = sound._rate;
@@ -926,55 +896,55 @@ class Howl {
           const play = node.play();
 
           if (play && typeof Promise !== 'undefined' && (play instanceof Promise || typeof (play as any).then === 'function')) {
-            self._playLock = true;
+            this._playLock = true;
 
             setParams();
 
             (play as any)
               .then(() => {
-                self._playLock = false;
+                this._playLock = false;
                 (node as any)._unlocked = true;
                 if (!internal) {
-                  self._emit('play', sound._id);
+                  this._emit('play', sound._id);
                 } else {
-                  self._loadQueue();
+                  this._loadQueue();
                 }
               })
               .catch(() => {
-                self._playLock = false;
-                self._emit('playerror', sound._id, 'Playback was unable to start. This is most commonly an issue on mobile devices and Chrome where playback was not within a user interaction.');
+                this._playLock = false;
+                this._emit('playerror', sound._id, 'Playback was unable to start. This is most commonly an issue on mobile devices and Chrome where playback was not within a user interaction.');
                 sound._ended = true;
                 sound._paused = true;
               });
           } else if (!internal) {
-            self._playLock = false;
+            this._playLock = false;
             setParams();
-            self._emit('play', sound._id);
+            this._emit('play', sound._id);
           }
 
           node.playbackRate = sound._rate;
 
           if (node.paused) {
-            self._emit('playerror', sound._id, 'Playback was unable to start. This is most commonly an issue on mobile devices and Chrome where playback was not within a user interaction.');
+            this._emit('playerror', sound._id, 'Playback was unable to start. This is most commonly an issue on mobile devices and Chrome where playback was not within a user interaction.');
             return;
           }
 
           if (sprite !== '__default' || sound._loop) {
-            self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
+            this._endTimers[sound._id] = setTimeout(this._ended.bind(this, sound), timeout);
           } else {
-            self._endTimers[sound._id] = () => {
-              self._ended(sound);
-              node.removeEventListener('ended', self._endTimers[sound._id], false);
+            this._endTimers[sound._id] = () => {
+              this._ended(sound);
+              node.removeEventListener('ended', this._endTimers[sound._id], false);
             };
-            node.addEventListener('ended', self._endTimers[sound._id], false);
+            node.addEventListener('ended', this._endTimers[sound._id], false);
           }
         } catch (err: unknown) {
-          self._emit('playerror', sound._id, err instanceof Error ? err.message : String(err));
+          this._emit('playerror', sound._id, err instanceof Error ? err.message : String(err));
         }
       };
 
       if (node.src === 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA') {
-        node.src = self._src;
+        node.src = this._src;
         node.load();
       }
 
@@ -982,17 +952,17 @@ class Howl {
       if (node.readyState >= 3 || loadedNoReadyState) {
         playHtml5();
       } else {
-        self._playLock = true;
-        self._state = 'loading';
+        this._playLock = true;
+        this._state = 'loading';
 
         const listener = () => {
-          self._state = 'loaded';
+          this._state = 'loaded';
           playHtml5();
           node.removeEventListener(Howler._canPlayEvent, listener, false);
         };
         node.addEventListener(Howler._canPlayEvent, listener as any, false);
 
-        self._clearTimer(sound._id);
+        this._clearTimer(sound._id);
       }
     }
 
@@ -1000,35 +970,35 @@ class Howl {
   }
 
   pause(id?: number): Howl {
-    const self = this;
+    
 
-    if (self._state !== 'loaded' || self._playLock) {
-      self._queue.push({
+    if (this._state !== 'loaded' || this._playLock) {
+      this._queue.push({
         event: 'pause',
         action: () => {
-          self.pause(id);
+          this.pause(id);
         }
       });
 
-      return self;
+      return this;
     }
 
-    const ids = self._getSoundIds(id);
+    const ids = this._getSoundIds(id);
 
     for (let i = 0; i < ids.length; i++) {
-      self._clearTimer(ids[i]);
+      this._clearTimer(ids[i]);
 
-      const sound = self._soundById(ids[i]);
+      const sound = this._soundById(ids[i]);
 
       if (sound && !sound._paused) {
-        sound._seek = self.seek(ids[i]) as number;
+        sound._seek = this.seek(ids[i]) as number;
         sound._rateSeek = 0;
         sound._paused = true;
 
-        self._stopFade(ids[i]);
+        this._stopFade(ids[i]);
 
         if (sound._node) {
-          if (self._webAudio) {
+          if (this._webAudio) {
             if (!sound._node.bufferSource) {
               continue;
             }
@@ -1039,7 +1009,7 @@ class Howl {
               (sound._node.bufferSource as any).stop(0);
             }
 
-            self._cleanBuffer(sound._node);
+            this._cleanBuffer(sound._node);
           } else if (!isNaN(sound._node.duration) || sound._node.duration === Infinity) {
             sound._node.pause();
           }
@@ -1047,33 +1017,33 @@ class Howl {
       }
 
       if (!arguments[1]) {
-        self._emit('pause', sound ? sound._id : null);
+        this._emit('pause', sound ? sound._id : null);
       }
     }
 
-    return self;
+    return this;
   }
 
   stop(id?: number, internal?: boolean): Howl {
-    const self = this;
+    
 
-    if (self._state !== 'loaded' || self._playLock) {
-      self._queue.push({
+    if (this._state !== 'loaded' || this._playLock) {
+      this._queue.push({
         event: 'stop',
         action: () => {
-          self.stop(id);
+          this.stop(id);
         }
       });
 
-      return self;
+      return this;
     }
 
-    const ids = self._getSoundIds(id);
+    const ids = this._getSoundIds(id);
 
     for (let i = 0; i < ids.length; i++) {
-      self._clearTimer(ids[i]);
+      this._clearTimer(ids[i]);
 
-      const sound = self._soundById(ids[i]);
+      const sound = this._soundById(ids[i]);
 
       if (sound) {
         sound._seek = sound._start || 0;
@@ -1081,10 +1051,10 @@ class Howl {
         sound._paused = true;
         sound._ended = true;
 
-        self._stopFade(ids[i]);
+        this._stopFade(ids[i]);
 
         if (sound._node) {
-          if (self._webAudio) {
+          if (this._webAudio) {
             if (sound._node.bufferSource) {
               if (typeof (sound._node.bufferSource as any).stop === 'undefined') {
                 (sound._node.bufferSource as any).noteOff(0);
@@ -1092,86 +1062,86 @@ class Howl {
                 (sound._node.bufferSource as any).stop(0);
               }
 
-              self._cleanBuffer(sound._node);
+              this._cleanBuffer(sound._node);
             }
           } else if (!isNaN(sound._node.duration) || sound._node.duration === Infinity) {
             sound._node.currentTime = sound._start || 0;
             sound._node.pause();
 
             if (sound._node.duration === Infinity) {
-              self._clearSound(sound._node);
+              this._clearSound(sound._node);
             }
           }
         }
 
         if (!internal) {
-          self._emit('stop', sound._id);
+          this._emit('stop', sound._id);
         }
       }
     }
 
-    return self;
+    return this;
   }
 
   mute(muted: boolean, id?: number): boolean | Howl {
-    const self = this;
+    
 
-    if (self._state !== 'loaded' || self._playLock) {
-      self._queue.push({
+    if (this._state !== 'loaded' || this._playLock) {
+      this._queue.push({
         event: 'mute',
         action: () => {
-          self.mute(muted, id);
+          this.mute(muted, id);
         }
       });
 
-      return self;
+      return this;
     }
 
     if (typeof id === 'undefined') {
       if (typeof muted === 'boolean') {
-        self._muted = muted;
+        this._muted = muted;
       } else {
-        return self._muted;
+        return this._muted;
       }
     }
 
-    const ids = self._getSoundIds(id);
+    const ids = this._getSoundIds(id);
 
     for (let i = 0; i < ids.length; i++) {
-      const sound = self._soundById(ids[i]);
+      const sound = this._soundById(ids[i]);
 
       if (sound) {
         sound._muted = muted;
 
         if (sound._interval) {
-          self._stopFade(sound._id);
+          this._stopFade(sound._id);
         }
 
-        if (self._webAudio && sound._node) {
+        if (this._webAudio && sound._node) {
           sound._node.gain.setValueAtTime(muted ? 0 : sound._volume, Howler.ctx!.currentTime);
         } else if (sound._node) {
           sound._node.muted = Howler._muted ? true : muted;
         }
 
-        self._emit('mute', sound._id);
+        this._emit('mute', sound._id);
       }
     }
 
-    return self;
+    return this;
   }
 
   volume(): number;
   volume(vol: number): Howl;
   volume(vol?: number): number | Howl {
-    const self = this;
+    
     const args = arguments;
     let volume: number | undefined;
     let id: number | undefined;
 
     if (args.length === 0) {
-      return self._volume;
+      return this._volume;
     } else if (args.length === 1 || (args.length === 2 && typeof args[1] === 'undefined')) {
-      const ids = self._getSoundIds();
+      const ids = this._getSoundIds();
       const index = ids.indexOf(args[0] as any);
       if (index >= 0) {
         id = parseInt(args[0] as any, 10);
@@ -1185,33 +1155,33 @@ class Howl {
 
     let sound;
     if (typeof volume !== 'undefined' && volume >= 0 && volume <= 1) {
-      if (self._state !== 'loaded' || self._playLock) {
-        self._queue.push({
+      if (this._state !== 'loaded' || this._playLock) {
+        this._queue.push({
           event: 'volume',
           action: () => {
-            self.volume.apply(self, args as any);
+            this.volume.apply(this, args as any);
           }
         });
 
-        return self;
+        return this;
       }
 
       if (typeof id === 'undefined') {
-        self._volume = volume;
+        this._volume = volume;
       }
 
-      id = self._getSoundIds(id);
+      id = this._getSoundIds(id);
       for (let i = 0; i < (id as any).length; i++) {
-        sound = self._soundById((id as any)[i]);
+        sound = this._soundById((id as any)[i]);
 
         if (sound) {
           sound._volume = volume;
 
           if (!(args as any)[2]) {
-            self._stopFade((id as any)[i]);
+            this._stopFade((id as any)[i]);
           }
 
-          if (self._webAudio && sound._node && !sound._muted) {
+          if (this._webAudio && sound._node && !sound._muted) {
             sound._node.gain.setValueAtTime(volume, Howler.ctx!.currentTime);
           } else if (sound._node && !sound._muted) {
             const volumeMultiplierOrGlobal = Howler.volume();
@@ -1220,47 +1190,47 @@ class Howl {
             }
           }
 
-          self._emit('volume', sound._id);
+          this._emit('volume', sound._id);
         }
       }
     } else {
-      sound = id ? self._soundById(id) : self._sounds[0];
+      sound = id ? this._soundById(id) : this._sounds[0];
       return sound ? sound._volume : 0;
     }
 
-    return self;
+    return this;
   }
 
   fade(from: number, to: number, len: number, id?: number): Howl {
-    const self = this;
+    
 
-    if (self._state !== 'loaded' || self._playLock) {
-      self._queue.push({
+    if (this._state !== 'loaded' || this._playLock) {
+      this._queue.push({
         event: 'fade',
         action: () => {
-          self.fade(from, to, len, id);
+          this.fade(from, to, len, id);
         }
       });
 
-      return self;
+      return this;
     }
 
     from = Math.min(Math.max(0, parseFloat(from as any)), 1);
     to = Math.min(Math.max(0, parseFloat(to as any)), 1);
     len = parseFloat(len as any);
 
-    self.volume(from, id);
+    this.volume(from, id);
 
-    const ids = self._getSoundIds(id);
+    const ids = this._getSoundIds(id);
     for (let i = 0; i < ids.length; i++) {
-      const sound = self._soundById(ids[i]);
+      const sound = this._soundById(ids[i]);
 
       if (sound) {
         if (!id) {
-          self._stopFade(ids[i]);
+          this._stopFade(ids[i]);
         }
 
-        if (self._webAudio && !sound._muted) {
+        if (this._webAudio && !sound._muted) {
           const currentTime = Howler.ctx!.currentTime;
           const end = currentTime + len / 1000;
           sound._volume = from;
@@ -1268,15 +1238,15 @@ class Howl {
           sound._node.gain.linearRampToValueAtTime(to, end);
         }
 
-        self._startFadeInterval(sound, from, to, len, ids[i], typeof id === 'undefined');
+        this._startFadeInterval(sound, from, to, len, ids[i], typeof id === 'undefined');
       }
     }
 
-    return self;
+    return this;
   }
 
   _startFadeInterval(sound: Sound, from: number, to: number, len: number, id: number, isGroup: boolean): void {
-    const self = this;
+    
     let vol = from;
     const diff = to - from;
     const steps = Math.abs(diff / 0.01);
@@ -1298,62 +1268,62 @@ class Howl {
         vol = Math.min(to, vol);
       }
 
-      if (self._webAudio) {
+      if (this._webAudio) {
         sound._volume = vol;
       } else {
-        self.volume(vol, sound._id, true);
+        this.volume(vol, sound._id, true);
       }
 
       if (isGroup) {
-        self._volume = vol;
+        this._volume = vol;
       }
 
       if ((to < from && vol <= to) || (to > from && vol >= to)) {
         clearInterval(sound._interval as any);
         sound._interval = undefined;
         sound._fadeTo = undefined;
-        self.volume(to, sound._id);
-        self._emit('fade', sound._id);
+        this.volume(to, sound._id);
+        this._emit('fade', sound._id);
       }
     }, stepLen);
   }
 
   _stopFade(id: number): Howl {
-    const self = this;
-    const sound = self._soundById(id);
+    
+    const sound = this._soundById(id);
 
     if (sound && sound._interval) {
-      if (self._webAudio) {
+      if (this._webAudio) {
         sound._node.gain.cancelScheduledValues(Howler.ctx!.currentTime);
       }
 
       clearInterval(sound._interval as any);
       sound._interval = undefined;
-      self.volume(sound._fadeTo as number, id);
+      this.volume(sound._fadeTo as number, id);
       sound._fadeTo = undefined;
-      self._emit('fade', id);
+      this._emit('fade', id);
     }
 
-    return self;
+    return this;
   }
 
   loop(): boolean;
   loop(loop: boolean): Howl;
   loop(loop?: boolean): boolean | Howl {
-    const self = this;
+    
     const args = arguments;
     let loopVal: boolean | undefined;
     let id: number | undefined;
     let sound: Sound | null = null;
 
     if (args.length === 0) {
-      return self._loop;
+      return this._loop;
     } else if (args.length === 1) {
       if (typeof args[0] === 'boolean') {
         loopVal = args[0] as boolean;
-        self._loop = loopVal;
+        this._loop = loopVal;
       } else {
-        sound = self._soundById(parseInt(args[0] as any, 10));
+        sound = this._soundById(parseInt(args[0] as any, 10));
         return sound ? sound._loop : false;
       }
     } else if (args.length === 2) {
@@ -1361,42 +1331,42 @@ class Howl {
       id = parseInt(args[1] as any, 10);
     }
 
-    const ids = self._getSoundIds(id);
+    const ids = this._getSoundIds(id);
     for (let i = 0; i < ids.length; i++) {
-      sound = self._soundById(ids[i]);
+      sound = this._soundById(ids[i]);
 
       if (sound) {
         sound._loop = loopVal as boolean;
-        if (self._webAudio && sound._node && (sound._node.bufferSource as any)) {
+        if (this._webAudio && sound._node && (sound._node.bufferSource as any)) {
           (sound._node.bufferSource as any).loop = loopVal;
           if (loopVal) {
             (sound._node.bufferSource as any).loopStart = sound._start || 0;
             (sound._node.bufferSource as any).loopEnd = sound._stop;
 
-            if (self.playing(ids[i])) {
-              self.pause(ids[i], true);
-              self.play(ids[i], true);
+            if (this.playing(ids[i])) {
+              this.pause(ids[i], true);
+              this.play(ids[i], true);
             }
           }
         }
       }
     }
 
-    return self;
+    return this;
   }
 
   rate(): number;
   rate(rate: number): Howl;
   rate(rate?: number): number | Howl {
-    const self = this;
+    
     const args = arguments;
     let rateVal: number | undefined;
     let id: number | undefined;
 
     if (args.length === 0) {
-      id = self._sounds[0]._id;
+      id = this._sounds[0]._id;
     } else if (args.length === 1) {
-      const ids = self._getSoundIds();
+      const ids = this._getSoundIds();
       const index = ids.indexOf(args[0] as any);
       if (index >= 0) {
         id = parseInt(args[0] as any, 10);
@@ -1410,77 +1380,77 @@ class Howl {
 
     let sound;
     if (typeof rateVal === 'number') {
-      if (self._state !== 'loaded' || self._playLock) {
-        self._queue.push({
+      if (this._state !== 'loaded' || this._playLock) {
+        this._queue.push({
           event: 'rate',
           action: () => {
-            self.rate.apply(self, args as any);
+            this.rate.apply(this, args as any);
           }
         });
 
-        return self;
+        return this;
       }
 
       if (typeof id === 'undefined') {
-        self._rate = rateVal;
+        this._rate = rateVal;
       }
 
-      id = self._getSoundIds(id);
+      id = this._getSoundIds(id);
       for (let i = 0; i < (id as any).length; i++) {
-        sound = self._soundById((id as any)[i]);
+        sound = this._soundById((id as any)[i]);
 
         if (sound) {
-          if (self.playing((id as any)[i])) {
-            sound._rateSeek = self.seek((id as any)[i]) as number;
-            sound._playStart = self._webAudio ? Howler.ctx!.currentTime : sound._playStart;
+          if (this.playing((id as any)[i])) {
+            sound._rateSeek = this.seek((id as any)[i]) as number;
+            sound._playStart = this._webAudio ? Howler.ctx!.currentTime : sound._playStart;
           }
           sound._rate = rateVal;
 
-          if (self._webAudio && sound._node && (sound._node.bufferSource as any)) {
+          if (this._webAudio && sound._node && (sound._node.bufferSource as any)) {
             (sound._node.bufferSource as any).playbackRate.setValueAtTime(rateVal, Howler.ctx!.currentTime);
           } else if (sound._node) {
             sound._node.playbackRate = rateVal;
           }
 
-          const seek = self.seek((id as any)[i]) as number;
-          const duration = (self._sprite[sound._sprite][0] + self._sprite[sound._sprite][1]) / 1000 - seek;
+          const seek = this.seek((id as any)[i]) as number;
+          const duration = (this._sprite[sound._sprite][0] + this._sprite[sound._sprite][1]) / 1000 - seek;
           const timeout = (duration * 1000) / Math.abs(sound._rate);
 
-          if (self._endTimers[(id as any)[i]] || !sound._paused) {
-            self._clearTimer((id as any)[i]);
-            self._endTimers[(id as any)[i]] = setTimeout(self._ended.bind(self, sound), timeout);
+          if (this._endTimers[(id as any)[i]] || !sound._paused) {
+            this._clearTimer((id as any)[i]);
+            this._endTimers[(id as any)[i]] = setTimeout(this._ended.bind(this, sound), timeout);
           }
 
-          self._emit('rate', sound._id);
+          this._emit('rate', sound._id);
         }
       }
     } else {
-      sound = self._soundById(id);
-      return sound ? sound._rate : self._rate;
+      sound = this._soundById(id);
+      return sound ? sound._rate : this._rate;
     }
 
-    return self;
+    return this;
   }
 
   seek(): number;
   seek(seek: number): Howl;
   seek(seek?: number): number | Howl {
-    const self = this;
+    
     const args = arguments;
     let seekVal: number | undefined;
     let id: number | undefined;
 
     if (args.length === 0) {
-      if (self._sounds.length) {
-        id = self._sounds[0]._id;
+      if (this._sounds.length) {
+        id = this._sounds[0]._id;
       }
     } else if (args.length === 1) {
-      const ids = self._getSoundIds();
+      const ids = this._getSoundIds();
       const index = ids.indexOf(args[0] as any);
       if (index >= 0) {
         id = parseInt(args[0] as any, 10);
-      } else if (self._sounds.length) {
-        id = self._sounds[0]._id;
+      } else if (this._sounds.length) {
+        id = this._sounds[0]._id;
         seekVal = parseFloat(args[0] as any);
       }
     } else if (args.length === 2) {
@@ -1492,45 +1462,45 @@ class Howl {
       return 0;
     }
 
-    if (typeof seekVal === 'number' && (self._state !== 'loaded' || self._playLock)) {
-      self._queue.push({
+    if (typeof seekVal === 'number' && (this._state !== 'loaded' || this._playLock)) {
+      this._queue.push({
         event: 'seek',
         action: () => {
-          self.seek.apply(self, args as any);
+          this.seek.apply(this, args as any);
         }
       });
 
-      return self;
+      return this;
     }
 
-    const sound = self._soundById(id);
+    const sound = this._soundById(id);
 
     if (sound) {
       if (typeof seekVal === 'number' && seekVal >= 0) {
-        const playing = self.playing(id);
+        const playing = this.playing(id);
         if (playing) {
-          self.pause(id, true);
+          this.pause(id, true);
         }
 
         sound._seek = seekVal;
         sound._ended = false;
-        self._clearTimer(id);
+        this._clearTimer(id);
 
-        if (!self._webAudio && sound._node && !isNaN(sound._node.duration)) {
+        if (!this._webAudio && sound._node && !isNaN(sound._node.duration)) {
           sound._node.currentTime = seekVal;
         }
 
         const seekAndEmit = () => {
           if (playing) {
-            self.play(id, true);
+            this.play(id, true);
           }
 
-          self._emit('seek', id);
+          this._emit('seek', id);
         };
 
-        if (playing && !self._webAudio) {
+        if (playing && !this._webAudio) {
           const emitSeek = () => {
-            if (!self._playLock) {
+            if (!this._playLock) {
               seekAndEmit();
             } else {
               setTimeout(emitSeek, 0);
@@ -1541,8 +1511,8 @@ class Howl {
           seekAndEmit();
         }
       } else {
-        if (self._webAudio) {
-          const realTime = self.playing(id) ? Howler.ctx!.currentTime - sound._playStart : 0;
+        if (this._webAudio) {
+          const realTime = this.playing(id) ? Howler.ctx!.currentTime - sound._playStart : 0;
           const rateSeek = sound._rateSeek ? sound._rateSeek - sound._seek : 0;
           return sound._seek + (rateSeek + realTime * Math.abs(sound._rate));
         } else {
@@ -1551,19 +1521,19 @@ class Howl {
       }
     }
 
-    return self;
+    return this;
   }
 
   playing(id?: number): boolean {
-    const self = this;
+    
 
     if (typeof id === 'number') {
-      const sound = self._soundById(id);
+      const sound = this._soundById(id);
       return sound ? !sound._paused : false;
     }
 
-    for (let i = 0; i < self._sounds.length; i++) {
-      if (!self._sounds[i]._paused) {
+    for (let i = 0; i < this._sounds.length; i++) {
+      if (!this._sounds[i]._paused) {
         return true;
       }
     }
@@ -1572,12 +1542,12 @@ class Howl {
   }
 
   duration(id?: number): number {
-    const self = this;
-    let duration = self._duration;
+    
+    let duration = this._duration;
 
-    const sound = self._soundById(id);
+    const sound = this._soundById(id);
     if (sound) {
-      duration = self._sprite[sound._sprite][1] / 1000;
+      duration = this._sprite[sound._sprite][1] / 1000;
     }
 
     return duration;
@@ -1588,19 +1558,19 @@ class Howl {
   }
 
   unload(): null {
-    const self = this;
+    
 
     // Execute plugin hooks before destruction
-    globalPluginManager.executeHowlDestroy(self);
+    globalPluginManager.executeHowlDestroy(this);
 
-    const sounds = self._sounds;
+    const sounds = this._sounds;
     for (let i = 0; i < sounds.length; i++) {
       if (!sounds[i]._paused) {
-        self.stop(sounds[i]._id);
+        this.stop(sounds[i]._id);
       }
 
-      if (!self._webAudio) {
-        self._clearSound(sounds[i]._node);
+      if (!this._webAudio) {
+        this._clearSound(sounds[i]._node);
 
         sounds[i]._node.removeEventListener('error', sounds[i]._errorFn, false);
         sounds[i]._node.removeEventListener(Howler._canPlayEvent, sounds[i]._loadFn, false);
@@ -1611,48 +1581,48 @@ class Howl {
 
       delete sounds[i]._node;
 
-      self._clearTimer(sounds[i]._id);
+      this._clearTimer(sounds[i]._id);
     }
 
-    const index = Howler._howls.indexOf(self);
+    const index = Howler._howls.indexOf(this);
     if (index >= 0) {
       Howler._howls.splice(index, 1);
     }
 
     let remCache = true;
     for (let i = 0; i < Howler._howls.length; i++) {
-      if (Howler._howls[i]._src === self._src || (self._src as string).indexOf(Howler._howls[i]._src as string) >= 0) {
+      if (Howler._howls[i]._src === this._src || (this._src as string).indexOf(Howler._howls[i]._src as string) >= 0) {
         remCache = false;
         break;
       }
     }
 
     if (cache && remCache) {
-      delete cache[self._src as string];
+      delete cache[this._src as string];
     }
 
     Howler.noAudio = false;
 
-    self._state = 'unloaded';
-    self._sounds = [];
+    this._state = 'unloaded';
+    this._sounds = [];
 
     return null;
   }
 
   on(event: string, fn: (...args: any[]) => void, id?: number, once?: boolean): Howl {
-    const self = this;
-    const events = (self as any)['_on' + event];
+    
+    const events = (this as any)['_on' + event];
 
     if (typeof fn === 'function') {
       events.push(once ? { id, fn, once } : { id, fn });
     }
 
-    return self;
+    return this;
   }
 
   off(event: string, fn?: (...args: any[]) => void, id?: number): Howl {
-    const self = this;
-    const events = (self as any)['_on' + event];
+    
+    const events = (this as any)['_on' + event];
     let i = 0;
 
     if (typeof fn === 'number') {
@@ -1669,60 +1639,57 @@ class Howl {
         }
       }
     } else if (event) {
-      (self as any)['_on' + event] = [];
+      (this as any)['_on' + event] = [];
     } else {
-      const keys = Object.keys(self);
+      const keys = Object.keys(this);
       for (i = 0; i < keys.length; i++) {
-        if (keys[i].indexOf('_on') === 0 && Array.isArray((self as any)[keys[i]])) {
-          (self as any)[keys[i]] = [];
+        if (keys[i].indexOf('_on') === 0 && Array.isArray((this as any)[keys[i]])) {
+          (this as any)[keys[i]] = [];
         }
       }
     }
 
-    return self;
+    return this;
   }
 
   once(event: string, fn: (...args: any[]) => void, id?: number): Howl {
-    const self = this;
+    
 
-    self.on(event, fn, id, true);
+    this.on(event, fn, id, true);
 
-    return self;
+    return this;
   }
 
   _emit(event: string, id?: number | null, msg?: string): Howl {
-    const self = this;
-    const events = (self as any)['_on' + event];
+    const events = (this as any)['_on' + event];
 
     for (let i = events.length - 1; i >= 0; i--) {
       if (!events[i].id || events[i].id === id || event === 'load') {
-        setTimeout(
-          function(fn) {
-            fn.call(this, id, msg);
-          }.bind(self, events[i].fn),
-          0
-        );
+        const fn = events[i].fn;
+        setTimeout(() => {
+          fn(id, msg);
+        }, 0);
 
         if (events[i].once) {
-          self.off(event, events[i].fn, events[i].id);
+          this.off(event, events[i].fn, events[i].id);
         }
       }
     }
 
-    self._loadQueue(event);
+    this._loadQueue(event);
 
-    return self;
+    return this;
   }
 
   _loadQueue(event?: string): Howl {
-    const self = this;
+    
 
-    if (self._queue.length > 0) {
-      const task = self._queue[0];
+    if (this._queue.length > 0) {
+      const task = this._queue[0];
 
       if (task.event === event) {
-        self._queue.shift();
-        self._loadQueue();
+        this._queue.shift();
+        this._loadQueue();
       }
 
       if (!event) {
@@ -1730,80 +1697,80 @@ class Howl {
       }
     }
 
-    return self;
+    return this;
   }
 
   _ended(sound: Sound): Howl {
-    const self = this;
+    
     const sprite = sound._sprite;
 
-    if (!self._webAudio && sound._node && !sound._node.paused && !sound._node.ended && sound._node.currentTime < sound._stop!) {
-      setTimeout(self._ended.bind(self, sound), 100);
-      return self;
+    if (!this._webAudio && sound._node && !sound._node.paused && !sound._node.ended && sound._node.currentTime < sound._stop!) {
+      setTimeout(this._ended.bind(this, sound), 100);
+      return this;
     }
 
-    const loop = !!(sound._loop || self._sprite[sprite][2]);
+    const loop = !!(sound._loop || this._sprite[sprite][2]);
 
-    self._emit('end', sound._id);
+    this._emit('end', sound._id);
 
-    if (!self._webAudio && loop) {
-      self.stop(sound._id, true).play(sound._id);
+    if (!this._webAudio && loop) {
+      this.stop(sound._id, true).play(sound._id);
     }
 
-    if (self._webAudio && loop) {
-      self._emit('play', sound._id);
+    if (this._webAudio && loop) {
+      this._emit('play', sound._id);
       sound._seek = sound._start || 0;
       sound._rateSeek = 0;
       sound._playStart = Howler.ctx!.currentTime;
 
       const timeout = ((sound._stop! - (sound._start || 0)) * 1000) / Math.abs(sound._rate);
-      self._endTimers[sound._id] = setTimeout(self._ended.bind(self, sound), timeout);
+      this._endTimers[sound._id] = setTimeout(this._ended.bind(this, sound), timeout);
     }
 
-    if (self._webAudio && !loop) {
+    if (this._webAudio && !loop) {
       sound._paused = true;
       sound._ended = true;
       sound._seek = sound._start || 0;
       sound._rateSeek = 0;
-      self._clearTimer(sound._id);
+      this._clearTimer(sound._id);
 
-      self._cleanBuffer(sound._node);
+      this._cleanBuffer(sound._node);
 
       Howler._autoSuspend();
     }
 
-    if (!self._webAudio && !loop) {
-      self.stop(sound._id, true);
+    if (!this._webAudio && !loop) {
+      this.stop(sound._id, true);
     }
 
-    return self;
+    return this;
   }
 
   _clearTimer(id: number): Howl {
-    const self = this;
+    
 
-    if (self._endTimers[id]) {
-      if (typeof self._endTimers[id] !== 'function') {
-        clearTimeout(self._endTimers[id]);
+    if (this._endTimers[id]) {
+      if (typeof this._endTimers[id] !== 'function') {
+        clearTimeout(this._endTimers[id]);
       } else {
-        const sound = self._soundById(id);
+        const sound = this._soundById(id);
         if (sound && sound._node) {
-          sound._node.removeEventListener('ended', self._endTimers[id], false);
+          sound._node.removeEventListener('ended', this._endTimers[id], false);
         }
       }
 
-      delete self._endTimers[id];
+      delete this._endTimers[id];
     }
 
-    return self;
+    return this;
   }
 
   _soundById(id: number): Sound | null {
-    const self = this;
+    
 
-    for (let i = 0; i < self._sounds.length; i++) {
-      if (id === self._sounds[i]._id) {
-        return self._sounds[i];
+    for (let i = 0; i < this._sounds.length; i++) {
+      if (id === this._sounds[i]._id) {
+        return this._sounds[i];
       }
     }
 
@@ -1811,57 +1778,57 @@ class Howl {
   }
 
   _inactiveSound(): Sound {
-    const self = this;
+    
 
-    self._drain();
+    this._drain();
 
-    for (let i = 0; i < self._sounds.length; i++) {
-      if (self._sounds[i]._ended) {
-        return self._sounds[i].reset();
+    for (let i = 0; i < this._sounds.length; i++) {
+      if (this._sounds[i]._ended) {
+        return this._sounds[i].reset();
       }
     }
 
-    return new Sound(self);
+    return new Sound(this);
   }
 
   _drain(): void {
-    const self = this;
-    const limit = self._pool;
+    
+    const limit = this._pool;
     let cnt = 0;
 
-    if (self._sounds.length < limit) {
+    if (this._sounds.length < limit) {
       return;
     }
 
-    for (let i = 0; i < self._sounds.length; i++) {
-      if (self._sounds[i]._ended) {
+    for (let i = 0; i < this._sounds.length; i++) {
+      if (this._sounds[i]._ended) {
         cnt++;
       }
     }
 
-    for (let i = self._sounds.length - 1; i >= 0; i--) {
+    for (let i = this._sounds.length - 1; i >= 0; i--) {
       if (cnt <= limit) {
         return;
       }
 
-      if (self._sounds[i]._ended) {
-        if (self._webAudio && self._sounds[i]._node) {
-          self._sounds[i]._node.disconnect(0);
+      if (this._sounds[i]._ended) {
+        if (this._webAudio && this._sounds[i]._node) {
+          this._sounds[i]._node.disconnect(0);
         }
 
-        self._sounds.splice(i, 1);
+        this._sounds.splice(i, 1);
         cnt--;
       }
     }
   }
 
   _getSoundIds(id?: number): number[] {
-    const self = this;
+    
 
     if (typeof id === 'undefined') {
       const ids: number[] = [];
-      for (let i = 0; i < self._sounds.length; i++) {
-        ids.push(self._sounds[i]._id);
+      for (let i = 0; i < this._sounds.length; i++) {
+        ids.push(this._sounds[i]._id);
       }
 
       return ids;
@@ -1871,10 +1838,10 @@ class Howl {
   }
 
   _refreshBuffer(sound: Sound): Howl {
-    const self = this;
+    
 
     sound._node.bufferSource = Howler.ctx!.createBufferSource();
-    sound._node.bufferSource.buffer = cache[self._src as string];
+    sound._node.bufferSource.buffer = cache[this._src as string];
 
     if (sound._panner) {
       sound._node.bufferSource.connect(sound._panner);
@@ -1889,15 +1856,15 @@ class Howl {
     }
     sound._node.bufferSource.playbackRate.setValueAtTime(sound._rate, Howler.ctx!.currentTime);
 
-    return self;
+    return this;
   }
 
   _cleanBuffer(node: any): Howl {
-    const self = this;
+    
     const isIOS = isAppleVendor(Howler._navigator);
 
     if (!node.bufferSource) {
-      return self;
+      return this;
     }
 
     if (Howler._scratchBuffer && node.bufferSource) {
@@ -1911,7 +1878,7 @@ class Howl {
     }
     node.bufferSource = null;
 
-    return self;
+    return this;
   }
 
   _clearSound(node: HTMLAudioElement): void {

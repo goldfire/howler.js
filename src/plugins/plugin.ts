@@ -16,12 +16,10 @@ import type { HowlOptions } from '../types';
  */
 export interface PluginHooks {
   /**
-   * Called when the plugin is registered with the PluginManager
-   */
-  onRegister?: () => void;
-
-  /**
    * Called when Howler global instance is initialized
+   * This is called either:
+   * - When Howler initializes (if plugin was registered before)
+   * - Immediately during registration (if Howler is already initialized)
    */
   onHowlerInit?: (howler: HowlerGlobal) => void;
 
@@ -106,17 +104,6 @@ export class PluginManager {
 
     this.plugins.set(plugin.name, registered);
 
-    // Execute onRegister hook if provided
-    // Plugins can use this hook to initialize themselves, even if Howler is
-    // already initialized. The howlerInstance is available via getHowlerInstance()
-    if (hooks.onRegister) {
-      try {
-        hooks.onRegister();
-      } catch (error: unknown) {
-        console.error(`Error during onRegister for plugin "${plugin.name}":`, error);
-      }
-    }
-
     // If Howler is already initialized, execute onHowlerInit hook for this plugin
     if (this.howlerInstance && hooks.onHowlerInit) {
       try {
@@ -175,7 +162,7 @@ export class PluginManager {
 
   /**
    * Get the Howler instance (if initialized)
-   * This can be used by plugins in their onRegister hook to apply initialization
+   * This can be used by plugins to access the Howler instance if needed
    */
   getHowlerInstance(): HowlerGlobal | null {
     return this.howlerInstance;
