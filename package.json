@@ -30,18 +30,16 @@
     "tsdown": "^0.16.6",
     "typescript": "^5.9.3"
   },
-  "main": "dist/howler.js",
-  "module": "dist/howler.mjs",
-  "types": "dist/howler.d.ts",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/howler.mjs",
-      "require": "./dist/howler.js",
-      "types": "./dist/howler.d.ts"
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
     },
     "./plugins/spatial": {
-      "import": "./dist/plugins/spatial.mjs",
-      "require": "./dist/plugins/spatial.js",
+      "import": "./dist/plugins/spatial.js",
       "types": "./dist/plugins/spatial.d.ts"
     }
   },
