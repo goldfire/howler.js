@@ -77,20 +77,9 @@ Several options to get up and running:
 * Install with [Bower](http://bower.io/): `bower install howler`
 * Hosted CDN: [`cdnjs`](https://cdnjs.com/libraries/howler) [`jsDelivr`](https://www.jsdelivr.com/projects/howler.js)
 
-In the browser:
-
-```html
-<script src="/path/to/howler.js"></script>
-<script>
-    var sound = new Howl({
-      src: ['sound.webm', 'sound.mp3']
-    });
-</script>
-```
-
 As an ES Module (ESM):
 
-```javascript
+```typescript
 import { Howl, Howler } from 'howler';
 import { SpatialAudioPlugin } from 'howler/plugins/spatial';
 ```
@@ -152,6 +141,8 @@ export class MyPlugin extends HowlerPlugin {
 
 Register plugins directly with Howler:
 
+**TypeScript/ES Modules:**
+
 ```typescript
 import { Howler, Howl } from 'howler';
 import { SpatialAudioPlugin, type SpatialHowler, type SpatialHowl } from 'howler/plugins/spatial';
@@ -160,16 +151,73 @@ import { SpatialAudioPlugin, type SpatialHowler, type SpatialHowl } from 'howler
 Howler.addPlugin(new SpatialAudioPlugin());
 
 // Type annotations for TypeScript support
+import type { SpatialHowlOptions } from 'howler/plugins/spatial';
+
 const listener: SpatialHowler = Howler as SpatialHowler;
 const sound: SpatialHowl = new Howl({
   src: ['audio.mp3'],
   pos: [0, 0, 0],  // Spatial audio options available
-});
+} as SpatialHowlOptions) as SpatialHowl;
 
 // Use spatial methods with full type support
 sound.pos(10, 5, 0);
 listener.stereo(0.5);
 listener.orientation(1, 0, 0, 0, 1, 0);
+```
+
+**HTML with Script Type Module:**
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Howler.js Spatial Audio Example</title>
+</head>
+<body>
+  <!-- Import map for cleaner module imports from CDN -->
+  <script type="importmap">
+    {
+      "imports": {
+        "howler": "https://cdn.jsdelivr.net/npm/howler@3/dist/index.js",
+        "howler/plugins/spatial": "https://cdn.jsdelivr.net/npm/howler@3/dist/plugins/spatial.js"
+      }
+    }
+  </script>
+  
+  <script type="module">
+    // Import using the import map aliases
+    import { Howler, Howl } from 'howler';
+    import { SpatialAudioPlugin } from 'howler/plugins/spatial';
+
+    const spatialPlugin = new SpatialAudioPlugin()
+    // Register the spatial audio plugin
+    Howler.addPlugin(spatialPlugin);
+
+    // Create a sound with spatial audio
+    const sound = new Howl({
+      src: ['audio.mp3'],
+      pos: [0, 0, 0],              // 3D position
+      stereo: 0,                   // Stereo pan (-1 to 1)
+      orientation: [1, 0, 0],      // Direction the sound is facing
+    });
+
+    // Set listener position (where the "ear" is)
+    Howler.pos(0, 0, 0);
+
+    // Set listener orientation (which way they're facing)
+    Howler.orientation(0, 0, -1, 0, 1, 0);
+
+    // Set sound position (where the sound is in 3D space)
+    sound.pos(10, 5, 0);
+
+    // Apply stereo panning
+    sound.stereo(0.5);
+
+    // Play the sound
+    sound.play();
+  </script>
+</body>
+</html>
 ```
 
 #### Managing Plugins
@@ -185,14 +233,6 @@ Howler.addPlugin(spatialPlugin);
 
 // Unregister a plugin (pass the plugin instance)
 Howler.removePlugin(spatialPlugin);
-
-// For more advanced management, use the global plugin manager:
-import { globalPluginManager } from 'howler';
-
-// Check if plugin is registered
-if (globalPluginManager.isRegistered('spatial-audio')) {
-  console.log('Spatial audio is available');
-}
 ```
 
 #### Available Plugins
@@ -201,27 +241,34 @@ if (globalPluginManager.isRegistered('spatial-audio')) {
 
 Adds 3D spatial audio and stereo panning support:
 
+**TypeScript/ES Modules:**
+
 ```typescript
 import { Howler, Howl } from 'howler';
 import { SpatialAudioPlugin } from 'howler/plugins/spatial';
+import type { SpatialHowler, SpatialHowl, SpatialHowlOptions } from 'howler/plugins/spatial';
 
 // Register the plugin
 Howler.addPlugin(new SpatialAudioPlugin());
 
-const sound = new Howl({
+// Type Howler with spatial capabilities
+const howler: SpatialHowler = Howler as SpatialHowler;
+
+// Create sound with spatial audio options
+const sound: SpatialHowl = new Howl({
   src: ['audio.mp3'],
   pos: [0, 0, 0],              // 3D position
   stereo: 0,                   // Stereo pan (-1 to 1)
   orientation: [1, 0, 0],      // Direction the sound is facing
   coneInnerAngle: 360,         // Cone parameters
   distanceModel: 'inverse',    // Distance attenuation model
-});
+} as SpatialHowlOptions) as SpatialHowl;
 
 // Set listener position (where the "ear" is)
-Howler.pos(0, 0, 0);
+howler.pos(0, 0, 0);
 
 // Set listener orientation (which way they're facing)
-Howler.orientation(0, 0, -1, 0, 1, 0);
+howler.orientation(0, 0, -1, 0, 1, 0);
 
 // Set sound position (where the sound is in 3D space)
 sound.pos(10, 5, 0);
@@ -241,32 +288,69 @@ sound.pannerAttr({
 
 #### Plugin Lifecycle Hooks
 
-Available hooks that plugins can implement:
+Available hooks that plugins can implement in their `getHooks()` method:
 
-* `onRegister()` - Called when plugin is registered
-* `onHowlerInit(howler)` - Called when Howler global is initialized
+* `onHowlerInit(howler)` - Called when Howler global is initialized. This is called either when Howler initializes (if plugin was registered before) or immediately during registration (if Howler is already initialized).
 * `onHowlCreate(howl, options)` - Called when a Howl instance is created
 * `onSoundCreate(sound, parent)` - Called when a Sound instance is created
 * `onHowlLoad(howl)` - Called when a Howl instance loads
 * `onHowlDestroy(howl)` - Called when a Howl instance is destroyed
-* `onUnregister()` - Called when plugin is unregistered (cleanup)
+
+**Note:** `onUnregister()` is a cleanup method on the `HowlerPlugin` class itself (not a hook), which is called when the plugin is unregistered. Override this method in your plugin class to perform cleanup.
 
 ### Examples
 
 #### Most basic, play an MP3
 
-```javascript
-var sound = new Howl({
+**TypeScript:**
+
+```typescript
+import { Howl } from 'howler';
+
+const sound = new Howl({
   src: ['sound.mp3']
 });
 
 sound.play();
 ```
 
+**HTML with Script Type Module:**
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Howler.js Basic Example</title>
+</head>
+<body>
+  <!-- Import map for cleaner module imports from CDN -->
+  <script type="importmap">
+    {
+      "imports": {
+        "howler": "https://cdn.jsdelivr.net/npm/howler@3/dist/index.js"
+      }
+    }
+  </script>
+  
+  <script type="module">
+    import { Howl } from 'howler';
+
+    const sound = new Howl({
+      src: ['sound.mp3']
+    });
+
+    sound.play();
+  </script>
+</body>
+</html>
+```
+
 #### Streaming audio (for live audio or large files)
 
-```javascript
-var sound = new Howl({
+```typescript
+import { Howl } from 'howler';
+
+const sound = new Howl({
   src: ['stream.mp3'],
   html5: true
 });
@@ -276,13 +360,15 @@ sound.play();
 
 ##### More playback options
 
-```javascript
-var sound = new Howl({
+```typescript
+import { Howl } from 'howler';
+
+const sound = new Howl({
   src: ['sound.webm', 'sound.mp3', 'sound.wav'],
   autoplay: true,
   loop: true,
   volume: 0.5,
-  onend: function() {
+  onend: () => {
     console.log('Finished!');
   }
 });
@@ -290,8 +376,10 @@ var sound = new Howl({
 
 ##### Define and play a sound sprite
 
-```javascript
-var sound = new Howl({
+```typescript
+import { Howl } from 'howler';
+
+const sound = new Howl({
   src: ['sounds.webm', 'sounds.mp3'],
   sprite: {
     blast: [0, 3000],
@@ -306,43 +394,51 @@ sound.play('laser');
 
 ##### Listen for events
 
-```javascript
-var sound = new Howl({
+```typescript
+import { Howl } from 'howler';
+
+const sound = new Howl({
   src: ['sound.webm', 'sound.mp3']
 });
 
 // Clear listener after first call.
-sound.once('load', function(){
+sound.once('load', () => {
   sound.play();
 });
 
 // Fires when the sound finishes playing.
-sound.on('end', function(){
+sound.on('end', () => {
   console.log('Finished!');
 });
 ```
 
 ##### Control multiple sounds
 
-```javascript
-var sound = new Howl({
+```typescript
+import { Howl } from 'howler';
+
+const sound = new Howl({
   src: ['sound.webm', 'sound.mp3']
 });
 
 // Play returns a unique Sound ID that can be passed
 // into any method on Howl to control that specific sound.
-var id1 = sound.play();
-var id2 = sound.play();
+const id1: number | null = sound.play();
+const id2: number | null = sound.play();
 
 // Fade out the first sound and speed up the second.
-sound.fade(1, 0, 1000, id1);
-sound.rate(1.5, id2);
+if (id1 !== null) {
+  sound.fade(1, 0, 1000, id1);
+}
+if (id2 !== null) {
+  sound.rate(1.5, id2);
+}
 ```
 
-##### ES6
+##### ES Modules
 
-```javascript
-import {Howl, Howler} from 'howler';
+```typescript
+import { Howl, Howler } from 'howler';
 
 // Setup the new Howl.
 const sound = new Howl({
@@ -394,10 +490,13 @@ Set to `true` to load the audio muted.
 
 Define a sound sprite for the sound. The offset and duration are defined in milliseconds. A third (optional) parameter is available to set a sprite as looping. An easy way to generate compatible sound sprites is with [audiosprite](https://github.com/tonistiigi/audiosprite).
 
-```javascript
+```typescript
+import { Howl } from 'howler';
+
 new Howl({
+  src: ['sounds.mp3'],
   sprite: {
-    key1: [offset, duration, (loop)]
+    key1: [offset, duration, loop] // loop is optional boolean
   },
 });
 ```
@@ -418,9 +517,12 @@ howler.js automatically detects your file format from the extension, but you may
 
 When using Web Audio, howler.js uses an XHR request to load the audio files. If you need to send custom headers, set the HTTP method or enable `withCredentials` ([see reference](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/withCredentials)), include them with this parameter. Each is optional (method defaults to `GET`, headers default to `null` and withCredentials defaults to `false`). For example:
 
-```javascript
+```typescript
+import { Howl } from 'howler';
+
 // Using each of the properties.
 new Howl({
+  src: ['audio.mp3'],
   xhr: {
     method: 'POST',
     headers: {
@@ -432,6 +534,7 @@ new Howl({
 
 // Only changing the method.
 new Howl({
+  src: ['audio.mp3'],
   xhr: {
     method: 'POST',
   }
@@ -774,8 +877,10 @@ Get/set the direction the listener is pointing in the 3D cartesian space. A fron
 
 Each `new Howl()` instance is also a group. You can play multiple sound instances from the `Howl` and control them individually or as a group (note: each `Howl` can only contain a single audio file). For example, the following plays two sounds from a sprite, changes their volume together and then pauses both of them at the same time.
 
-```javascript
-var sound = new Howl({
+```typescript
+import { Howl } from 'howler';
+
+const sound = new Howl({
   src: ['sound.webm', 'sound.mp3'],
   sprite: {
     track01: [0, 20000],
@@ -800,17 +905,21 @@ setTimeout(function() {
 
 By default, audio on mobile browsers and Chrome/Safari is locked until a sound is played within a user interaction, and then it plays normally the rest of the page session ([Apple documentation](https://developer.apple.com/library/safari/documentation/audiovideo/conceptual/using_html5_audio_video/PlayingandSynthesizingSounds/PlayingandSynthesizingSounds.html)). The default behavior of howler.js is to attempt to silently unlock audio playback by playing an empty buffer on the first `touchend` event. This behavior can be disabled by calling:
 
-```javascript
+```typescript
+import { Howler, Howl } from 'howler';
+
 Howler.autoUnlock = false;
 ```
 
 If you try to play audio automatically on page load, you can listen to a `playerror` event and then wait for the `unlock` event to try and play the audio again:
 
-```javascript
-var sound = new Howl({
+```typescript
+import { Howl } from 'howler';
+
+const sound = new Howl({
   src: ['sound.webm', 'sound.mp3'],
-  onplayerror: function() {
-    sound.once('unlock', function() {
+  onplayerror: () => {
+    sound.once('unlock', () => {
       sound.play();
     });
   }
@@ -823,8 +932,10 @@ sound.play();
 
 Full support for playback of the Dolby Audio format (currently support in Edge and Safari) is included. However, you must specify that the file you are loading is `dolby` since it is in a `mp4` container.
 
-```javascript
-var dolbySound = new Howl({
+```typescript
+import { Howl } from 'howler';
+
+const dolbySound = new Howl({
   src: ['sound.mp4', 'sound.webm', 'sound.mp3'],
   format: ['dolby', 'webm', 'mp3']
 });
