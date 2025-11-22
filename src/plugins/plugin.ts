@@ -79,7 +79,6 @@ export abstract class HowlerPlugin {
 export interface RegisteredPlugin {
   plugin: HowlerPlugin;
   hooks: PluginHooks;
-  enabled: boolean;
 }
 
 /**
@@ -102,8 +101,7 @@ export class PluginManager {
     const hooks = plugin.getHooks();
     const registered: RegisteredPlugin = {
       plugin,
-      hooks,
-      enabled: true
+      hooks
     };
 
     this.plugins.set(plugin.name, registered);
@@ -146,30 +144,6 @@ export class PluginManager {
    */
   isRegistered(pluginName: string): boolean {
     return this.plugins.has(pluginName);
-  }
-
-  /**
-   * Enable a plugin
-   * @param pluginName - The name of the plugin to enable
-   */
-  enable(pluginName: string): void {
-    const registered = this.plugins.get(pluginName);
-    if (!registered) {
-      throw new Error(`Plugin "${pluginName}" is not registered`);
-    }
-    registered.enabled = true;
-  }
-
-  /**
-   * Disable a plugin (keeps it registered but doesn't execute hooks)
-   * @param pluginName - The name of the plugin to disable
-   */
-  disable(pluginName: string): void {
-    const registered = this.plugins.get(pluginName);
-    if (!registered) {
-      throw new Error(`Plugin "${pluginName}" is not registered`);
-    }
-    registered.enabled = false;
   }
 
   /**
@@ -239,10 +213,6 @@ export class PluginManager {
    */
   private _executeHooks(hookName: string, callback: (hooks: PluginHooks) => void): void {
     for (const [pluginName, registered] of this.plugins) {
-      if (!registered.enabled) {
-        continue;
-      }
-
       try {
         callback(registered.hooks);
       } catch (error) {
