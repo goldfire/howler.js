@@ -10,3 +10,4 @@
 
 export { loadBuffer, safeXhrSend, decodeAudioData, loadSound } from './audio-loader';
 export { setupAudioContext } from './audio-context';
+export { isIOS, getIOSVersion, isSafari, getSafariVersion, isOldSafari, isOpera, getOperaVersion, isOldOpera, isIE, isAppleVendor, isChromeBased, isCocoonJS } from './light-ua-parser';

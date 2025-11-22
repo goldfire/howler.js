@@ -11,7 +11,7 @@
 import { cache, EventListener, HowlOptions, QueueItem } from './types';
 
 // Import helper functions
-import { loadBuffer, setupAudioContext } from './helpers';
+import { loadBuffer, setupAudioContext, isOldOpera, isOldSafari, isAppleVendor, isIE } from './helpers';
 
 // Import plugin manager
 import { globalPluginManager, HowlerPlugin } from './plugins';
@@ -241,15 +241,11 @@ export class HowlerGlobal {
     }
 
     const mpegTest = audioTest.canPlayType('audio/mpeg;').replace(/^no$/, '');
-    const ua = self._navigator ? self._navigator.userAgent : '';
-    const checkOpera = ua.match(/OPR\/(\d+)/g);
-    const isOldOpera = checkOpera && parseInt(checkOpera[0].split('/')[1], 10) < 33;
-    const checkSafari = ua.indexOf('Safari') !== -1 && ua.indexOf('Chrome') === -1;
-    const safariVersion = ua.match(/Version\/(.*?) /);
-    const isOldSafari = checkSafari && safariVersion && parseInt(safariVersion[1], 10) < 15;
+    const oldOpera = isOldOpera(self._navigator);
+    const oldSafari = isOldSafari(self._navigator);
 
     self._codecs = {
-      mp3: !!(!isOldOpera && (mpegTest || audioTest.canPlayType('audio/mp3;').replace(/^no$/, ''))),
+      mp3: !!(!oldOpera && (mpegTest || audioTest.canPlayType('audio/mp3;').replace(/^no$/, ''))),
       mpeg: !!mpegTest,
       opus: !!audioTest.canPlayType('audio/ogg; codecs="opus"').replace(/^no$/, ''),
       ogg: !!audioTest.canPlayType('audio/ogg; codecs="vorbis"').replace(/^no$/, ''),
@@ -260,8 +256,8 @@ export class HowlerGlobal {
       m4a: !!(audioTest.canPlayType('audio/x-m4a;') || audioTest.canPlayType('audio/m4a;') || audioTest.canPlayType('audio/aac;')).replace(/^no$/, ''),
       m4b: !!(audioTest.canPlayType('audio/x-m4b;') || audioTest.canPlayType('audio/m4b;') || audioTest.canPlayType('audio/aac;')).replace(/^no$/, ''),
       mp4: !!(audioTest.canPlayType('audio/x-mp4;') || audioTest.canPlayType('audio/mp4;') || audioTest.canPlayType('audio/aac;')).replace(/^no$/, ''),
-      weba: !!(!isOldSafari && audioTest.canPlayType('audio/webm; codecs="vorbis"').replace(/^no$/, '')),
-      webm: !!(!isOldSafari && audioTest.canPlayType('audio/webm; codecs="vorbis"').replace(/^no$/, '')),
+      weba: !!(!oldSafari && audioTest.canPlayType('audio/webm; codecs="vorbis"').replace(/^no$/, '')),
+      webm: !!(!oldSafari && audioTest.canPlayType('audio/webm; codecs="vorbis"').replace(/^no$/, '')),
       dolby: !!audioTest.canPlayType('audio/mp4; codecs="ec-3"').replace(/^no$/, ''),
       flac: !!(audioTest.canPlayType('audio/x-flac;') || audioTest.canPlayType('audio/flac;')).replace(/^no$/, '')
     };
@@ -1889,7 +1885,7 @@ class Howl {
 
   _cleanBuffer(node: any): Howl {
     const self = this;
-    const isIOS = Howler._navigator && Howler._navigator.vendor.indexOf('Apple') >= 0;
+    const isIOS = isAppleVendor(Howler._navigator);
 
     if (!node.bufferSource) {
       return self;
@@ -1910,8 +1906,7 @@ class Howl {
   }
 
   _clearSound(node: HTMLAudioElement): void {
-    const checkIE = /MSIE |Trident\//.test((Howler._navigator && Howler._navigator.userAgent) || '');
-    if (!checkIE) {
+    if (!isIE(Howler._navigator)) {
       node.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
     }
   }

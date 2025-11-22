@@ -9,6 +9,7 @@
  */
 
 import { Howler } from '../howler.core';
+import { isIOS, getIOSVersion, isSafari } from './light-ua-parser';
 
 export const setupAudioContext = () => {
   if (!Howler.usingWebAudio) {
@@ -31,11 +32,10 @@ export const setupAudioContext = () => {
     Howler.usingWebAudio = false;
   }
 
-  const iOS = /iP(hone|od|ad)/.test((Howler._navigator && Howler._navigator.platform || ""));
-  const appVersion = Howler._navigator && Howler._navigator.appVersion?.match(/OS (\d+)_(\d+)_?(\d+)?/);
-  const version = appVersion ? parseInt(appVersion[1], 10) : null;
+  const iOS = isIOS(Howler._navigator);
+  const version = getIOSVersion(Howler._navigator);
   if (iOS && version && version < 9) {
-    const safari = /safari/.test(Howler._navigator?.userAgent.toLowerCase() ?? '');
+    const safari = isSafari(Howler._navigator);
     if (Howler._navigator && !safari) {
       Howler.usingWebAudio = false;
     }
