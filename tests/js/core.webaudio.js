@@ -1,4 +1,4 @@
-import { Howl } from 'howler';
+import { Howl, Howler } from 'howler';
 
 // Cache the label for later use.
 const label = document.getElementById('label');

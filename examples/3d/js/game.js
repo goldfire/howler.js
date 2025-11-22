@@ -8,56 +8,53 @@
  *  MIT License
  */
 
-'use strict';
+import { Howler } from "./howlerConfig.js";
+import { Camera } from "./camera.js";
+import { Controls } from "./controls.js";
+import { Map } from "./map.js";
+import { Player } from "./player.js";
+import { Sound } from "./sound.js";
+import { isMobile } from "./utils.js";
 
-import { Sound } from './sound.js';
-import { Player } from './player.js';
-import { Controls } from './controls.js';
-import { Map } from './map.js';
-import { Camera } from './camera.js';
-
-// Cache some commonly used values.
-var circle = Math.PI * 2;
-var isMobile = /iPhone|iPad|iPod|Android|BlackBerry|BB10|Silk/i.test(navigator.userAgent);
-var canvas = document.getElementById('canvas');
-var ctx = canvas.getContext('2d');
 
 /**
  * Main game class that runs the tick and sets up all other components.
  */
-var Game = function() {
-  this.lastTime = 0;
+class Game {
+	constructor() {
+		this.lastTime = 0;
+		this.Howler = Howler;
 
-  // Setup our different game components.
-  this.audio = new Sound();
-  this.player = new Player(10, 26, Math.PI * 1.9, 2.5);
-  this.controls = new Controls();
-  this.map = new Map(25);
-  this.camera = new Camera(isMobile ? 256 : 512);
+		// Setup our different game components.
+		this.audio = new Sound();
+		this.player = new Player(10, 26, Math.PI * 1.9, 2.5);
+		this.controls = new Controls();
+		this.map = new Map(25);
+		this.camera = new Camera(isMobile ? 256 : 512);
 
-  requestAnimationFrame(this.tick.bind(this));
-};
-Game.prototype = {
-  /**
-   * Main game loop that renders the full scene on each screen refresh.
-   * @param  {Number} time
-   */
-  tick: function(time) {
-    var ms = time - this.lastTime;
-    this.lastTime = time;
+		this.tick = this.tick.bind(this);
 
-    // Update the different components of the scene.
-    this.map.update(ms / 1000);
-    this.player.update(ms / 1000);
-    this.camera.render(this.player, this.map);
+		requestAnimationFrame(this.tick);
+	}
+	/**
+	 * Main game loop that renders the full scene on each screen refresh.
+	 * @param  {Number} time
+	 */
+	tick(time) {
+		var ms = time - this.lastTime;
+		this.lastTime = time;
 
-    // Continue the game loop.
-    requestAnimationFrame(this.tick.bind(this));
-  }
-};
+		// Update the different components of the scene.
+		this.map.update(ms / 1000);
+		this.player.update(ms / 1000);
+		this.camera.render(this.player, this.map);
 
-// Setup and start the new game instance.
-var game = new Game();
-
+		// Continue the game loop.
+		requestAnimationFrame(this.tick);
+	}
+}
 // Generate the new map.
+const game = new Game();
+// Setup and start the new game instance.
 game.map.setup();
+export { game };

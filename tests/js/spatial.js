@@ -1,18 +1,19 @@
-import { SpatialHowl, SpatialAudioPlugin, globalPluginManager } from 'howler/plugins/spatial';
+import { Howl, Howler } from 'howler';
+import { SpatialAudioPlugin } from 'howler/plugins/spatial';
 
 // Register the Spatial Audio Plugin
-globalPluginManager.register(new SpatialAudioPlugin());
+Howler.addPlugin(new SpatialAudioPlugin());
 
 // Cache the label for later use.
 const label = document.getElementById('label');
 const start = document.getElementById('start');
 
 // Setup the sounds to be used.
-const sound1 = new SpatialHowl({
+const sound1 = new Howl({
   src: ['audio/sound1.webm', 'audio/sound1.mp3']
 });
 
-const sound2 = new SpatialHowl({
+const sound2 = new Howl({
   src: ['audio/sound2.webm', 'audio/sound2.mp3'],
   sprite: {
     one: [0, 450],

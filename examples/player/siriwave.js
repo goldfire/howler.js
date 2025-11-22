@@ -25,6 +25,8 @@ export class SiriWave {
     this.amplitude = opt.amplitude || 1;
     this.speed = opt.speed || 0.2;
     this.frequency = opt.frequency || 6;
+
+    this._draw = this._draw.bind(this);
     this.color = (() => {
       const hex2rgb = (hex) => {
         const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
@@ -87,7 +89,7 @@ export class SiriWave {
 
     let i = -2;
     while ((i += 0.01) <= 2) {
-      const y = this._ypos(i, attenuation);
+      let y = this._ypos(i, attenuation);
       if (Math.abs(i) >= 1.90) y = this.height_2;
       this.ctx.lineTo(this._xpos(i), y);
     }
@@ -114,10 +116,10 @@ export class SiriWave {
     this._drawLine(1, 'rgba(' + this.color + ',1)', 1.5);
 
     if (window.requestAnimationFrame) {
-      requestAnimationFrame(this._draw.bind(this));
+      requestAnimationFrame(this._draw);
       return;
     }
-    setTimeout(this._draw.bind(this), 20);
+    setTimeout(this._draw, 20);
   }
 
   /* API */

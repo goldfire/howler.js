@@ -8,7 +8,7 @@
  *  MIT License
  */
 
-import { Howl } from 'howler';
+import { Howl, Howler } from 'howler';
 import { SiriWave } from './siriwave.js';
 
 // Cache references to DOM elements.
