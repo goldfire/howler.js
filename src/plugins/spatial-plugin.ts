@@ -11,6 +11,7 @@
 
 import type { HowlOptions } from '../howler.core';
 import { Howl, Howler, HowlerGlobal, Sound } from '../howler.core';
+import { isGainNode } from '../types';
 import { HowlerPlugin, type PluginHooks, globalPluginManager } from './plugin';
 
 /**
@@ -177,7 +178,9 @@ function setupPanner(sound: Sound & SpatialSoundState, type: 'stereo' | 'spatial
   }
 
   // Connect panner to the sound's node
-  sound._panner.connect(sound._node);
+  if (sound._node && isGainNode(sound._node)) {
+    sound._panner.connect(sound._node);
+  }
 
   // Update connections if sound is playing
   if (!sound._paused) {

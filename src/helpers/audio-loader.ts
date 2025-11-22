@@ -69,7 +69,13 @@ export const safeXhrSend = (xhr: XMLHttpRequest) => {
     xhr.send();
   } catch (e) {
     if (xhr.onerror) {
-      xhr.onerror(new Event('error'));
+      // Create a ProgressEvent-like object for the error handler
+      const errorEvent = new ProgressEvent('error', {
+        lengthComputable: false,
+        loaded: 0,
+        total: 0
+      });
+      xhr.onerror(errorEvent);
     }
   }
 };

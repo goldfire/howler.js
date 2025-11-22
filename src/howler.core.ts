@@ -8,7 +8,7 @@
  *  MIT License
  */
 // Import shared types
-import { cache, EventListener, HowlOptions, QueueItem } from './types';
+import { AudioBufferSourceNodeWithLegacy, cache, EventListener, GainNodeWithBufferSource, HowlOptions, HTMLAudioElementWithUnlocked, isGainNode, isHTMLAudioElement, NavigatorWithCocoonJS, QueueItem, WindowWithAudio } from './types';
 
 // Import helper functions
 import { isAppleVendor, isIE, isOldOpera, isOldSafari, loadBuffer, setupAudioContext } from './helpers';
@@ -25,7 +25,7 @@ export class HowlerGlobal {
   _muted: boolean = false;
   _volume: number = 1;
   _canPlayEvent: string = 'canplaythrough';
-  _navigator: Navigator | null = null;
+  _navigator: NavigatorWithCocoonJS | null = null;
   masterGain: GainNode | null = null;
   noAudio: boolean = false;
   usingWebAudio: boolean = true;
@@ -67,7 +67,7 @@ export class HowlerGlobal {
 
   volume(vol?: number): number | HowlerGlobal {
     if (vol !== undefined) {
-      vol = parseFloat(vol as any);
+      vol = parseFloat(String(vol));
 
       if (!this.ctx) {
         setupAudioContext();
@@ -89,7 +89,7 @@ export class HowlerGlobal {
             const ids = this._howls[i]._getSoundIds();
             for (let j = 0; j < ids.length; j++) {
               const sound = this._howls[i]._soundById(ids[j]);
-              if (sound && sound._node) {
+              if (sound && sound._node && isHTMLAudioElement(sound._node)) {
                 sound._node.volume = sound._volume * vol;
               }
             }
@@ -119,7 +119,7 @@ export class HowlerGlobal {
         const ids = this._howls[i]._getSoundIds();
         for (let j = 0; j < ids.length; j++) {
           const sound = this._howls[i]._soundById(ids[j]);
-          if (sound && sound._node) {
+          if (sound && sound._node && isHTMLAudioElement(sound._node)) {
             sound._node.muted = muted ? true : sound._muted;
           }
         }
@@ -220,7 +220,7 @@ export class HowlerGlobal {
   }
 
   _setupCodecs(): HowlerGlobal {
-    let audioTest: any = null;
+    let audioTest: HTMLAudioElement | null = null;
 
     try {
       audioTest = typeof window.Audio !== 'undefined' ? new window.Audio() : null;
@@ -275,7 +275,7 @@ export class HowlerGlobal {
     const unlock = () => {
       while (this._html5AudioPool.length < this.html5PoolSize) {
         try {
-          const audioNode = new (window as any).Audio();
+          const audioNode = new (window as WindowWithAudio).Audio() as HTMLAudioElementWithUnlocked;
           audioNode._unlocked = true;
           this._releaseHtml5Audio(audioNode);
         } catch (e) {
@@ -289,8 +289,8 @@ export class HowlerGlobal {
           const ids = this._howls[i]._getSoundIds();
           for (let j = 0; j < ids.length; j++) {
             const sound = this._howls[i]._soundById(ids[j]);
-            if (sound && sound._node && !(sound._node as any)._unlocked) {
-              (sound._node as any)._unlocked = true;
+            if (sound && sound._node && isHTMLAudioElement(sound._node) && !sound._node._unlocked) {
+              sound._node._unlocked = true;
               sound._node.load();
             }
           }
@@ -304,7 +304,7 @@ export class HowlerGlobal {
       source.connect(this.ctx!.destination);
 
       if (typeof source.start === 'undefined') {
-        (source as any).noteOn(0);
+        (source as AudioBufferSourceNodeWithLegacy).noteOn?.(0);
       } else {
         source.start(0);
       }
@@ -328,28 +328,35 @@ export class HowlerGlobal {
       };
     };
 
-    document.addEventListener('touchstart', unlock as any, true);
-    document.addEventListener('touchend', unlock as any, true);
-    document.addEventListener('click', unlock as any, true);
-    document.addEventListener('keydown', unlock as any, true);
+    document.addEventListener('touchstart', unlock, true);
+    document.addEventListener('touchend', unlock, true);
+    document.addEventListener('click', unlock, true);
+    document.addEventListener('keydown', unlock, true);
   }
 
-  _obtainHtml5Audio(): HTMLAudioElement {
+  _obtainHtml5Audio(): HTMLAudioElementWithUnlocked {
     if (this._html5AudioPool.length) {
       return this._html5AudioPool.pop()!;
     }
 
-    const testPlay = new (window as any).Audio().play();
-    if (testPlay && typeof Promise !== 'undefined' && (testPlay instanceof Promise || typeof (testPlay as any).then === 'function')) {
-      (testPlay as any).catch(() => {
-        console.warn('HTML5 Audio pool exhausted, returning potentially locked audio object.');
-      });
+    const testPlay = new (window as WindowWithAudio).Audio().play();
+    if (testPlay && typeof Promise !== 'undefined') {
+      if (testPlay instanceof Promise) {
+        testPlay.catch(() => {
+          console.warn('HTML5 Audio pool exhausted, returning potentially locked audio object.');
+        });
+      } else if (typeof testPlay === 'object' && testPlay !== null && 'then' in testPlay && typeof (testPlay as { then?: unknown }).then === 'function') {
+        // Handle thenable objects
+        (testPlay as { catch: (onRejected: () => void) => void }).catch(() => {
+          console.warn('HTML5 Audio pool exhausted, returning potentially locked audio object.');
+        });
+      }
     }
 
-    return new (window as any).Audio();
+    return new (window as WindowWithAudio).Audio() as HTMLAudioElementWithUnlocked;
   }
 
-  _releaseHtml5Audio(audio: any): HowlerGlobal {
+  _releaseHtml5Audio(audio: HTMLAudioElementWithUnlocked): HowlerGlobal {
     if (audio._unlocked) {
       this._html5AudioPool.push(audio);
     }
@@ -427,6 +434,8 @@ export class HowlerGlobal {
 // Setup the global audio controller
 const Howler = new HowlerGlobal();
 
+// Type guards for Sound._node
+
 class Sound {
   _parent: Howl;
   _muted: boolean = false;
@@ -438,12 +447,12 @@ class Sound {
   _ended: boolean = true;
   _sprite: string = '__default';
   _id: number = 0;
-  _node: HTMLAudioElement | any = null;
+  _node: HTMLAudioElementWithUnlocked | GainNodeWithBufferSource | null = null;
   _playStart: number = 0;
   _rateSeek: number = 0;
-  _errorFn?: any;
-  _loadFn?: any;
-  _endFn?: any;
+  _errorFn?: (event: Event) => void;
+  _loadFn?: (event: Event) => void;
+  _endFn?: (event: Event) => void;
   _start?: number;
   _stop?: number;
   _panner?: PannerNode | StereoPannerNode;
@@ -481,15 +490,21 @@ class Sound {
   }
 
   create(): Sound {
-    
     const parent = this._parent;
     const volume = Howler._muted || this._muted || parent._muted ? 0 : this._volume;
 
-    if (parent._webAudio) {
-      this._node = typeof Howler.ctx!.createGain === 'undefined' ? Howler.ctx!.createGainNode() : Howler.ctx!.createGain();
-      this._node.gain.setValueAtTime(volume, Howler.ctx!.currentTime);
-      this._node.paused = true;
-      this._node.connect(Howler.masterGain);
+    this._errorFn = this._errorListener.bind(this);
+    this._loadFn = this._loadListener.bind(this);
+    this._endFn = this._endListener.bind(this);
+
+    if (parent._webAudio && Howler.ctx) {
+      const gainNode = typeof Howler.ctx.createGain === 'undefined' ? (Howler.ctx as { createGainNode?: () => GainNode }).createGainNode?.() : Howler.ctx.createGain();
+      if (gainNode) {
+        this._node = gainNode as GainNodeWithBufferSource;
+        this._node.gain.setValueAtTime(volume, Howler.ctx.currentTime);
+        (this._node as { paused?: boolean }).paused = true;
+        this._node.connect(Howler.masterGain!);
+      }
     } else if (!Howler.noAudio) {
       this._node = Howler._obtainHtml5Audio();
 
@@ -502,8 +517,10 @@ class Sound {
       this._endFn = this._endListener.bind(this);
       this._node.addEventListener('ended', this._endFn, false);
 
-      this._node.src = parent._src;
-      this._node.preload = parent._preload === true ? 'auto' : parent._preload;
+      const src = typeof parent._src === 'string' ? parent._src : (Array.isArray(parent._src) && parent._src.length > 0 ? parent._src[0] : '');
+      this._node.src = src;
+      const preloadValue = parent._preload === true ? 'auto' : (parent._preload === false ? 'none' : (parent._preload === 'metadata' ? 'metadata' : 'auto'));
+      this._node.preload = preloadValue;
       const volumeOrHowler = Howler.volume();
       if (typeof volumeOrHowler === 'number') {
         this._node.volume = volume * volumeOrHowler;
@@ -535,13 +552,20 @@ class Sound {
   }
 
   _errorListener(): void {
-    
-    this._parent._emit('loaderror', this._id, this._node.error ? this._node.error.code : 0);
-    this._node.removeEventListener('error', this._errorFn, false);
+    if (this._node && isHTMLAudioElement(this._node)) {
+      const errorCode = this._node.error ? this._node.error.code : 0;
+      this._parent._emit('loaderror', this._id, String(errorCode));
+      if (this._errorFn) {
+        this._node.removeEventListener('error', this._errorFn, false);
+      }
+    }
   }
 
   _loadListener(): void {
-    
+    if (!this._node || !isHTMLAudioElement(this._node)) {
+      return;
+    }
+
     const parent = this._parent;
 
     parent._duration = Math.ceil(this._node.duration * 10) / 10;
@@ -559,14 +583,16 @@ class Sound {
       globalPluginManager.executeHowlLoad(parent);
     }
 
-    this._node.removeEventListener(Howler._canPlayEvent, this._loadFn, false);
+    if (this._loadFn) {
+      this._node.removeEventListener(Howler._canPlayEvent, this._loadFn, false);
+    }
   }
 
   _endListener(): void {
     
     const parent = this._parent;
 
-    if (parent._duration === Infinity) {
+    if (parent._duration === Infinity && this._node && isHTMLAudioElement(this._node)) {
       parent._duration = Math.ceil(this._node.duration * 10) / 10;
 
       if (parent._sprite.__default[1] === Infinity) {
@@ -576,7 +602,9 @@ class Sound {
       parent._ended(this);
     }
 
-    this._node.removeEventListener('ended', this._endFn, false);
+    if (this._endFn && this._node) {
+      this._node.removeEventListener('ended', this._endFn, false);
+    }
   }
 }
 
@@ -596,7 +624,7 @@ class Howl {
   _duration: number = 0;
   _state: string = 'unloaded';
   _sounds: Sound[] = [];
-  _endTimers: Record<number, any> = {};
+  _endTimers: Record<number, ReturnType<typeof setTimeout>> = {};
   _queue: QueueItem[] = [];
   _playLock: boolean = false;
   _webAudio: boolean = false;
@@ -656,8 +684,16 @@ class Howl {
     this._onend = o.onend ? [{ fn: o.onend }] : [];
     this._onfade = o.onfade ? [{ fn: o.onfade }] : [];
     this._onload = o.onload ? [{ fn: o.onload }] : [];
-    this._onloaderror = o.onloaderror ? [{ fn: o.onloaderror }] : [];
-    this._onplayerror = o.onplayerror ? [{ fn: o.onplayerror }] : [];
+    this._onloaderror = o.onloaderror ? [{ fn: (...args: unknown[]) => { 
+      if (o.onloaderror && typeof args[0] === 'number' && typeof args[1] === 'string') {
+        o.onloaderror(args[0], args[1]);
+      }
+    } }] : [];
+    this._onplayerror = o.onplayerror ? [{ fn: (...args: unknown[]) => { 
+      if (o.onplayerror && typeof args[0] === 'number' && typeof args[1] === 'string') {
+        o.onplayerror(args[0], args[1]);
+      }
+    } }] : [];
     this._onpause = o.onpause ? [{ fn: o.onpause }] : [];
     this._onplay = o.onplay ? [{ fn: o.onplay }] : [];
     this._onstop = o.onstop ? [{ fn: o.onstop }] : [];
@@ -688,7 +724,7 @@ class Howl {
       });
     }
 
-    if (this._preload && this._preload !== 'none') {
+    if (this._preload === true || this._preload === 'metadata') {
       this.load();
     }
 
@@ -799,7 +835,7 @@ class Howl {
     }
 
     if (this._state !== 'loaded') {
-      sound._sprite = sprite;
+      sound._sprite = sprite || '__default';
       sound._ended = false;
 
       const soundId = sound._id;
@@ -849,7 +885,7 @@ class Howl {
 
     const node = sound._node;
 
-    if (this._webAudio) {
+    if (this._webAudio && node && isGainNode(node)) {
       const playWebAudio = () => {
         this._playLock = false;
         setParams();
@@ -859,10 +895,12 @@ class Howl {
         node.gain.setValueAtTime(vol, Howler.ctx!.currentTime);
         sound._playStart = Howler.ctx!.currentTime;
 
-        if (typeof (node.bufferSource as any).start === 'undefined') {
-          (node.bufferSource as any).noteGrainOn(0, seek, sound._loop ? 86400 : duration);
-        } else {
-          (node.bufferSource as any).start(0, seek, sound._loop ? 86400 : duration);
+        if (node.bufferSource) {
+          if (typeof node.bufferSource.start === 'undefined') {
+            node.bufferSource.noteGrainOn?.(0, seek, sound._loop ? 86400 : duration);
+          } else {
+            node.bufferSource.start(0, seek, sound._loop ? 86400 : duration);
+          }
         }
 
         if (timeout !== Infinity) {
@@ -884,7 +922,7 @@ class Howl {
         this.once('resume', playWebAudio);
         this._clearTimer(sound._id);
       }
-    } else {
+    } else if (node && isHTMLAudioElement(node)) {
       const playHtml5 = () => {
         node.currentTime = seek;
         node.muted = sound._muted || this._muted || Howler._muted || node.muted;
@@ -903,7 +941,9 @@ class Howl {
             (play as any)
               .then(() => {
                 this._playLock = false;
-                (node as any)._unlocked = true;
+                if ('_unlocked' in node) {
+                  (node as HTMLAudioElementWithUnlocked)._unlocked = true;
+                }
                 if (!internal) {
                   this._emit('play', sound._id);
                 } else {
@@ -932,11 +972,12 @@ class Howl {
           if (sprite !== '__default' || sound._loop) {
             this._endTimers[sound._id] = setTimeout(this._ended.bind(this, sound), timeout);
           } else {
-            this._endTimers[sound._id] = () => {
+            const endHandler = () => {
               this._ended(sound);
-              node.removeEventListener('ended', this._endTimers[sound._id], false);
+              node.removeEventListener('ended', endHandler, false);
             };
-            node.addEventListener('ended', this._endTimers[sound._id], false);
+            this._endTimers[sound._id] = setTimeout(endHandler, timeout);
+            node.addEventListener('ended', endHandler, false);
           }
         } catch (err: unknown) {
           this._emit('playerror', sound._id, err instanceof Error ? err.message : String(err));
@@ -944,11 +985,12 @@ class Howl {
       };
 
       if (node.src === 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA') {
-        node.src = this._src;
+        const src = typeof this._src === 'string' ? this._src : (Array.isArray(this._src) && this._src.length > 0 ? this._src[0] : '');
+        node.src = src;
         node.load();
       }
 
-      const loadedNoReadyState = (typeof (window as any).ejecta !== 'undefined') || (!node.readyState && Howler._navigator && (Howler._navigator as any).isCocoonJS);
+      const loadedNoReadyState = (typeof (window as WindowWithAudio).ejecta !== 'undefined') || (!node.readyState && Howler._navigator && Howler._navigator.isCocoonJS);
       if (node.readyState >= 3 || loadedNoReadyState) {
         playHtml5();
       } else {
@@ -960,7 +1002,7 @@ class Howl {
           playHtml5();
           node.removeEventListener(Howler._canPlayEvent, listener, false);
         };
-        node.addEventListener(Howler._canPlayEvent, listener as any, false);
+        node.addEventListener(Howler._canPlayEvent, listener, false);
 
         this._clearTimer(sound._id);
       }
@@ -969,7 +1011,7 @@ class Howl {
     return sound._id;
   }
 
-  pause(id?: number): Howl {
+  pause(id?: number, internal?: boolean): Howl {
     
 
     if (this._state !== 'loaded' || this._playLock) {
@@ -991,26 +1033,27 @@ class Howl {
       const sound = this._soundById(ids[i]);
 
       if (sound && !sound._paused) {
-        sound._seek = this.seek(ids[i]) as number;
+        const seekResult = this.seek(ids[i]);
+        sound._seek = typeof seekResult === 'number' ? seekResult : 0;
         sound._rateSeek = 0;
         sound._paused = true;
 
         this._stopFade(ids[i]);
 
         if (sound._node) {
-          if (this._webAudio) {
+          if (this._webAudio && isGainNode(sound._node)) {
             if (!sound._node.bufferSource) {
               continue;
             }
 
-            if (typeof (sound._node.bufferSource as any).stop === 'undefined') {
-              (sound._node.bufferSource as any).noteOff(0);
+            if (typeof sound._node.bufferSource.stop === 'undefined') {
+              sound._node.bufferSource.noteOff?.(0);
             } else {
-              (sound._node.bufferSource as any).stop(0);
+              sound._node.bufferSource.stop(0);
             }
 
             this._cleanBuffer(sound._node);
-          } else if (!isNaN(sound._node.duration) || sound._node.duration === Infinity) {
+          } else if (isHTMLAudioElement(sound._node) && (!isNaN(sound._node.duration) || sound._node.duration === Infinity)) {
             sound._node.pause();
           }
         }
@@ -1054,17 +1097,17 @@ class Howl {
         this._stopFade(ids[i]);
 
         if (sound._node) {
-          if (this._webAudio) {
+          if (this._webAudio && isGainNode(sound._node)) {
             if (sound._node.bufferSource) {
-              if (typeof (sound._node.bufferSource as any).stop === 'undefined') {
-                (sound._node.bufferSource as any).noteOff(0);
+              if (typeof sound._node.bufferSource.stop === 'undefined') {
+                sound._node.bufferSource.noteOff?.(0);
               } else {
-                (sound._node.bufferSource as any).stop(0);
+                sound._node.bufferSource.stop(0);
               }
 
               this._cleanBuffer(sound._node);
             }
-          } else if (!isNaN(sound._node.duration) || sound._node.duration === Infinity) {
+          } else if (isHTMLAudioElement(sound._node) && (!isNaN(sound._node.duration) || sound._node.duration === Infinity)) {
             sound._node.currentTime = sound._start || 0;
             sound._node.pause();
 
@@ -1117,9 +1160,9 @@ class Howl {
           this._stopFade(sound._id);
         }
 
-        if (this._webAudio && sound._node) {
+        if (this._webAudio && sound._node && isGainNode(sound._node)) {
           sound._node.gain.setValueAtTime(muted ? 0 : sound._volume, Howler.ctx!.currentTime);
-        } else if (sound._node) {
+        } else if (sound._node && isHTMLAudioElement(sound._node)) {
           sound._node.muted = Howler._muted ? true : muted;
         }
 
@@ -1132,6 +1175,8 @@ class Howl {
 
   volume(): number;
   volume(vol: number): Howl;
+  volume(vol: number, id: number): Howl;
+  volume(vol: number, id: number, internal: boolean): Howl;
   volume(vol?: number): number | Howl {
     
     const args = arguments;
@@ -1142,15 +1187,15 @@ class Howl {
       return this._volume;
     } else if (args.length === 1 || (args.length === 2 && typeof args[1] === 'undefined')) {
       const ids = this._getSoundIds();
-      const index = ids.indexOf(args[0] as any);
+      const index = ids.indexOf(args[0] as number);
       if (index >= 0) {
-        id = parseInt(args[0] as any, 10);
+        id = parseInt(String(args[0]), 10);
       } else {
-        volume = parseFloat(args[0] as any);
+        volume = parseFloat(String(args[0]));
       }
     } else if (args.length >= 2) {
-      volume = parseFloat(args[0] as any);
-      id = parseInt(args[1] as any, 10);
+      volume = parseFloat(String(args[0]));
+      id = parseInt(String(args[1]), 10);
     }
 
     let sound;
@@ -1159,7 +1204,13 @@ class Howl {
         this._queue.push({
           event: 'volume',
           action: () => {
-            this.volume.apply(this, args as any);
+            if (args.length >= 1 && typeof args[0] === 'number') {
+              if (args.length >= 2 && typeof args[1] === 'number') {
+                this.volume(args[0], args[1]);
+              } else {
+                this.volume(args[0]);
+              }
+            }
           }
         });
 
@@ -1170,20 +1221,20 @@ class Howl {
         this._volume = volume;
       }
 
-      id = this._getSoundIds(id);
-      for (let i = 0; i < (id as any).length; i++) {
-        sound = this._soundById((id as any)[i]);
+      const soundIds = this._getSoundIds(id);
+      for (let i = 0; i < soundIds.length; i++) {
+        sound = this._soundById(soundIds[i]);
 
         if (sound) {
           sound._volume = volume;
 
-          if (!(args as any)[2]) {
-            this._stopFade((id as any)[i]);
+          if (!args[2]) {
+            this._stopFade(soundIds[i]);
           }
 
-          if (this._webAudio && sound._node && !sound._muted) {
+          if (this._webAudio && sound._node && isGainNode(sound._node) && !sound._muted) {
             sound._node.gain.setValueAtTime(volume, Howler.ctx!.currentTime);
-          } else if (sound._node && !sound._muted) {
+          } else if (sound._node && isHTMLAudioElement(sound._node) && !sound._muted) {
             const volumeMultiplierOrGlobal = Howler.volume();
             if (typeof volumeMultiplierOrGlobal === 'number') {
               sound._node.volume = volume * volumeMultiplierOrGlobal;
@@ -1215,11 +1266,15 @@ class Howl {
       return this;
     }
 
-    from = Math.min(Math.max(0, parseFloat(from as any)), 1);
-    to = Math.min(Math.max(0, parseFloat(to as any)), 1);
-    len = parseFloat(len as any);
+    from = Math.min(Math.max(0, parseFloat(String(from))), 1);
+    to = Math.min(Math.max(0, parseFloat(String(to))), 1);
+    len = parseFloat(String(len));
 
-    this.volume(from, id);
+    if (typeof id !== 'undefined') {
+      this.volume(from, id);
+    } else {
+      this.volume(from);
+    }
 
     const ids = this._getSoundIds(id);
     for (let i = 0; i < ids.length; i++) {
@@ -1234,8 +1289,10 @@ class Howl {
           const currentTime = Howler.ctx!.currentTime;
           const end = currentTime + len / 1000;
           sound._volume = from;
-          sound._node.gain.setValueAtTime(from, currentTime);
-          sound._node.gain.linearRampToValueAtTime(to, end);
+          if (sound._node && isGainNode(sound._node)) {
+            sound._node.gain.setValueAtTime(from, currentTime);
+            sound._node.gain.linearRampToValueAtTime(to, end);
+          }
         }
 
         this._startFadeInterval(sound, from, to, len, ids[i], typeof id === 'undefined');
@@ -1279,7 +1336,9 @@ class Howl {
       }
 
       if ((to < from && vol <= to) || (to > from && vol >= to)) {
-        clearInterval(sound._interval as any);
+        if (sound._interval) {
+          clearInterval(sound._interval);
+        }
         sound._interval = undefined;
         sound._fadeTo = undefined;
         this.volume(to, sound._id);
@@ -1293,12 +1352,14 @@ class Howl {
     const sound = this._soundById(id);
 
     if (sound && sound._interval) {
-      if (this._webAudio) {
+      if (this._webAudio && sound._node && isGainNode(sound._node)) {
         sound._node.gain.cancelScheduledValues(Howler.ctx!.currentTime);
       }
 
-      clearInterval(sound._interval as any);
-      sound._interval = undefined;
+      if (sound._interval) {
+        clearInterval(sound._interval);
+        sound._interval = undefined;
+      }
       this.volume(sound._fadeTo as number, id);
       sound._fadeTo = undefined;
       this._emit('fade', id);
@@ -1323,12 +1384,12 @@ class Howl {
         loopVal = args[0] as boolean;
         this._loop = loopVal;
       } else {
-        sound = this._soundById(parseInt(args[0] as any, 10));
+        sound = this._soundById(parseInt(String(args[0]), 10));
         return sound ? sound._loop : false;
       }
     } else if (args.length === 2) {
       loopVal = args[0] as boolean;
-      id = parseInt(args[1] as any, 10);
+      id = parseInt(String(args[1]), 10);
     }
 
     const ids = this._getSoundIds(id);
@@ -1337,11 +1398,11 @@ class Howl {
 
       if (sound) {
         sound._loop = loopVal as boolean;
-        if (this._webAudio && sound._node && (sound._node.bufferSource as any)) {
-          (sound._node.bufferSource as any).loop = loopVal;
+        if (this._webAudio && sound._node && isGainNode(sound._node) && sound._node.bufferSource) {
+          sound._node.bufferSource.loop = loopVal;
           if (loopVal) {
-            (sound._node.bufferSource as any).loopStart = sound._start || 0;
-            (sound._node.bufferSource as any).loopEnd = sound._stop;
+            sound._node.bufferSource.loopStart = sound._start || 0;
+            sound._node.bufferSource.loopEnd = sound._stop;
 
             if (this.playing(ids[i])) {
               this.pause(ids[i], true);
@@ -1357,6 +1418,7 @@ class Howl {
 
   rate(): number;
   rate(rate: number): Howl;
+  rate(rate: number, id: number): Howl;
   rate(rate?: number): number | Howl {
     
     const args = arguments;
@@ -1367,15 +1429,15 @@ class Howl {
       id = this._sounds[0]._id;
     } else if (args.length === 1) {
       const ids = this._getSoundIds();
-      const index = ids.indexOf(args[0] as any);
+      const index = ids.indexOf(args[0] as number);
       if (index >= 0) {
-        id = parseInt(args[0] as any, 10);
+        id = parseInt(String(args[0]), 10);
       } else {
-        rateVal = parseFloat(args[0] as any);
+        rateVal = parseFloat(String(args[0]));
       }
     } else if (args.length === 2) {
-      rateVal = parseFloat(args[0] as any);
-      id = parseInt(args[1] as any, 10);
+      rateVal = parseFloat(String(args[0]));
+      id = parseInt(String(args[1]), 10);
     }
 
     let sound;
@@ -1384,7 +1446,13 @@ class Howl {
         this._queue.push({
           event: 'rate',
           action: () => {
-            this.rate.apply(this, args as any);
+            if (args.length >= 1 && typeof args[0] === 'number') {
+              if (args.length >= 2 && typeof args[1] === 'number') {
+                this.rate(args[0], args[1]);
+              } else {
+                this.rate(args[0]);
+              }
+            }
           }
         });
 
@@ -1395,38 +1463,43 @@ class Howl {
         this._rate = rateVal;
       }
 
-      id = this._getSoundIds(id);
-      for (let i = 0; i < (id as any).length; i++) {
-        sound = this._soundById((id as any)[i]);
+      const soundIds = this._getSoundIds(id);
+      for (let i = 0; i < soundIds.length; i++) {
+        sound = this._soundById(soundIds[i]);
 
         if (sound) {
-          if (this.playing((id as any)[i])) {
-            sound._rateSeek = this.seek((id as any)[i]) as number;
+          if (this.playing(soundIds[i])) {
+            const seekResult = this.seek(soundIds[i]);
+            sound._rateSeek = typeof seekResult === 'number' ? seekResult : 0;
             sound._playStart = this._webAudio ? Howler.ctx!.currentTime : sound._playStart;
           }
           sound._rate = rateVal;
 
-          if (this._webAudio && sound._node && (sound._node.bufferSource as any)) {
-            (sound._node.bufferSource as any).playbackRate.setValueAtTime(rateVal, Howler.ctx!.currentTime);
-          } else if (sound._node) {
+          if (this._webAudio && sound._node && isGainNode(sound._node) && sound._node.bufferSource) {
+            sound._node.bufferSource.playbackRate.setValueAtTime(rateVal, Howler.ctx!.currentTime);
+          } else if (sound._node && isHTMLAudioElement(sound._node)) {
             sound._node.playbackRate = rateVal;
           }
 
-          const seek = this.seek((id as any)[i]) as number;
+          const seekResult = this.seek(soundIds[i]);
+          const seek = typeof seekResult === 'number' ? seekResult : 0;
           const duration = (this._sprite[sound._sprite][0] + this._sprite[sound._sprite][1]) / 1000 - seek;
           const timeout = (duration * 1000) / Math.abs(sound._rate);
 
-          if (this._endTimers[(id as any)[i]] || !sound._paused) {
-            this._clearTimer((id as any)[i]);
-            this._endTimers[(id as any)[i]] = setTimeout(this._ended.bind(this, sound), timeout);
+          if (this._endTimers[soundIds[i]] || !sound._paused) {
+            this._clearTimer(soundIds[i]);
+            this._endTimers[soundIds[i]] = setTimeout(this._ended.bind(this, sound), timeout);
           }
 
           this._emit('rate', sound._id);
         }
       }
     } else {
-      sound = this._soundById(id);
-      return sound ? sound._rate : this._rate;
+      if (typeof id !== 'undefined') {
+        sound = this._soundById(id);
+        return sound ? sound._rate : this._rate;
+      }
+      return this._rate;
     }
 
     return this;
@@ -1434,6 +1507,7 @@ class Howl {
 
   seek(): number;
   seek(seek: number): Howl;
+  seek(seek: number, id: number): Howl;
   seek(seek?: number): number | Howl {
     
     const args = arguments;
@@ -1446,16 +1520,16 @@ class Howl {
       }
     } else if (args.length === 1) {
       const ids = this._getSoundIds();
-      const index = ids.indexOf(args[0] as any);
+      const index = ids.indexOf(args[0] as number);
       if (index >= 0) {
-        id = parseInt(args[0] as any, 10);
+        id = parseInt(String(args[0]), 10);
       } else if (this._sounds.length) {
         id = this._sounds[0]._id;
-        seekVal = parseFloat(args[0] as any);
+        seekVal = parseFloat(String(args[0]));
       }
     } else if (args.length === 2) {
-      seekVal = parseFloat(args[0] as any);
-      id = parseInt(args[1] as any, 10);
+      seekVal = parseFloat(String(args[0]));
+      id = parseInt(String(args[1]), 10);
     }
 
     if (typeof id === 'undefined') {
@@ -1466,7 +1540,13 @@ class Howl {
       this._queue.push({
         event: 'seek',
         action: () => {
-          this.seek.apply(this, args as any);
+          if (args.length >= 1 && typeof args[0] === 'number') {
+            if (args.length >= 2 && typeof args[1] === 'number') {
+              this.seek(args[0], args[1]);
+            } else {
+              this.seek(args[0]);
+            }
+          }
         }
       });
 
@@ -1486,7 +1566,7 @@ class Howl {
         sound._ended = false;
         this._clearTimer(id);
 
-        if (!this._webAudio && sound._node && !isNaN(sound._node.duration)) {
+        if (!this._webAudio && sound._node && isHTMLAudioElement(sound._node) && !isNaN(sound._node.duration)) {
           sound._node.currentTime = seekVal;
         }
 
@@ -1515,9 +1595,10 @@ class Howl {
           const realTime = this.playing(id) ? Howler.ctx!.currentTime - sound._playStart : 0;
           const rateSeek = sound._rateSeek ? sound._rateSeek - sound._seek : 0;
           return sound._seek + (rateSeek + realTime * Math.abs(sound._rate));
-        } else {
+        } else if (sound._node && isHTMLAudioElement(sound._node)) {
           return sound._node.currentTime;
         }
+        return 0;
       }
     }
 
@@ -1545,9 +1626,11 @@ class Howl {
     
     let duration = this._duration;
 
-    const sound = this._soundById(id);
-    if (sound) {
-      duration = this._sprite[sound._sprite][1] / 1000;
+    if (typeof id !== 'undefined') {
+      const sound = this._soundById(id);
+      if (sound) {
+        duration = this._sprite[sound._sprite][1] / 1000;
+      }
     }
 
     return duration;
@@ -1569,17 +1652,27 @@ class Howl {
         this.stop(sounds[i]._id);
       }
 
-      if (!this._webAudio) {
-        this._clearSound(sounds[i]._node);
+      const node = sounds[i]._node;
+      if (!this._webAudio && node && isHTMLAudioElement(node)) {
+        this._clearSound(node);
 
-        sounds[i]._node.removeEventListener('error', sounds[i]._errorFn, false);
-        sounds[i]._node.removeEventListener(Howler._canPlayEvent, sounds[i]._loadFn, false);
-        sounds[i]._node.removeEventListener('ended', sounds[i]._endFn, false);
+        const errorFn = sounds[i]._errorFn;
+        if (errorFn) {
+          node.removeEventListener('error', errorFn, false);
+        }
+        const loadFn = sounds[i]._loadFn;
+        if (loadFn) {
+          node.removeEventListener(Howler._canPlayEvent as string, loadFn, false);
+        }
+        const endFn = sounds[i]._endFn;
+        if (endFn) {
+          node.removeEventListener('ended', endFn, false);
+        }
 
-        Howler._releaseHtml5Audio(sounds[i]._node);
+        Howler._releaseHtml5Audio(node);
       }
 
-      delete sounds[i]._node;
+      sounds[i]._node = null;
 
       this._clearTimer(sounds[i]._id);
     }
@@ -1609,9 +1702,8 @@ class Howl {
     return null;
   }
 
-  on(event: string, fn: (...args: any[]) => void, id?: number, once?: boolean): Howl {
-    
-    const events = (this as any)['_on' + event];
+  on(event: string, fn: (...args: unknown[]) => void, id?: number, once?: boolean): Howl {
+    const events = (this as unknown as Record<string, EventListener[]>)[`_on${event}`];
 
     if (typeof fn === 'function') {
       events.push(once ? { id, fn, once } : { id, fn });
@@ -1620,9 +1712,8 @@ class Howl {
     return this;
   }
 
-  off(event: string, fn?: (...args: any[]) => void, id?: number): Howl {
-    
-    const events = (this as any)['_on' + event];
+  off(event: string, fn?: (...args: unknown[]) => void, id?: number): Howl {
+    const events = (this as unknown as Record<string, EventListener[]>)[`_on${event}`];
     let i = 0;
 
     if (typeof fn === 'number') {
@@ -1639,12 +1730,12 @@ class Howl {
         }
       }
     } else if (event) {
-      (this as any)['_on' + event] = [];
+      (this as unknown as Record<string, EventListener[]>)[`_on${event}`] = [];
     } else {
       const keys = Object.keys(this);
       for (i = 0; i < keys.length; i++) {
-        if (keys[i].indexOf('_on') === 0 && Array.isArray((this as any)[keys[i]])) {
-          (this as any)[keys[i]] = [];
+        if (keys[i].indexOf('_on') === 0 && Array.isArray((this as unknown as Record<string, EventListener[]>)[keys[i]])) {
+          (this as unknown as Record<string, EventListener[]>)[keys[i]] = [];
         }
       }
     }
@@ -1652,7 +1743,7 @@ class Howl {
     return this;
   }
 
-  once(event: string, fn: (...args: any[]) => void, id?: number): Howl {
+  once(event: string, fn: (...args: unknown[]) => void, id?: number): Howl {
     
 
     this.on(event, fn, id, true);
@@ -1661,7 +1752,7 @@ class Howl {
   }
 
   _emit(event: string, id?: number | null, msg?: string): Howl {
-    const events = (this as any)['_on' + event];
+    const events = (this as unknown as Record<string, EventListener[]>)[`_on${event}`];
 
     for (let i = events.length - 1; i >= 0; i--) {
       if (!events[i].id || events[i].id === id || event === 'load') {
@@ -1704,7 +1795,7 @@ class Howl {
     
     const sprite = sound._sprite;
 
-    if (!this._webAudio && sound._node && !sound._node.paused && !sound._node.ended && sound._node.currentTime < sound._stop!) {
+    if (!this._webAudio && sound._node && isHTMLAudioElement(sound._node) && !sound._node.paused && !sound._node.ended && sound._node.currentTime < sound._stop!) {
       setTimeout(this._ended.bind(this, sound), 100);
       return this;
     }
@@ -1812,8 +1903,9 @@ class Howl {
       }
 
       if (this._sounds[i]._ended) {
-        if (this._webAudio && this._sounds[i]._node) {
-          this._sounds[i]._node.disconnect(0);
+        const node = this._sounds[i]._node;
+        if (this._webAudio && node && isGainNode(node)) {
+          node.disconnect(0);
         }
 
         this._sounds.splice(i, 1);
@@ -1838,10 +1930,13 @@ class Howl {
   }
 
   _refreshBuffer(sound: Sound): Howl {
-    
+    if (!sound._node || !isGainNode(sound._node) || !Howler.ctx) {
+      return this;
+    }
 
-    sound._node.bufferSource = Howler.ctx!.createBufferSource();
-    sound._node.bufferSource.buffer = cache[this._src as string];
+    sound._node.bufferSource = Howler.ctx.createBufferSource() as AudioBufferSourceNodeWithLegacy;
+    const src = typeof this._src === 'string' ? this._src : (Array.isArray(this._src) && this._src.length > 0 ? this._src[0] : '');
+    sound._node.bufferSource.buffer = cache[src];
 
     if (sound._panner) {
       sound._node.bufferSource.connect(sound._panner);
@@ -1854,7 +1949,7 @@ class Howl {
       sound._node.bufferSource.loopStart = sound._start || 0;
       sound._node.bufferSource.loopEnd = sound._stop || 0;
     }
-    sound._node.bufferSource.playbackRate.setValueAtTime(sound._rate, Howler.ctx!.currentTime);
+    sound._node.bufferSource.playbackRate.setValueAtTime(sound._rate, Howler.ctx.currentTime);
 
     return this;
   }
@@ -1881,7 +1976,7 @@ class Howl {
     return this;
   }
 
-  _clearSound(node: HTMLAudioElement): void {
+  _clearSound(node: HTMLAudioElementWithUnlocked): void {
     if (!isIE(Howler._navigator)) {
       node.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
     }
