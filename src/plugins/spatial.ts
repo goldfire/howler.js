@@ -2,5 +2,8 @@
  * Howler.js - Spatial Plugin Entry Point
  */
 
- // Spatial Audio Plugin
- export { SpatialAudioPlugin, SpatialHowler, SpatialHowl, SpatialSound } from './spatial-plugin';
+// Export the plugin for use with Howler.addPlugin()
+export { SpatialAudioPlugin } from './spatial-plugin';
+
+// Export spatial types for TypeScript support
+export type { SpatialAudioState, SpatialHowler, SpatialHowl } from './spatial-plugin';

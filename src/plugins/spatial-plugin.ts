@@ -9,43 +9,69 @@
  *  MIT License
  */
 
-import { HowlerPlugin, type PluginHooks } from './plugin';
-import { Howl, HowlerGlobal, Sound } from '../howler.core';
 import type { HowlOptions } from '../howler.core';
+import { Howl, HowlerGlobal } from '../howler.core';
+import { HowlerPlugin, type PluginHooks, globalPluginManager } from './plugin';
 
 /**
- * Extended Howler class with spatial audio support
+ * Spatial audio properties
  */
-export class SpatialHowler extends (HowlerGlobal as any) {
-  _pos: [number, number, number] = [0, 0, 0];
-  _orientation: [number, number, number, number, number, number] = [0, 0, -1, 0, 1, 0];
+export interface SpatialAudioState {
+  _pos: [number, number, number];
+  _orientation: [number, number, number, number, number, number];
+  _stereo?: number;
+}
 
-  stereo(pan?: number): this | number {
-    if (!this.ctx || !this.ctx.listener) {
-      console.warn('Spatial audio unavailable: Web Audio API not supported');
-      return this;
-    }
+/**
+ * Howler instance with spatial audio capabilities
+ */
+export type SpatialHowler = HowlerGlobal & SpatialAudioState & {
+  pos(x?: number, y?: number, z?: number): any;
+  orientation(x?: number, y?: number, z?: number, xUp?: number, yUp?: number, zUp?: number): any;
+  stereo(pan?: number): any;
+};
 
-    if (typeof pan === 'number') {
-      for (let i = 0; i < this._howls.length; i++) {
-        (this._howls[i] as any).stereo?.(pan);
-      }
-      return this;
-    }
+/**
+ * Howl instance with spatial audio capabilities
+ */
+export type SpatialHowl = Howl & {
+  _pos?: [number, number, number] | null;
+  _orientation?: [number, number, number];
+  _stereo?: number | null;
+  _pannerAttr?: any;
+  pos(x?: number, y?: number, z?: number, id?: number): any;
+  orientation(x?: number, y?: number, z?: number, id?: number): any;
+  stereo(pan?: number, id?: number): any;
+  pannerAttr(o?: any, id?: number): any;
+};
 
-    return (this as any)._stereo ?? 0;
-  }
+/**
+ * Mixin function to add spatial audio to HowlerGlobal (listener)
+ */
+export function withSpatialListener<T extends HowlerGlobal>(
+  instance: T
+): T & SpatialAudioState & {
+  pos(x?: number, y?: number, z?: number): any;
+  orientation(x?: number, y?: number, z?: number, xUp?: number, yUp?: number, zUp?: number): any;
+  stereo(pan?: number): any;
+} {
+  const spatial = instance as any;
 
-  pos(x?: number, y?: number, z?: number): this | [number, number, number] {
+  // Initialize spatial properties
+  spatial._pos = [0, 0, 0];
+  spatial._orientation = [0, 0, -1, 0, 1, 0];
+
+  // Add pos method to set listener position
+  spatial.pos = function (x?: number, y?: number, z?: number) {
     if (!this.ctx || !this.ctx.listener) {
       console.warn('Spatial audio unavailable: Web Audio API not supported');
       return this;
     }
 
     if (typeof x === 'number') {
-      const y_val = typeof y === 'number' ? y : this._pos[1];
-      const z_val = typeof z === 'number' ? z : this._pos[2];
-      this._pos = [x, y_val, z_val];
+      const y_val = typeof y === 'number' ? y : spatial._pos[1];
+      const z_val = typeof z === 'number' ? z : spatial._pos[2];
+      spatial._pos = [x, y_val, z_val];
 
       // Set listener position using appropriate API
       if (typeof this.ctx.listener.positionX !== 'undefined') {
@@ -59,30 +85,31 @@ export class SpatialHowler extends (HowlerGlobal as any) {
       return this;
     }
 
-    return this._pos;
-  }
+    return spatial._pos;
+  };
 
-  orientation(
+  // Add orientation method to set listener orientation
+  spatial.orientation = function (
     x?: number,
     y?: number,
     z?: number,
     xUp?: number,
     yUp?: number,
     zUp?: number
-  ): this | [number, number, number, number, number, number] {
+  ) {
     if (!this.ctx || !this.ctx.listener) {
       console.warn('Spatial audio unavailable: Web Audio API not supported');
       return this;
     }
 
     if (typeof x === 'number') {
-      const or = this._orientation;
+      const or = spatial._orientation;
       const y_val = typeof y === 'number' ? y : or[1];
       const z_val = typeof z === 'number' ? z : or[2];
       const xUp_val = typeof xUp === 'number' ? xUp : or[3];
       const yUp_val = typeof yUp === 'number' ? yUp : or[4];
       const zUp_val = typeof zUp === 'number' ? zUp : or[5];
-      this._orientation = [x, y_val, z_val, xUp_val, yUp_val, zUp_val];
+      spatial._orientation = [x, y_val, z_val, xUp_val, yUp_val, zUp_val];
 
       // Set listener orientation using appropriate API
       if (typeof this.ctx.listener.forwardX !== 'undefined') {
@@ -93,119 +120,63 @@ export class SpatialHowler extends (HowlerGlobal as any) {
         this.ctx.listener.upY.setTargetAtTime(yUp_val, this.ctx.currentTime, 0.1);
         this.ctx.listener.upZ.setTargetAtTime(zUp_val, this.ctx.currentTime, 0.1);
       } else {
-        (this.ctx.listener as any).setOrientation(x, y_val, z_val, xUp_val, yUp_val, zUp_val);
+        (this.ctx.listener as any).setOrientation(
+          x,
+          y_val,
+          z_val,
+          xUp_val,
+          yUp_val,
+          zUp_val
+        );
       }
 
       return this;
     }
 
-    return this._orientation;
-  }
-}
-
-/**
- * Extended Howl class with spatial audio support
- */
-export class SpatialHowl extends Howl {
-  _orientation: [number, number, number] = [1, 0, 0];
-  _stereo: number | null = null;
-  _pos: [number, number, number] | null = null;
-  _pannerAttr: {
-    coneInnerAngle: number;
-    coneOuterAngle: number;
-    coneOuterGain: number;
-    distanceModel: string;
-    maxDistance: number;
-    refDistance: number;
-    rolloffFactor: number;
-    panningModel: string;
-  } = {
-    coneInnerAngle: 360,
-    coneOuterAngle: 360,
-    coneOuterGain: 0,
-    distanceModel: 'inverse',
-    maxDistance: 10000,
-    refDistance: 1,
-    rolloffFactor: 1,
-    panningModel: 'HRTF',
+    return spatial._orientation;
   };
 
-  constructor(o: HowlOptions & any) {
-    super(o);
-    // Initialize spatial properties from options
-    this._orientation = o.orientation || [1, 0, 0];
-    this._stereo = o.stereo || null;
-    this._pos = o.pos || null;
-    this._pannerAttr = {
-      coneInnerAngle: o.coneInnerAngle ?? 360,
-      coneOuterAngle: o.coneOuterAngle ?? 360,
-      coneOuterGain: o.coneOuterGain ?? 0,
-      distanceModel: o.distanceModel ?? 'inverse',
-      maxDistance: o.maxDistance ?? 10000,
-      refDistance: o.refDistance ?? 1,
-      rolloffFactor: o.rolloffFactor ?? 1,
-      panningModel: o.panningModel ?? 'HRTF',
-    };
-  }
+  // Add stereo method
+  spatial.stereo = function (pan?: number) {
+    if (!this.ctx || !this.ctx.listener) {
+      console.warn('Spatial audio unavailable: Web Audio API not supported');
+      return this;
+    }
 
-  stereo(pan?: number, id?: number): this | number {
     if (typeof pan === 'number') {
-      this._stereo = pan;
-      // Apply to all sounds
-      for (let i = 0; i < this._sounds.length; i++) {
-        (this._sounds[i] as any)._stereo = pan;
+      for (let i = 0; i < this._howls.length; i++) {
+        (this._howls[i] as any).stereo?.(pan);
       }
       return this;
     }
-    return this._stereo ?? 0;
-  }
 
-  pos(x?: number, y?: number, z?: number, id?: number): this | [number, number, number] {
-    if (typeof x === 'number') {
-      const y_val = typeof y === 'number' ? y : (this._pos?.[1] ?? 0);
-      const z_val = typeof z === 'number' ? z : (this._pos?.[2] ?? 0);
-      this._pos = [x, y_val, z_val];
-      return this;
-    }
-    return this._pos ?? [0, 0, 0];
-  }
+    return spatial._stereo ?? 0;
+  };
 
-  orientation(x?: number, y?: number, z?: number, id?: number): this | [number, number, number] {
-    if (typeof x === 'number') {
-      const y_val = typeof y === 'number' ? y : this._orientation[1];
-      const z_val = typeof z === 'number' ? z : this._orientation[2];
-      this._orientation = [x, y_val, z_val];
-      return this;
-    }
-    return this._orientation;
-  }
-
-  pannerAttr(o?: any, id?: number): any {
-    if (o) {
-      Object.assign(this._pannerAttr, o);
-      return this;
-    }
-    return this._pannerAttr;
-  }
+  return spatial;
 }
 
 /**
- * Extended Sound class with spatial audio support
+ * Mixin function to add spatial audio to Howl instances
  */
-export class SpatialSound extends Sound {
-  _orientation: [number, number, number] = [1, 0, 0];
-  _stereo: number | null = null;
-  _pos: [number, number, number] | null = null;
-  _pannerAttr: {
-    coneInnerAngle: number;
-    coneOuterAngle: number;
-    coneOuterGain: number;
-    distanceModel: string;
-    maxDistance: number;
-    refDistance: number;
-    rolloffFactor: number;
-    panningModel: string;
-  } = {
+export function withSpatialHowl<T extends Howl>(
+  instance: T
+): T & {
+  _orientation: [number, number, number];
+  _stereo: number | null;
+  _pos: [number, number, number] | null;
+  _pannerAttr: any;
+  pos(x?: number, y?: number, z?: number, id?: number): any;
+  orientation(x?: number, y?: number, z?: number, id?: number): any;
+  stereo(pan?: number, id?: number): any;
+  pannerAttr(o?: any, id?: number): any;
+} {
+  const spatial = instance as any;
+
+  spatial._orientation = [1, 0, 0];
+  spatial._stereo = null;
+  spatial._pos = null;
+  spatial._pannerAttr = {
     coneInnerAngle: 360,
     coneOuterAngle: 360,
     coneOuterGain: 0,
@@ -215,35 +186,67 @@ export class SpatialSound extends Sound {
     rolloffFactor: 1,
     panningModel: 'HRTF',
   };
-  _panner?: PannerNode | StereoPannerNode;
 
-  constructor(howl: Howl) {
-    super(howl);
-    // Inherit spatial properties from parent
-    if (howl instanceof SpatialHowl) {
-      this._orientation = howl._orientation;
-      this._stereo = howl._stereo;
-      this._pos = howl._pos;
-      this._pannerAttr = howl._pannerAttr;
+  spatial.stereo = function (pan?: number, id?: number) {
+    if (typeof pan === 'number') {
+      spatial._stereo = pan;
+      return this;
     }
-  }
+    return spatial._stereo ?? 0;
+  };
+
+  spatial.pos = function (x?: number, y?: number, z?: number, id?: number) {
+    if (typeof x === 'number') {
+      const y_val = typeof y === 'number' ? y : (spatial._pos?.[1] ?? 0);
+      const z_val = typeof z === 'number' ? z : (spatial._pos?.[2] ?? 0);
+      spatial._pos = [x, y_val, z_val];
+      return this;
+    }
+    return spatial._pos ?? [0, 0, 0];
+  };
+
+  spatial.orientation = function (x?: number, y?: number, z?: number, id?: number) {
+    if (typeof x === 'number') {
+      const y_val = typeof y === 'number' ? y : spatial._orientation[1];
+      const z_val = typeof z === 'number' ? z : spatial._orientation[2];
+      spatial._orientation = [x, y_val, z_val];
+      return this;
+    }
+    return spatial._orientation;
+  };
+
+  spatial.pannerAttr = function (o?: any, id?: number) {
+    if (o) {
+      Object.assign(spatial._pannerAttr, o);
+      return this;
+    }
+    return spatial._pannerAttr;
+  };
+
+  return spatial;
 }
 
 /**
  * Spatial Audio Plugin
- * Adds 3D spatial audio and stereo panning capabilities to Howler
+ * Adds 3D spatial audio and stereo panning capabilities to Howler and Howl instances
  *
  * Usage:
  * ```typescript
- * import { globalPluginManager } from 'howler/plugins';
+ * import { Howler } from 'howler';
  * import { SpatialAudioPlugin } from 'howler/plugins/spatial';
  *
- * globalPluginManager.register(new SpatialAudioPlugin());
+ * // Register the plugin
+ * Howler.addPlugin(new SpatialAudioPlugin());
  *
- * // Then use the spatial classes for your audio objects:
- * const sound = new SpatialHowl({ src: 'audio.mp3' });
+ * // Use spatial methods on Howler listener:
+ * Howler.pos(10, 20, 30);
+ * Howler.orientation(1, 0, 0, 0, 1, 0);
+ *
+ * // Use spatial methods on Howl instances:
+ * const sound = new Howl({ src: 'audio.mp3' });
  * sound.pos(10, 20, 30);
  * sound.stereo(0.5);
+ * sound.pannerAttr({ refDistance: 0.8 });
  * ```
  */
 export class SpatialAudioPlugin extends HowlerPlugin {
@@ -252,22 +255,41 @@ export class SpatialAudioPlugin extends HowlerPlugin {
 
   getHooks(): PluginHooks {
     return {
-      onHowlerInit: this.onHowlerInit.bind(this),
+      onRegister: this.onRegister.bind(this),
+      onHowlCreate: this.onHowlCreate.bind(this),
     };
   }
 
   /**
-   * Initialize spatial audio global state when Howler is initialized.
-   * Note: Users should instantiate SpatialHowl and SpatialSound directly
-   * instead of using the base Howl and Sound classes when they need spatial features.
+   * Initialize spatial audio when the plugin is registered.
+   * This is called whether the Howler is already initialized or not.
    */
-  private onHowlerInit(howler: HowlerGlobal): void {
-    console.info(
-      'Spatial Audio Plugin registered. Use SpatialHowl and SpatialSound classes for spatial audio features.'
-    );
+  private onRegister(): void {
+    // Apply the spatial audio mixin to Howler if it's initialized
+    const howler = globalPluginManager.getHowlerInstance();
+    if (howler) {
+      withSpatialListener(howler);
+    }
+  }
+
+  /**
+   * Extend Howl instances with spatial audio methods via mixin.
+   */
+  private onHowlCreate(howl: Howl, _options: HowlOptions): void {
+    withSpatialHowl(howl);
   }
 
   onUnregister(): void {
-    // Cleanup if needed
+    // Remove spatial audio methods from Howler instance
+    const howler = globalPluginManager.getHowlerInstance();
+    if (howler) {
+      // Remove spatial audio properties and methods
+      delete (howler as any)._pos;
+      delete (howler as any)._orientation;
+      delete (howler as any)._stereo;
+      delete (howler as any).pos;
+      delete (howler as any).orientation;
+      delete (howler as any).stereo;
+    }
   }
 }

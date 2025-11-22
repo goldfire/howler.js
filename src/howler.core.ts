@@ -8,13 +8,13 @@
  *  MIT License
  */
 // Import shared types
-import { cache, HowlOptions, EventListener, QueueItem } from './types';
+import { cache, EventListener, HowlOptions, QueueItem } from './types';
 
 // Import helper functions
 import { loadBuffer, setupAudioContext } from './helpers';
 
 // Import plugin manager
-import { globalPluginManager } from './plugins';
+import { globalPluginManager, HowlerPlugin } from './plugins';
 
 export class HowlerGlobal {
   _counter: number = 1000;
@@ -65,8 +65,9 @@ export class HowlerGlobal {
 
     self._setup();
 
-    // Execute plugin hooks
-    globalPluginManager.executeHowlerInit(self);
+    // Register the Howler instance with the plugin manager
+    // This allows plugins registered after initialization to access it via onRegister
+    globalPluginManager.setHowlerInstance(self);
 
     return self;
   }
@@ -166,6 +167,28 @@ export class HowlerGlobal {
 
   codecs(ext: string): boolean {
     return (this || Howler)._codecs[ext.replace(/^x-/, '')];
+  }
+
+  /**
+   * Register a plugin with Howler
+   * @param plugin - The plugin to register
+   * @returns this for chaining
+   * @throws Error if a plugin with the same name is already registered
+   */
+  addPlugin(plugin: HowlerPlugin): HowlerGlobal {
+    globalPluginManager.register(plugin);
+    return this;
+  }
+
+  /**
+   * Unregister a plugin from Howler
+   * @param plugin - The plugin instance to unregister
+   * @returns this for chaining
+   * @throws Error if the plugin is not registered
+   */
+  removePlugin(plugin: HowlerPlugin): HowlerGlobal {
+    globalPluginManager.unregister(plugin.name);
+    return this;
   }
 
   _setup(): HowlerGlobal {
@@ -890,7 +913,8 @@ class Howl {
       const playHtml5 = () => {
         node.currentTime = seek;
         node.muted = sound._muted || self._muted || Howler._muted || node.muted;
-        node.volume = sound._volume * Howler.volume();
+        const volume = Howler.volume();
+        node.volume = sound._volume * (typeof volume === 'number' ? volume : 1);
         node.playbackRate = sound._rate;
 
         try {
@@ -939,8 +963,8 @@ class Howl {
             };
             node.addEventListener('ended', self._endTimers[sound._id], false);
           }
-        } catch (err) {
-          self._emit('playerror', sound._id, err);
+        } catch (err: unknown) {
+          self._emit('playerror', sound._id, err instanceof Error ? err.message : String(err));
         }
       };
 
@@ -1893,7 +1917,38 @@ class Howl {
   }
 }
 
+/**
+ * Type declaration for Howler with optional spatial audio mixin methods.
+ * These methods are added dynamically by the SpatialAudioPlugin at runtime.
+ */
+export interface HowlerInstance extends HowlerGlobal {
+  // Optional spatial audio methods added by plugin
+  _pos?: [number, number, number];
+  _orientation?: [number, number, number, number, number, number];
+  pos?(x?: number, y?: number, z?: number): any;
+  orientation?(x?: number, y?: number, z?: number, xUp?: number, yUp?: number, zUp?: number): any;
+  stereo?(pan?: number): any;
+}
+
+/**
+ * Type declaration for Howl with optional spatial audio mixin methods.
+ * These methods are added dynamically by the SpatialAudioPlugin at runtime.
+ */
+export interface HowlInstance extends Howl {
+  // Optional spatial audio properties added by plugin
+  _pos?: [number, number, number] | null;
+  _orientation?: [number, number, number];
+  _stereo?: number | null;
+  _pannerAttr?: any;
+
+  // Optional spatial audio methods added by plugin
+  pos?(x?: number, y?: number, z?: number, id?: number): any;
+  orientation?(x?: number, y?: number, z?: number, id?: number): any;
+  stereo?(pan?: number, id?: number): any;
+  pannerAttr?(o?: any, id?: number): any;
+}
+
 // Export for ESM
 export * from './types';
-export { Howler, Howl, Sound };
+export { Howl, Howler, Sound };
 export default { Howler, Howl, Sound };

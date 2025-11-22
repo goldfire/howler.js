@@ -8,7 +8,7 @@
  *  MIT License
  */
 
-import type { HowlerGlobal, Howl, Sound } from '../howler.core';
+import type { Howl, HowlerGlobal, Sound } from '../howler.core';
 import type { HowlOptions } from '../types';
 
 /**
@@ -87,6 +87,7 @@ export interface RegisteredPlugin {
 export class PluginManager {
   private plugins: Map<string, RegisteredPlugin> = new Map();
   private hookHistory: Map<string, string[]> = new Map();
+  private howlerInstance: HowlerGlobal | null = null;
 
   /**
    * Register a plugin
@@ -107,10 +108,12 @@ export class PluginManager {
     this.plugins.set(plugin.name, registered);
 
     // Execute onRegister hook if provided
+    // Plugins can use this hook to initialize themselves, even if Howler is
+    // already initialized. The howlerInstance is available via getHowlerInstance()
     if (hooks.onRegister) {
       try {
         hooks.onRegister();
-      } catch (error) {
+      } catch (error: unknown) {
         console.error(`Error during onRegister for plugin "${plugin.name}":`, error);
       }
     }
@@ -147,21 +150,26 @@ export class PluginManager {
   }
 
   /**
+   * Set the Howler instance reference for late-registered plugins
+   * @internal
+   */
+  setHowlerInstance(howler: HowlerGlobal): void {
+    this.howlerInstance = howler;
+  }
+
+  /**
+   * Get the Howler instance (if initialized)
+   * This can be used by plugins in their onRegister hook to apply initialization
+   */
+  getHowlerInstance(): HowlerGlobal | null {
+    return this.howlerInstance;
+  }
+
+  /**
    * Get all registered plugins
    */
   getPlugins(): ReadonlyMap<string, RegisteredPlugin> {
     return new Map(this.plugins);
-  }
-
-  /**
-   * Execute onHowlerInit hooks
-   */
-  executeHowlerInit(howler: HowlerGlobal): void {
-    this._executeHooks('onHowlerInit', (hooks) => {
-      if (hooks.onHowlerInit) {
-        hooks.onHowlerInit(howler);
-      }
-    });
   }
 
   /**
