@@ -10,7 +10,7 @@
 
 import type { Howl } from "../howler.core";
 import { Howler } from "../howler.core";
-import { globalPluginManager } from "../plugins";
+import { globalPluginManager } from "../plugins/plugin";
 import { cache } from "../types";
 
 export const loadBuffer = (self: Howl) => {

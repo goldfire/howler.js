@@ -13,7 +13,7 @@ export {
 	decodeAudioData,
 	loadBuffer,
 	loadSound,
-	safeXhrSend,
+	safeXhrSend
 } from "./audio-loader";
 export {
 	getIOSVersion,
@@ -21,11 +21,8 @@ export {
 	getSafariVersion,
 	isAppleVendor,
 	isChromeBased,
-	isCocoonJS,
-	isIE,
 	isIOS,
-	isOldOpera,
-	isOldSafari,
 	isOpera,
-	isSafari,
+	isSafari
 } from "./light-ua-parser";
+

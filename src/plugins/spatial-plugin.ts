@@ -11,86 +11,149 @@
 
 import type { HowlOptions } from "../howler.core";
 import {
-	type Howl,
-	Howler,
-	type HowlerGlobal,
-	type Sound,
+  type Howl,
+  Howler,
+  type HowlerGlobal,
+  type Sound,
 } from "../howler.core";
 import { isGainNode } from "../types";
 import { globalPluginManager, HowlerPlugin, type PluginHooks } from "./plugin";
 
 /**
- * Extended HowlOptions with spatial audio properties
+ * Extended HowlOptions with spatial audio properties.
+ * Use this interface when creating a Howl instance with spatial audio capabilities.
+ *
+ * @example
+ * ```typescript
+ * const sound = new Howl({
+ *   src: ['sound.mp3'],
+ *   pos: [10, 20, 30],
+ *   stereo: 0.5,
+ *   distanceModel: 'inverse'
+ * } as SpatialHowlOptions);
+ * ```
  */
 export interface SpatialHowlOptions extends HowlOptions {
+	/** 3D position of the sound source [x, y, z]. */
 	pos?: [number, number, number];
+	/** Orientation vector of the sound source [x, y, z]. */
 	orientation?: [number, number, number];
+	/** Stereo panning value from -1.0 (left) to 1.0 (right). */
 	stereo?: number;
+	/** Inner angle of the sound cone in degrees. Default: `360` */
 	coneInnerAngle?: number;
+	/** Outer angle of the sound cone in degrees. Default: `360` */
 	coneOuterAngle?: number;
+	/** Gain value outside the outer cone. Range: 0.0 to 1.0. Default: `0` */
 	coneOuterGain?: number;
+	/** Distance model algorithm: 'linear', 'inverse', or 'exponential'. Default: `'inverse'` */
 	distanceModel?: "linear" | "inverse" | "exponential";
+	/** Maximum distance for the distance model. Default: `10000` */
 	maxDistance?: number;
+	/** Panning model: 'equalpower' or 'HRTF'. Default: `'HRTF'` */
 	panningModel?: "equalpower" | "HRTF";
+	/** Reference distance for the distance model. Default: `1` */
 	refDistance?: number;
+	/** Rolloff factor for the distance model. Default: `1` */
 	rolloffFactor?: number;
+	/** Fires when the stereo panning changes. */
 	onstereo?: () => void;
+	/** Fires when the 3D position changes. */
 	onpos?: () => void;
+	/** Fires when the orientation changes. */
 	onorientation?: () => void;
 }
 
 /**
- * Spatial audio properties for HowlerGlobal
+ * Spatial audio state for the global Howler instance.
+ * Contains the listener's position and orientation in 3D space.
+ *
+ * @internal
  */
 export interface SpatialAudioState {
+	/** Listener's 3D position [x, y, z]. */
 	_pos: [number, number, number];
+	/** Listener's orientation [forwardX, forwardY, forwardZ, upX, upY, upZ]. */
 	_orientation: [number, number, number, number, number, number];
 }
 
 /**
- * Spatial audio properties for Howl
+ * Spatial audio state for a Howl instance.
+ * Contains the sound source's position, orientation, and panner attributes.
+ *
+ * @internal
  */
 export interface SpatialHowlState {
+	/** Sound source's 3D position [x, y, z], or null if not set. */
 	_pos: [number, number, number] | null;
+	/** Sound source's orientation vector [x, y, z]. */
 	_orientation: [number, number, number];
+	/** Stereo panning value from -1.0 to 1.0, or null if not set. */
 	_stereo: number | null;
+	/** Panner node attributes for 3D audio processing. */
 	_pannerAttr: {
+		/** Inner angle of the sound cone in degrees. */
 		coneInnerAngle: number;
+		/** Outer angle of the sound cone in degrees. */
 		coneOuterAngle: number;
+		/** Gain value outside the outer cone (0.0 to 1.0). */
 		coneOuterGain: number;
+		/** Distance model algorithm. */
 		distanceModel: "linear" | "inverse" | "exponential";
+		/** Maximum distance for the distance model. */
 		maxDistance: number;
+		/** Panning model algorithm. */
 		panningModel: "equalpower" | "HRTF";
+		/** Reference distance for the distance model. */
 		refDistance: number;
+		/** Rolloff factor for the distance model. */
 		rolloffFactor: number;
 	};
+	/** Event listeners for stereo panning changes. */
 	_onstereo: Array<{ fn: () => void }>;
+	/** Event listeners for position changes. */
 	_onpos: Array<{ fn: () => void }>;
+	/** Event listeners for orientation changes. */
 	_onorientation: Array<{ fn: () => void }>;
 }
 
 /**
- * Spatial audio properties for Sound
+ * Spatial audio state for a Sound instance.
+ * Contains per-sound spatial audio properties.
+ *
+ * @internal
  */
 export interface SpatialSoundState {
+	/** Sound's 3D position [x, y, z], or null if not set. */
 	_pos: [number, number, number] | null;
+	/** Sound's orientation vector [x, y, z]. */
 	_orientation: [number, number, number];
+	/** Stereo panning value from -1.0 to 1.0, or null if not set. */
 	_stereo: number | null;
+	/** Panner node attributes for 3D audio processing. */
 	_pannerAttr: {
+		/** Inner angle of the sound cone in degrees. */
 		coneInnerAngle: number;
+		/** Outer angle of the sound cone in degrees. */
 		coneOuterAngle: number;
+		/** Gain value outside the outer cone (0.0 to 1.0). */
 		coneOuterGain: number;
+		/** Distance model algorithm. */
 		distanceModel: "linear" | "inverse" | "exponential";
+		/** Maximum distance for the distance model. */
 		maxDistance: number;
+		/** Panning model algorithm. */
 		panningModel: "equalpower" | "HRTF";
+		/** Reference distance for the distance model. */
 		refDistance: number;
+		/** Rolloff factor for the distance model. */
 		rolloffFactor: number;
 	};
 }
 
 /**
- * Howler instance with spatial audio capabilities
- * Use this type when the spatial plugin is registered
+ * Howler instance with spatial audio capabilities.
+ * Use this type when the spatial plugin is registered to get full type safety for spatial audio methods.
  *
  * @example
  * ```typescript
@@ -100,16 +163,35 @@ export interface SpatialSoundState {
  * Howler.addPlugin(new SpatialAudioPlugin());
  *
  * const howler: SpatialHowler = Howler as SpatialHowler;
- * howler.pos(10, 20, 30);
+ * howler.pos(10, 20, 30); // Set listener position
+ * howler.orientation(0, 0, -1, 0, 1, 0); // Set listener orientation
+ * howler.stereo(0.5); // Set stereo panning
  * ```
  */
 export type SpatialHowler = HowlerGlobal &
 	SpatialAudioState & {
+		/**
+		 * Set or get the listener's 3D position.
+		 * @param x - X coordinate (optional)
+		 * @param y - Y coordinate (optional)
+		 * @param z - Z coordinate (optional)
+		 * @returns If called with no arguments, returns the current position [x, y, z]. Otherwise, returns the Howler instance for chaining.
+		 */
 		pos(
 			x?: number,
 			y?: number,
 			z?: number,
 		): SpatialHowler | [number, number, number];
+		/**
+		 * Set or get the listener's orientation.
+		 * @param x - Forward X component (optional)
+		 * @param y - Forward Y component (optional)
+		 * @param z - Forward Z component (optional)
+		 * @param xUp - Up X component (optional)
+		 * @param yUp - Up Y component (optional)
+		 * @param zUp - Up Z component (optional)
+		 * @returns If called with no arguments, returns the current orientation [forwardX, forwardY, forwardZ, upX, upY, upZ]. Otherwise, returns the Howler instance for chaining.
+		 */
 		orientation(
 			x?: number,
 			y?: number,
@@ -118,12 +200,17 @@ export type SpatialHowler = HowlerGlobal &
 			yUp?: number,
 			zUp?: number,
 		): SpatialHowler | [number, number, number, number, number, number];
+		/**
+		 * Set or get the stereo panning value.
+		 * @param pan - Panning value from -1.0 (left) to 1.0 (right) (optional)
+		 * @returns If called with no arguments, returns the current panning value. Otherwise, returns the Howler instance for chaining.
+		 */
 		stereo(pan?: number): SpatialHowler;
 	};
 
 /**
- * Howl instance with spatial audio capabilities
- * Use this type when the spatial plugin is registered
+ * Howl instance with spatial audio capabilities.
+ * Use this type when the spatial plugin is registered to get full type safety for spatial audio methods.
  *
  * @example
  * ```typescript
@@ -137,25 +224,54 @@ export type SpatialHowler = HowlerGlobal &
  *   pos: [10, 20, 30]
  * } as SpatialHowlOptions) as SpatialHowl;
  *
- * sound.pos(5, 10, 15);
- * sound.stereo(0.5);
+ * sound.pos(5, 10, 15); // Set sound position
+ * sound.stereo(0.5); // Set stereo panning
+ * sound.orientation(0, 1, 0); // Set sound orientation
  * ```
  */
 export type SpatialHowl = Howl &
 	SpatialHowlState & {
+		/**
+		 * Set or get the sound's 3D position.
+		 * @param x - X coordinate (optional)
+		 * @param y - Y coordinate (optional)
+		 * @param z - Z coordinate (optional)
+		 * @param id - Sound ID to target a specific sound instance (optional)
+		 * @returns If called with no arguments, returns the current position [x, y, z]. Otherwise, returns the Howl instance for chaining.
+		 */
 		pos(
 			x?: number,
 			y?: number,
 			z?: number,
 			id?: number,
 		): SpatialHowl | [number, number, number];
+		/**
+		 * Set or get the sound's orientation vector.
+		 * @param x - X component (optional)
+		 * @param y - Y component (optional)
+		 * @param z - Z component (optional)
+		 * @param id - Sound ID to target a specific sound instance (optional)
+		 * @returns If called with no arguments, returns the current orientation [x, y, z]. Otherwise, returns the Howl instance for chaining.
+		 */
 		orientation(
 			x?: number,
 			y?: number,
 			z?: number,
 			id?: number,
 		): SpatialHowl | [number, number, number];
+		/**
+		 * Set or get the stereo panning value.
+		 * @param pan - Panning value from -1.0 (left) to 1.0 (right) (optional)
+		 * @param id - Sound ID to target a specific sound instance (optional)
+		 * @returns If called with no arguments, returns the current panning value. Otherwise, returns the Howl instance for chaining.
+		 */
 		stereo(pan?: number, id?: number): SpatialHowl | number;
+		/**
+		 * Set or get panner node attributes.
+		 * @param o - Panner attributes object (optional)
+		 * @param id - Sound ID to target a specific sound instance (optional)
+		 * @returns If called with no arguments, returns the current panner attributes. Otherwise, returns the Howl instance for chaining.
+		 */
 		pannerAttr(o?: any, id?: number): SpatialHowl | any;
 	};
 
@@ -912,13 +1028,7 @@ export class SpatialAudioPlugin extends HowlerPlugin {
 						) {
 							try {
 								// Stop the current buffer source
-								if (
-									typeof (sound._node.bufferSource as any).stop === "undefined"
-								) {
-									(sound._node.bufferSource as any).noteOff(0);
-								} else {
-									(sound._node.bufferSource as any).stop(0);
-								}
+								sound._node.bufferSource.stop(0);
 								sound._node.bufferSource.disconnect(0);
 							} catch (e) {
 								// Buffer source may already be stopped or disconnected

@@ -66,14 +66,6 @@ export function getSafariVersion(navigator: Navigator | null): number | null {
 }
 
 /**
- * Check if Safari is an old version (before version 15)
- */
-export function isOldSafari(navigator: Navigator | null): boolean {
-	const version = getSafariVersion(navigator);
-	return version !== null && version < 15;
-}
-
-/**
  * Check if the browser is Opera
  */
 export function isOpera(navigator: Navigator | null): boolean {
@@ -96,22 +88,6 @@ export function getOperaVersion(navigator: Navigator | null): number | null {
 }
 
 /**
- * Check if Opera is an old version (before version 33)
- */
-export function isOldOpera(navigator: Navigator | null): boolean {
-	const version = getOperaVersion(navigator);
-	return version !== null && version < 33;
-}
-
-/**
- * Check if the browser is Internet Explorer (MSIE or Trident)
- */
-export function isIE(navigator: Navigator | null): boolean {
-	const ua = getUserAgent(navigator);
-	return /MSIE |Trident\//.test(ua);
-}
-
-/**
  * Check if the browser vendor is Apple
  */
 export function isAppleVendor(navigator: Navigator | null): boolean {
@@ -126,9 +102,3 @@ export function isChromeBased(navigator: Navigator | null): boolean {
 	return ua.indexOf("Chrome") !== -1;
 }
 
-/**
- * Check if the browser is CocoonJS (for game engines)
- */
-export function isCocoonJS(navigator: Navigator | null): boolean {
-	return !!(navigator as any)?.isCocoonJS;
-}

@@ -4,6 +4,7 @@
 	"description": "Javascript audio library for the modern web.",
 	"homepage": "https://howlerjs.com",
 	"type": "module",
+	"sideEffects": false,
 	"keywords": [
 		"howler",
 		"howler.js",
@@ -24,6 +25,7 @@
 	},
 	"scripts": {
 		"build": "tsdown",
+		"size": "node scripts/check-size.js",
 		"release": "npm run build && git add dist && git commit -m 'build: update dist files' && npm publish"
 	},
 	"devDependencies": {

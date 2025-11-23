@@ -19,8 +19,6 @@ export const setupAudioContext = () => {
 	try {
 		if (typeof window.AudioContext !== "undefined") {
 			Howler.ctx = new window.AudioContext();
-		} else if (typeof (window as any).webkitAudioContext !== "undefined") {
-			Howler.ctx = new (window as any).webkitAudioContext();
 		} else {
 			Howler.usingWebAudio = false;
 		}
@@ -42,10 +40,7 @@ export const setupAudioContext = () => {
 	}
 
 	if (Howler.usingWebAudio && Howler.ctx) {
-		Howler.masterGain =
-			typeof Howler.ctx.createGain === "undefined"
-				? (Howler.ctx as any).createGainNode()
-				: Howler.ctx.createGain();
+		Howler.masterGain = Howler.ctx.createGain();
 		if (Howler.masterGain) {
 			Howler.masterGain.gain.setValueAtTime(
 				Howler._muted ? 0 : Howler._volume,
