@@ -1,14 +1,3 @@
-/*!
- *  Lightweight User Agent Parser for Howler.js
- *  Provides simple browser/device detection utilities
- *  howlerjs.com
- *
- *  (c) 2013-2020, James Simpson of GoldFire Studios
- *  goldfirestudios.com
- *
- *  MIT License
- */
-
 /**
  * Get the user agent string from navigator
  */

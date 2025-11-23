@@ -1,21 +1,10 @@
-/*!
- *  howler.js v2.2.4
- *  howlerjs.com
- *
- *  (c) 2013-2020, James Simpson of GoldFire Studios
- *  goldfirestudios.com
- *
- *  MIT License
- */
-
 // Import Howler singleton from howler.core.ts
-// This creates a circular dependency, but it's resolved at runtime
 import { type Howl, Howler } from "./howler.core";
 import { globalPluginManager } from "./plugins/plugin";
 import {
-  type GainNodeWithBufferSource,
-  type HTMLAudioElementWithUnlocked,
-  isHTMLAudioElement,
+	type GainNodeWithBufferSource,
+	type HTMLAudioElementWithUnlocked,
+	isHTMLAudioElement,
 } from "./types";
 
 export class Sound {

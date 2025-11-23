@@ -1,13 +1,3 @@
-/*!
- *  Howler.js Audio Context Setup Helper
- *  howlerjs.com
- *
- *  (c) 2013-2020, James Simpson of GoldFire Studios
- *  goldfirestudios.com
- *
- *  MIT License
- */
-
 import { Howler } from "../howler.core";
 import { getIOSVersion, isIOS, isSafari } from "./light-ua-parser";
 

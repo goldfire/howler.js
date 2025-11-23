@@ -1,20 +1,9 @@
-/*!
- *  Spatial Plugin for Howler.js
- *  Adds 3D spatial audio and stereo panning support
- *  howlerjs.com
- *
- *  (c) 2013-2020, James Simpson of GoldFire Studios
- *  goldfirestudios.com
- *
- *  MIT License
- */
-
 import type { HowlOptions } from "../howler.core";
 import {
-  type Howl,
-  Howler,
-  type HowlerGlobal,
-  type Sound,
+	type Howl,
+	Howler,
+	type HowlerGlobal,
+	type Sound,
 } from "../howler.core";
 import { isGainNode } from "../types";
 import { globalPluginManager, HowlerPlugin, type PluginHooks } from "./plugin";

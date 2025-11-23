@@ -1,8 +1,11 @@
-/**
- * Howler.js - Javascript Audio Library
- * Main entry point for the library
+/*!
+ *  howler.js v3.0.0-alpha.1
+ *  howlerjs.com
+ *  (c) 2013-2025, James Simpson of GoldFire Studios
+ *  goldfirestudios.com
+ *  https://github.com/goldfire/howler.js
+ *  MIT License
  */
-
 // Core library exports
 export { Howl, Howler, Sound } from "./howler.core";
 export type { PluginHooks } from "./plugins";

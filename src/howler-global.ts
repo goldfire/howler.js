@@ -1,23 +1,13 @@
-/*!
- *  howler.js v2.2.4
- *  howlerjs.com
- *
- *  (c) 2013-2020, James Simpson of GoldFire Studios
- *  goldfirestudios.com
- *
- *  MIT License
- */
-
 // Import helper functions directly for better tree-shaking
 import { setupAudioContext } from "./helpers/audio-context";
 import type { Howl } from "./howl";
 // Import plugin manager
 import { globalPluginManager, type HowlerPlugin } from "./plugins/plugin";
 import {
-  type HTMLAudioElementWithUnlocked,
-  isHTMLAudioElement,
-  type NavigatorWithCocoonJS,
-  type WindowWithAudio,
+	type HTMLAudioElementWithUnlocked,
+	isHTMLAudioElement,
+	type NavigatorWithCocoonJS,
+	type WindowWithAudio,
 } from "./types";
 
 export class HowlerGlobal {

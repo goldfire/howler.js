@@ -1,13 +1,3 @@
-/*!
- *  Howler.js Type Definitions
- *  howlerjs.com
- *
- *  (c) 2013-2020, James Simpson of GoldFire Studios
- *  goldfirestudios.com
- *
- *  MIT License
- */
-
 /**
  * Configuration options for creating a new Howl instance.
  *
