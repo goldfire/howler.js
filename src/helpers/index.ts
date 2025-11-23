@@ -8,6 +8,24 @@
  *  MIT License
  */
 
-export { loadBuffer, safeXhrSend, decodeAudioData, loadSound } from './audio-loader';
-export { setupAudioContext } from './audio-context';
-export { isIOS, getIOSVersion, isSafari, getSafariVersion, isOldSafari, isOpera, getOperaVersion, isOldOpera, isIE, isAppleVendor, isChromeBased, isCocoonJS } from './light-ua-parser';
+export { setupAudioContext } from "./audio-context";
+export {
+	decodeAudioData,
+	loadBuffer,
+	loadSound,
+	safeXhrSend,
+} from "./audio-loader";
+export {
+	getIOSVersion,
+	getOperaVersion,
+	getSafariVersion,
+	isAppleVendor,
+	isChromeBased,
+	isCocoonJS,
+	isIE,
+	isIOS,
+	isOldOpera,
+	isOldSafari,
+	isOpera,
+	isSafari,
+} from "./light-ua-parser";

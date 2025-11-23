@@ -8,14 +8,13 @@
  *  MIT License
  */
 
-import { Howler } from "./howlerConfig.js";
 import { Camera } from "./camera.js";
 import { Controls } from "./controls.js";
+import { Howler } from "./howlerConfig.js";
 import { Map } from "./map.js";
 import { Player } from "./player.js";
 import { Sound } from "./sound.js";
 import { isMobile } from "./utils.js";
-
 
 /**
  * Main game class that runs the tick and sets up all other components.

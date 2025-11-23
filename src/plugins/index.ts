@@ -8,6 +8,6 @@
  *  MIT License
  */
 
+export type { PluginHooks, RegisteredPlugin } from "./plugin";
 // Core plugin infrastructure
-export { HowlerPlugin, PluginManager, globalPluginManager } from './plugin';
-export type { PluginHooks, RegisteredPlugin } from './plugin';
+export { globalPluginManager, HowlerPlugin, PluginManager } from "./plugin";

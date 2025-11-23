@@ -8,8 +8,8 @@
  *  MIT License
  */
 
-import { Howl, Howler } from 'howler';
-import { SpatialAudioPlugin } from 'howler/plugins/spatial';
+import { Howl, Howler } from "howler";
+import { SpatialAudioPlugin } from "howler/plugins/spatial";
 
 const spatialAudioPlugin = new SpatialAudioPlugin();
 // Register the spatial audio plugin on module initialization
@@ -26,4 +26,3 @@ export { Howler };
  * @type {new (...args: any[]) => import('howler/plugins/spatial').SpatialHowl}
  */
 export { Howl };
-

@@ -4,9 +4,9 @@
  */
 
 // Core library exports
-export { Howl, Howler, Sound } from './howler.core';
-export type { HowlOptions } from './types';
+export { Howl, Howler, Sound } from "./howler.core";
+export type { PluginHooks } from "./plugins";
 
 // Plugin system exports
-export { globalPluginManager, HowlerPlugin, PluginManager } from './plugins';
-export type { PluginHooks } from './plugins';
+export { globalPluginManager, HowlerPlugin, PluginManager } from "./plugins";
+export type { HowlOptions } from "./types";

@@ -1,52 +1,53 @@
 {
-  "name": "howler",
-  "version": "3.0.0-alpha.1",
-  "description": "Javascript audio library for the modern web.",
-  "homepage": "https://howlerjs.com",
-  "type": "module",
-  "keywords": [
-    "howler",
-    "howler.js",
-    "audio",
-    "sound",
-    "web audio",
-    "webaudio",
-    "browser",
-    "html5",
-    "html5 audio",
-    "audio sprite",
-    "audiosprite"
-  ],
-  "author": "James Simpson <james@goldfirestudios.com> (http://goldfirestudios.com)",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/goldfire/howler.js.git"
-  },
-  "scripts": {
-    "build": "tsdown",
-    "release": "npm run build && git add dist && git commit -m 'build: update dist files' && npm publish"
-  },
-  "devDependencies": {
-    "tsdown": "~0.16.6",
-    "typescript": "~5.9.3"
-  },
-  "main": "dist/index.js",
-  "module": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    },
-    "./plugins/spatial": {
-      "import": "./dist/plugins/spatial.js",
-      "types": "./dist/plugins/spatial.d.ts"
-    }
-  },
-  "license": "MIT",
-  "files": [
-    "src",
-    "dist",
-    "LICENSE.md"
-  ]
+	"name": "howler",
+	"version": "3.0.0-alpha.1",
+	"description": "Javascript audio library for the modern web.",
+	"homepage": "https://howlerjs.com",
+	"type": "module",
+	"keywords": [
+		"howler",
+		"howler.js",
+		"audio",
+		"sound",
+		"web audio",
+		"webaudio",
+		"browser",
+		"html5",
+		"html5 audio",
+		"audio sprite",
+		"audiosprite"
+	],
+	"author": "James Simpson <james@goldfirestudios.com> (http://goldfirestudios.com)",
+	"repository": {
+		"type": "git",
+		"url": "git://github.com/goldfire/howler.js.git"
+	},
+	"scripts": {
+		"build": "tsdown",
+		"release": "npm run build && git add dist && git commit -m 'build: update dist files' && npm publish"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.3.7",
+		"tsdown": "~0.16.6",
+		"typescript": "~5.9.3"
+	},
+	"main": "dist/index.js",
+	"module": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"exports": {
+		".": {
+			"import": "./dist/index.js",
+			"types": "./dist/index.d.ts"
+		},
+		"./plugins/spatial": {
+			"import": "./dist/plugins/spatial.js",
+			"types": "./dist/plugins/spatial.d.ts"
+		}
+	},
+	"license": "MIT",
+	"files": [
+		"src",
+		"dist",
+		"LICENSE.md"
+	]
 }

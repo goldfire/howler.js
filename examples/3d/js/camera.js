@@ -43,7 +43,6 @@ export class Camera {
 			ctx.fillRect(0, this.height * 0.5, this.width, this.height * 0.5);
 		}
 		ctx.restore();
-		
 	}
 
 	/**
@@ -64,7 +63,6 @@ export class Camera {
 
 		ctx.restore();
 	}
-	
 
 	/**
 	 * Draw a single column of the scene.
