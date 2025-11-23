@@ -9,19 +9,15 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const rootDir = join(__dirname, '..');
 
-// Files to check - core library files
+// Files to check - core library files (now bundled into index.js)
 const coreFiles = [
 	'dist/index.js',
-	'dist/howler.core.js',
-	'dist/howler-global.js',
-	'dist/howl.js',
-	'dist/sound.js',
+  'dist/howler.core.js',
 ];
 
-// Plugin files
+// Plugin files (now at root level due to bundling config)
 const pluginFiles = [
 	'dist/plugins/spatial.js',
-	'dist/plugins/spatial-plugin.js',
 ];
 
 // All files for total calculation

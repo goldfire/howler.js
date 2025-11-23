@@ -21,7 +21,7 @@
 	"author": "James Simpson <james@goldfirestudios.com> (http://goldfirestudios.com)",
 	"repository": {
 		"type": "git",
-		"url": "git://github.com/goldfire/howler.js.git"
+		"url": "git+https://github.com/goldfire/howler.js.git"
 	},
 	"scripts": {
 		"build": "tsdown",
@@ -29,7 +29,9 @@
 		"release": "npm run build && git add dist && git commit -m 'build: update dist files' && npm publish"
 	},
 	"devDependencies": {
+		"@arethetypeswrong/core": "~0.18.2",
 		"@biomejs/biome": "2.3.7",
+		"publint": "~0.3.15",
 		"tsdown": "~0.16.6",
 		"typescript": "~5.9.3"
 	},
@@ -38,12 +40,12 @@
 	"types": "dist/index.d.ts",
 	"exports": {
 		".": {
-			"import": "./dist/index.js",
-			"types": "./dist/index.d.ts"
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
 		},
 		"./plugins/spatial": {
-			"import": "./dist/plugins/spatial.js",
-			"types": "./dist/plugins/spatial.d.ts"
+			"types": "./dist/plugins/spatial.d.ts",
+			"import": "./dist/plugins/spatial.js"
 		}
 	},
 	"license": "MIT",
