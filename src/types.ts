@@ -44,7 +44,7 @@ export interface HowlOptions {
 	sprite?: Record<string, [number, number, boolean?]>;
 	/** The volume of the sound, from 0.0 to 1.0. Default: `1.0` */
 	volume?: number;
-	/** Configure XHR options for loading audio files. */
+	/** Configure fetch options for loading audio files (when using Web Audio). */
 	xhr?: {
 		/** The HTTP method to use. Default: `'GET'` */
 		method?: string;

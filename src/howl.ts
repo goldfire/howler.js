@@ -39,7 +39,7 @@ class Howl {
 	_volume: number = 1;
 	_xhr: {
 		method: string;
-		headers?: Record<string, string>;
+		headers?: HeadersInit;
 		withCredentials: boolean;
 	} = { method: "GET", withCredentials: false };
 	_duration: number = 0;

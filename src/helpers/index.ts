@@ -12,8 +12,7 @@ export { setupAudioContext } from "./audio-context";
 export {
 	decodeAudioData,
 	loadBuffer,
-	loadSound,
-	safeXhrSend
+	loadSound
 } from "./audio-loader";
 export {
 	getIOSVersion,

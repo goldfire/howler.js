@@ -31,58 +31,45 @@ export const loadBuffer = (self: Howl) => {
 
 		decodeAudioData(dataView.buffer, self);
 	} else {
-		const xhr = new XMLHttpRequest();
-		xhr.open(self._xhr.method, url, true);
-		xhr.withCredentials = self._xhr.withCredentials;
-		xhr.responseType = "arraybuffer";
+		// Use fetch API (supported in all target browsers)
+		const fetchOptions: RequestInit = {
+			method: self._xhr.method,
+			credentials: self._xhr.withCredentials ? "include" : "same-origin",
+		};
 
 		if (self._xhr.headers) {
-			Object.keys(self._xhr.headers).forEach((key) => {
-				xhr.setRequestHeader(key, self._xhr.headers![key]);
-			});
+			fetchOptions.headers = self._xhr.headers;
 		}
 
-		xhr.onload = () => {
-			const code = (xhr.status + "")[0];
-			if (code !== "0" && code !== "2" && code !== "3") {
-				self._emit(
-					"loaderror",
-					null,
-					"Failed loading audio file with status: " + xhr.status + ".",
-				);
-				return;
-			}
-
-			decodeAudioData(xhr.response, self);
-		};
-		xhr.onerror = () => {
-			if (self._webAudio) {
-				self._html5 = true;
-				self._webAudio = false;
-				self._sounds = [];
-				delete cache[url];
-				self.load();
-			}
-		};
-		safeXhrSend(xhr);
+		fetch(url, fetchOptions)
+			.then((response) => {
+				if (!response.ok) {
+					self._emit(
+						"loaderror",
+						null,
+						"Failed loading audio file with status: " + response.status + ".",
+					);
+					return;
+				}
+				return response.arrayBuffer();
+			})
+			.then((arrayBuffer) => {
+				if (arrayBuffer) {
+					decodeAudioData(arrayBuffer, self);
+				}
+			})
+			.catch(() => {
+				if (self._webAudio) {
+					self._html5 = true;
+					self._webAudio = false;
+					self._sounds = [];
+					delete cache[url];
+					self.load();
+				}
+			});
 	}
 };
 
-export const safeXhrSend = (xhr: XMLHttpRequest) => {
-	try {
-		xhr.send();
-	} catch (e) {
-		if (xhr.onerror) {
-			// Create a ProgressEvent-like object for the error handler
-			const errorEvent = new ProgressEvent("error", {
-				lengthComputable: false,
-				loaded: 0,
-				total: 0,
-			});
-			xhr.onerror(errorEvent);
-		}
-	}
-};
 
 export const decodeAudioData = (arraybuffer: ArrayBuffer, self: Howl) => {
 	const error = () => {
