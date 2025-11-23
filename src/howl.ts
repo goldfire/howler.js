@@ -1,3 +1,4 @@
+import { cache } from "./cache";
 import { setupAudioContext } from "./helpers/audio-context";
 import { loadBuffer } from "./helpers/audio-loader";
 import { isAppleVendor } from "./helpers/light-ua-parser";
@@ -6,13 +7,12 @@ import { globalPluginManager } from "./plugins/plugin";
 import { Sound } from "./sound";
 import {
 	type AudioBufferSourceNodeWithLegacy,
-	cache,
 	type EventListener,
 	type HowlOptions,
 	type HTMLAudioElementWithUnlocked,
 	isGainNode,
 	isHTMLAudioElement,
-	type QueueItem
+	type QueueItem,
 } from "./types";
 
 class Howl {

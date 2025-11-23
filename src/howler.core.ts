@@ -17,6 +17,6 @@ export type {
   WindowWithAudio
 } from "./types";
 // Export for ESM - explicit exports for better tree-shaking
-export { cache, isGainNode, isHTMLAudioElement } from "./types";
+export { cache } from "./cache";
+export { isGainNode, isHTMLAudioElement } from "./types";
 export { Howl, Howler, HowlerGlobal, Sound };
-

@@ -1,7 +1,7 @@
+import { cache } from "../cache";
 import type { Howl } from "../howler.core";
 import { Howler } from "../howler.core";
 import { globalPluginManager } from "../plugins/plugin";
-import { cache } from "../types";
 
 export const loadBuffer = (self: Howl) => {
 	const url = self._src as string;
@@ -59,7 +59,6 @@ export const loadBuffer = (self: Howl) => {
 			});
 	}
 };
-
 
 export const decodeAudioData = (arraybuffer: ArrayBuffer, self: Howl) => {
 	const error = () => {
