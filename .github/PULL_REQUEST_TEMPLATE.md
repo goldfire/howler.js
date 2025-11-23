@@ -1,10 +1,10 @@
-### Issue/Feature
+# Issue/Feature
 <!--
   Describe the issue/feature resolved by this PR.
   If a new feature, explain why this should be included in the core library.
 -->
 
-### Related Issues
+## Related Issues
 <!-- Link to any related issues here. -->
 
 ### Solution
