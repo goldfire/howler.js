@@ -1,24 +1,28 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="user-scalable=no">
-  <title>Howler.js 3D Spatial Audio</title>
-  <link rel="stylesheet" href="./styles.css">
-</head>
-<body>
-  <!-- Game Canvas -->
-  <canvas id="canvas" width="1" height="1">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="user-scalable=no" />
+    <title>Howler.js 3D Spatial Audio</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "howler": "../../dist/index.js",
+          "howler/plugins/spatial": "../../dist/plugins/spatial.js"
+        }
+      }
+    </script>
+    <script
+      async
+      src="https://ga.jspm.io/npm:es-module-shims@2.6.2/dist/es-module-shims.js"
+    ></script>
+  </head>
+  <body>
+    <!-- Game Canvas -->
+    <canvas id="canvas" width="1" height="1"></canvas>
 
-  <!-- Scripts -->
-  <script src="../../src/howler.core.js"></script>
-  <script src="../../src/plugins/howler.spatial.js"></script>
-  <script src="./js/sound.js"></script>
-  <script src="./js/player.js"></script>
-  <script src="./js/controls.js"></script>
-  <script src="./js/texture.js"></script>
-  <script src="./js/map.js"></script>
-  <script src="./js/camera.js"></script>
-  <script src="./js/game.js"></script>
-</body>
+    <!-- Scripts -->
+    <script type="module" src="./js/game.js"></script>
+  </body>
 </html>
