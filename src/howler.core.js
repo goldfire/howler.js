@@ -2572,16 +2572,8 @@
     exports.Howl = Howl;
   }
 
-  // Add to global in Node.js (for testing, etc).
-  if (typeof global !== 'undefined') {
-    global.HowlerGlobal = HowlerGlobal;
-    global.Howler = Howler;
-    global.Howl = Howl;
-    global.Sound = Sound;
-  } else if (typeof window !== 'undefined') {  // Define globally in case AMD is not available or unused.
-    window.HowlerGlobal = HowlerGlobal;
-    window.Howler = Howler;
-    window.Howl = Howl;
-    window.Sound = Sound;
-  }
+  globalThis.HowlerGlobal = HowlerGlobal;
+  globalThis.Howler = Howler;
+  globalThis.Howl = Howl;
+  globalThis.Sound = Sound;
 })();
