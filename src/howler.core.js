@@ -585,7 +585,7 @@
       self._muted = o.mute || false;
       self._loop = o.loop || false;
       self._pool = o.pool || 5;
-      self._preload = (typeof o.preload === 'boolean' || o.preload === 'metadata') ? o.preload : true;
+      self._preload = (typeof o.preload === 'boolean' || o.preload === 'metadata' || o.preload === 'full') ? o.preload : true;
       self._rate = o.rate || 1;
       self._sprite = o.sprite || {};
       self._src = (typeof o.src !== 'string') ? o.src : [o.src];
@@ -603,6 +603,7 @@
       self._endTimers = {};
       self._queue = [];
       self._playLock = false;
+      self._blobUrl = null;
 
       // Setup event listeners.
       self._onend = o.onend ? [{fn: o.onend}] : [];
@@ -721,12 +722,22 @@
         self._webAudio = false;
       }
 
-      // Create a new sound object and add it to the pool.
-      new Sound(self);
+      if (self._html5 && self._preload === 'full') {
+        // Preload the whole file before starting streaming
+        loadBuffer(self, function(arraybuffer, self) {
+          var blob = new Blob([arraybuffer]);
+          self._blobUrl = window.URL.createObjectURL(blob);
+
+          new Sound(self);
+        });
+      } else {
+        // Create a new sound object and add it to the pool.
+        new Sound(self);
+      }
 
       // Load and decode the audio data for playback.
       if (self._webAudio) {
-        loadBuffer(self);
+        loadBuffer(self, decodeAudioData);
       }
 
       return self;
@@ -1798,6 +1809,12 @@
       // Clear global errors.
       Howler.noAudio = false;
 
+      // Revoke blob URL
+      if (self._blobUrl) {
+        window.URL.revokeObjectURL(self._blobUrl);
+        self._blobUrl = null;
+      }
+
       // Clear out `self`.
       self._state = 'unloaded';
       self._sounds = [];
@@ -2270,8 +2287,8 @@
         self._node.addEventListener('ended', self._endFn, false);
 
         // Setup the new audio node.
-        self._node.src = parent._src;
-        self._node.preload = parent._preload === true ? 'auto' : parent._preload;
+        self._node.src = parent._blobUrl ? parent._blobUrl : parent._src;
+        self._node.preload = (parent._preload === true || parent._preload === 'full') ? 'auto' : parent._preload;
         self._node.volume = volume * Howler.volume();
 
         // Begin loading the source.
@@ -2377,10 +2394,10 @@
   var cache = {};
 
   /**
-   * Buffer a sound from URL, Data URI or cache and decode to audio source (Web Audio API).
+   * Buffer a sound from URL, Data URI or cache.
    * @param  {Howl} self
    */
-  var loadBuffer = function(self) {
+  var loadBuffer = function(self, callback) {
     var url = self._src;
 
     // Check if the buffer has already been cached and use it instead.
@@ -2402,7 +2419,7 @@
         dataView[i] = data.charCodeAt(i);
       }
 
-      decodeAudioData(dataView.buffer, self);
+      callback(dataView.buffer, self);
     } else {
       // Load the buffer from the URL.
       var xhr = new XMLHttpRequest();
@@ -2425,7 +2442,7 @@
           return;
         }
 
-        decodeAudioData(xhr.response, self);
+        callback(xhr.response, self);
       };
       xhr.onerror = function() {
         // If there is an error, switch to HTML5 Audio.
