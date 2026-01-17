@@ -47,4 +47,4 @@ body:
 
   - type: input
     attributes:
-      label: Affected Browser(s)/Versiuon(s)
+      label: Affected Browser(s)/Version(s)
