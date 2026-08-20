@@ -1680,7 +1680,19 @@
           if (self._webAudio) {
             var realTime = self.playing(id) ? Howler.ctx.currentTime - sound._playStart : 0;
             var rateSeek = sound._rateSeek ? sound._rateSeek - sound._seek : 0;
-            return sound._seek + (rateSeek + realTime * Math.abs(sound._rate));
+            var position = sound._seek + (rateSeek + realTime * Math.abs(sound._rate));
+
+            // Keep the reported position inside the active loop even if the
+            // JavaScript end timer runs after the audio buffer has restarted.
+            if (sound._loop) {
+              var loopStart = sound._start || 0;
+              var loopDuration = sound._stop - loopStart;
+              if (loopDuration > 0 && position >= sound._stop) {
+                position = loopStart + ((position - loopStart) % loopDuration);
+              }
+            }
+
+            return position;
           } else {
             return sound._node.currentTime;
           }
