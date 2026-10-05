@@ -1849,7 +1849,10 @@
           var isId = (id === events[i].id);
           if (fn === events[i].fn && isId || !fn && isId) {
             events.splice(i, 1);
-            break;
+            if (fn) {
+              break;
+            }
+            i--;
           }
         }
       } else if (event) {
